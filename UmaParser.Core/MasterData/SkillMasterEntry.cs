@@ -1,0 +1,7 @@
+namespace UmaBlobber.MasterData;
+
+/// <summary>Per-skill master data beyond a display name (e.g. pre-race wit lottery).</summary>
+internal readonly record struct SkillMasterEntry(string Name, SkillActivateLotKind ActivateLot)
+{
+    public static SkillMasterEntry NameOnly(string name) => new(name, SkillActivateLotKind.Unknown);
+}

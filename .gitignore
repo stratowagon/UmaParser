@@ -361,3 +361,16 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Agent session artifacts (local only)
+agent-tools/
+mcps/
+terminals/
+.cursor/
+
+# Game DB extracts
+*.mdb
+
+# Per-user app cache if created beside the repo during development
+master-cache.json
+settings.json
