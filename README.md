@@ -1,19 +1,29 @@
 # UmaParser
 
-A janky app for viewing Team Trials scores in an easy format to paste into spreadsheets.
+A janky app for analyzing Team Trials scores.
 
-Use: Drag and drop one or more team trials results json files (from HorseACT).
+## Prereqs
+You will need to have a tool installed that can capture your Team Trials results, such as Ayaliz's HorseACT: https://github.com/ayaliz/horseACT
+(HorseACT will save them TT races but by default this is disabled, you will have to enable it after setup).
 
-If all of the results use the same roster, it will display all individual scores for every character in a normalized order (Sprint Ace first).  These cells can be copy-pasted into spreadsheets for analysis.
+Other tools capable of saving TT responses in json or raw msgpack .bin formats should also work, but I haven't tested them.
 
-There is also a total row for the total score for each result file.
+The tool will try to read the game database from the default location to keep character and skill names up to date.  If you have the database in a different location, use the menu to browse for it.
+If you don't have the game database at all, the app has hardcoded data as a fallback but may be out of date.
 
-If any of the dropped files have a different roster, the filenames and character names will be shown instead, to make it easy to spot the differences.
+## Usage
+Drag and drop one or more .json files containing TT results onto the app.  Every time you drop it will reset everything, so the best use is to drop a stack of races at once.
 
-You can also drop .bin files from CarrotJuicer or other tools that capture raw msgpack responses.  These will be converted and saved as .json versions in the same folder.
+If all of the results use the same roster, it will display all individual scores for every character in a normalized order.  These cells can be copy-pasted into spreadsheets for analysis.
+(for example, @harubanana's spreadsheet which was the inspiration for this tool: https://docs.google.com/spreadsheets/d/18NIXEu4MCYM5yRaQwRx5fSQxP9oarDotrn3oQHf2K94/edit?gid=733213549#gid=733213549
 
-Current known issues:
-* Character names are hardcoded from a db dump, so they need frequent updating until I can bolt in an actual SQLite connector to get them from the live game data.
-* The parser may not differentiate between different versions of the same character (like regular Oguri vs. Xmas Oguri).
-* Totals require deriving the opponent bonus from other bonuses, so may be a tiny bit off due to rounding errors.
-* Code is messy because I was reverse engineering on the fly.
+If any of the dropped files have different rosters, the filenames and character names will be shown instead, to make it easy to spot the outliers and separate them.
+
+Besides the individual scores in table format, there are some built in analysis tools too:
+
+The Analyze tab shows averaged normalized scores (opponent, support, and ace bonuses removed) to help see which characters are performing better or worse.
+
+It will also show hints if you have any characters that might be better for the ace position, but take this with a grain of salt if you don't have a large sample size.
+
+The Skills tab will show skill performance for individual characters.  You can sort this table by any of the columns.
+This can identify skills that are underperforming, such as proccing much less frequently than expected.
