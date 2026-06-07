@@ -4,7 +4,7 @@ A janky app for analyzing Team Trials scores.
 
 ## Prereqs
 You will need to have a tool installed that can capture your Team Trials results, such as Ayaliz's HorseACT: https://github.com/ayaliz/horseACT
-(HorseACT will save them TT races but by default this is disabled, you will have to enable it after setup).
+(HorseACT will save TT races but by default this is disabled, you will have to enable it after setup).
 
 Other tools capable of saving TT responses in json or raw msgpack .bin formats should also work, but I haven't tested them.
 
