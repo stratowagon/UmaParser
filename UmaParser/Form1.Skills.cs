@@ -11,7 +11,7 @@ namespace UmaBlobber
         private static readonly Dictionary<string, string> SkillsColumnTooltips = new(StringComparer.Ordinal)
         {
             ["Skill"] = "Skill name from master data.",
-            ["Pts/race"] = "Observed team-trial skill points per race (total skill score events ÷ races). Good-start bonus is excluded.",
+            ["Pts/race"] = "Observed team-trial skill points per race (attributed score points ÷ races). Individual score values (500 white / 1200 gold / variable unique) are paired 1:1 to co-timed skill procs using event order (no sum-and-split). 1 Hz bulk ticks mean shared FrameTimes are common. Good-start bonus is excluded.",
             ["Activations"] = "Total times this skill activated across all races in the sample.",
             ["≥1/race %"] = "Percent of races where the skill activated at least once.",
             ["Procs/race %"] = "Total activations ÷ races. Can exceed 100% when a skill procs more than once in a race.",

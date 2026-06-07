@@ -7,9 +7,19 @@ public sealed class SkillActivationRow
     public int SkillId { get; init; }
     public string SkillName { get; init; } = string.Empty;
     public int ActivationCount { get; init; }
-    public int TotalPointsEarned { get; init; }
+    /// <summary>
+    /// Total attributed points from matched skill activation score events (raw_score 26-57 / condition_type 8)
+    /// across all races. Each individual score point value is paired 1:1 with a co-timed skill proc
+    /// (in event log order within the same FrameTime). No multiplication or even-splitting occurs.
+    /// White activations contribute their recorded 500, gold 1200, uniques the variable amount (level + rarity).
+    /// </summary>
+    public double TotalPointsEarned { get; init; }
 
-    /// <summary>Observed skill points ÷ races (from race score events).</summary>
+    /// <summary>
+    /// Observed team-trial skill points per race (TotalPointsEarned ÷ RaceCount).
+    /// Because the scenario log uses 1 Hz ticks for most of the race, multiple procs can share a FrameTime;
+    /// points are assigned via 1:1 consumption of the actual per-activation score values rather than summed+split.
+    /// </summary>
     public double PointsPerRace { get; init; }
 
     public int RaceCount { get; init; }

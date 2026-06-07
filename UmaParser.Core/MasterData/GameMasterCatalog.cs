@@ -4,6 +4,7 @@ internal sealed class GameMasterCatalog
 {
     private readonly Dictionary<MasterTextCategory, Dictionary<int, string>> _sections = new();
     private readonly Dictionary<int, SkillMasterEntry> _skills = new();
+    private readonly Dictionary<int, int> _teamTrialsRawScores = new();
 
     public IReadOnlyDictionary<MasterTextCategory, int> SectionCounts =>
         _sections.ToDictionary(kv => kv.Key, kv => kv.Value.Count);
@@ -95,6 +96,30 @@ internal sealed class GameMasterCatalog
     public int SkillActivateLotCount =>
         _skills.Values.Count(e => e.ActivateLot != SkillActivateLotKind.Unknown);
 
+    public void SetTeamTrialsRawScores(Dictionary<int, int> scores)
+    {
+        _teamTrialsRawScores.Clear();
+        if (scores != null)
+        {
+            foreach (var (id, score) in scores)
+            {
+                _teamTrialsRawScores[id] = score;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Base score value for a team_stadium_raw_score id (from the master table).
+    /// 500 for typical white skill activations, 1200 for gold, variable for uniques.
+    /// </summary>
+    public int GetTeamTrialsRawScoreValue(int rawScoreId) =>
+        _teamTrialsRawScores.GetValueOrDefault(rawScoreId, 0);
+
+    public bool HasTeamTrialsRawScore(int rawScoreId) =>
+        _teamTrialsRawScores.ContainsKey(rawScoreId);
+
+    public IEnumerable<int> GetAllTeamTrialsRawScoreIds() => _teamTrialsRawScores.Keys;
+
     public void ImportFromCache(MasterCacheFile cache)
     {
         _sections.Clear();
@@ -137,6 +162,19 @@ internal sealed class GameMasterCatalog
 
             MergeSkillActivateLot(lots);
         }
+
+        if (cache.TeamTrialsRawScores != null)
+        {
+            var scores = new Dictionary<int, int>();
+            foreach (var (key, value) in cache.TeamTrialsRawScores)
+            {
+                if (int.TryParse(key, out int id))
+                {
+                    scores[id] = value;
+                }
+            }
+            SetTeamTrialsRawScores(scores);
+        }
     }
 
     public MasterCacheFile ExportToCache(string? sourcePath, DateTime? sourceLastWriteUtc)
@@ -160,6 +198,10 @@ internal sealed class GameMasterCatalog
                 Name = kv.Value.Name,
                 ActivateLot = kv.Value.ActivateLot.ToString(),
             });
+
+        cache.TeamTrialsRawScores = _teamTrialsRawScores.ToDictionary(
+            kv => kv.Key.ToString(),
+            kv => kv.Value);
 
         return cache;
     }

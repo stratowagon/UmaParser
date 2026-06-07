@@ -10,6 +10,7 @@ internal static class MasterDbReader
         MasterTextCategory.CharaShortName,
         MasterTextCategory.SkillName,
         MasterTextCategory.TeamTrialsScoreType,
+        MasterTextCategory.TeamTrialsScoreDesc,
         MasterTextCategory.FactorSkillName,
         MasterTextCategory.ScoreBonusType,
     ];
@@ -32,6 +33,9 @@ internal static class MasterDbReader
             }
 
             ApplySkillMetadata(catalog, sections, LoadSkillActivateLot(dbPath));
+
+            var rawScores = LoadTeamTrialsRawScores(dbPath);
+            catalog.SetTeamTrialsRawScores(rawScores);
 
             return true;
         }
@@ -117,6 +121,28 @@ internal static class MasterDbReader
             int id = reader.GetInt32(0);
             int lot = reader.GetInt32(1);
             result[id] = lot == 1 ? SkillActivateLotKind.Wit : SkillActivateLotKind.Unconditional;
+        }
+
+        return result;
+    }
+
+    private static Dictionary<int, int> LoadTeamTrialsRawScores(string dbPath)
+    {
+        var result = new Dictionary<int, int>();
+        using var connection = new SqliteConnection($"Data Source={dbPath};Mode=ReadOnly");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        // id and score (base amount) from team_stadium_raw_score.
+        // Join with text_data category 140 (name) / 141 (desc) is done via MasterTextCategory.
+        command.CommandText = "SELECT id, score FROM team_stadium_raw_score";
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            int id = reader.GetInt32(0);
+            int score = reader.GetInt32(1);
+            result[id] = score;
         }
 
         return result;

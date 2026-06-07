@@ -25,7 +25,7 @@ public static class SkillActivationAnalyzer
         int raceCount = 0;
         var activationCounts = new Dictionary<int, int>();
         var racesWithActivation = new Dictionary<int, int>();
-        var pointsEarned = new Dictionary<int, int>();
+        var pointsEarned = new Dictionary<int, double>();
         var knownSkills = new HashSet<int>();
         int witSum = 0;
 
@@ -57,7 +57,7 @@ public static class SkillActivationAnalyzer
 
                 foreach (var (skillId, points) in SkillRaceScoring.ScoreActivations(appearance))
                 {
-                    pointsEarned.TryGetValue(skillId, out int total);
+                    pointsEarned.TryGetValue(skillId, out double total);
                     pointsEarned[skillId] = total + points;
                 }
             }
@@ -71,10 +71,10 @@ public static class SkillActivationAnalyzer
         foreach (int skillId in knownSkills.OrderBy(id => id))
         {
             int activations = activationCounts.GetValueOrDefault(skillId);
-            int totalPoints = pointsEarned.GetValueOrDefault(skillId);
+            double totalPoints = pointsEarned.GetValueOrDefault(skillId);
             int racesHit = racesWithActivation.GetValueOrDefault(skillId);
             double rate = raceCount > 0 ? activations * 100.0 / raceCount : 0;
-            double pointsPerRace = raceCount > 0 ? (double)totalPoints / raceCount : 0;
+            double pointsPerRace = raceCount > 0 ? totalPoints / raceCount : 0;
             double perRaceRate = raceCount > 0 ? racesHit * 100.0 / raceCount : 0;
             var lot = catalog.GetSkillActivateLot(skillId);
             double? expectedWit = lot == SkillActivateLotKind.Wit

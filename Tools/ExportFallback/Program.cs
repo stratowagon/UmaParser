@@ -22,6 +22,8 @@ if (!File.Exists(dbPath))
 var categories = new (int Id, string FieldName, MasterTextCategory Category)[]
 {
     (6, "CharaShortNames", MasterTextCategory.CharaShortName),
+    (140, "TeamTrialsScoreTypes", MasterTextCategory.TeamTrialsScoreType),
+    (141, "TeamTrialsScoreDescs", MasterTextCategory.TeamTrialsScoreDesc),
 };
 
 using var connection = new SqliteConnection($"Data Source={dbPath};Mode=ReadOnly");
@@ -39,7 +41,10 @@ sb.AppendLine("{");
 sb.AppendLine("    public static void Apply(GameMasterCatalog catalog)");
 sb.AppendLine("    {");
 sb.AppendLine("        catalog.MergeSection(MasterTextCategory.CharaShortName, CharaShortNames);");
+sb.AppendLine("        catalog.MergeSection(MasterTextCategory.TeamTrialsScoreType, TeamTrialsScoreTypes);");
+sb.AppendLine("        catalog.MergeSection(MasterTextCategory.TeamTrialsScoreDesc, TeamTrialsScoreDescs);");
 sb.AppendLine("        catalog.MergeSkillEntries(Skills);");
+sb.AppendLine("        catalog.SetTeamTrialsRawScores(TeamTrialsRawScores);");
 sb.AppendLine("    }");
 sb.AppendLine();
 sb.AppendLine("    #region Embedded fallback dictionaries");
@@ -89,6 +94,22 @@ using (var skillCommand = connection.CreateCommand())
 
 sb.AppendLine("    };");
 sb.AppendLine();
+
+sb.AppendLine("    private static readonly Dictionary<int, int> TeamTrialsRawScores = new()");
+sb.AppendLine("    {");
+using (var rawScoreCommand = connection.CreateCommand())
+{
+    rawScoreCommand.CommandText = "SELECT id, score FROM team_stadium_raw_score ORDER BY id";
+    using var reader = rawScoreCommand.ExecuteReader();
+    while (reader.Read())
+    {
+        int id = reader.GetInt32(0);
+        int score = reader.GetInt32(1);
+        sb.AppendLine($"        {{ {id}, {score} }},");
+    }
+}
+sb.AppendLine("    };");
+sb.AppendLine();
 sb.AppendLine("    #endregion");
 sb.AppendLine("}");
 
@@ -104,4 +125,6 @@ enum MasterTextCategory
 {
     CharaShortName,
     SkillName,
+    TeamTrialsScoreType,
+    TeamTrialsScoreDesc,
 }

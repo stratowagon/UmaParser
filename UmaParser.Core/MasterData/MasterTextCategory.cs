@@ -15,6 +15,9 @@ internal enum MasterTextCategory
     /// <summary>Team Trials score bucket labels (category 140).</summary>
     TeamTrialsScoreType = 140,
 
+    /// <summary>Team Trials score bucket descriptions (category 141).</summary>
+    TeamTrialsScoreDesc = 141,
+
     /// <summary>Parent factor / spark skill names (category 147).</summary>
     FactorSkillName = 147,
 
