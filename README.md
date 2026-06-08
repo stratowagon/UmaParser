@@ -14,16 +14,23 @@ If you don't have the game database at all, the app has hardcoded data as a fall
 ## Usage
 Drag and drop one or more .json files containing TT results onto the app.  Every time you drop it will reset everything, so the best use is to drop a stack of races at once.
 
-If all of the results use the same roster, it will display all individual scores for every character in a normalized order.  These cells can be copy-pasted into spreadsheets for analysis.
-(for example, @harubanana's spreadsheet which was the inspiration for this tool: https://docs.google.com/spreadsheets/d/18NIXEu4MCYM5yRaQwRx5fSQxP9oarDotrn3oQHf2K94/edit?gid=733213549#gid=733213549
+If any of the dropped files have different rosters, the filenames and character names will be shown, to make it easy to spot the outliers and separate them.
+Separate your files to all have the same roster and drop those in to get the analysis.
 
-If any of the dropped files have different rosters, the filenames and character names will be shown instead, to make it easy to spot the outliers and separate them.
+### Results Tab
+This simply shows your team in standard roster order and what they scored in each race.  These cells can be directly copy/pasted into other spreadsheets if you want.
 
-Besides the individual scores in table format, there are some built in analysis tools too:
+### Analysis Tab
+This compares your umas against eachother to see who the high and low performers are, and their consistency.  The scores shown here are normalized to remove Ace, Streak, Opponent, and Support bonuses so everyone is on an even level (as much as possible).
 
-The Analyze tab shows averaged normalized scores (opponent, support, and ace bonuses removed) to help see which characters are performing better or worse.
+It will also show how the trimmed average of your non-aces compare to the aces, to see if you should consider swapping ace roles.
 
-It will also show hints if you have any characters that might be better for the ace position, but take this with a grain of salt if you don't have a large sample size.
+It will also highlight when you have 2 or more umas running the same style, reducing your chances for positioning bonuses.
 
-The Skills tab will show skill performance for individual characters.  You can sort this table by any of the columns.
-This can identify skills that are underperforming, such as proccing much less frequently than expected.
+### Skills Tab
+This shows a breakdown of all skills for a selected uma and what their actual activation rates are, including your actual expected points per race.
+
+This can show you skills that are not proccing very often, which is especially important for ults.
+
+### Tracks Tab
+This tab breaks down the selected uma's performance on every different track they ran on.  This is especially useful for seeing if you are running out of stamina on the longest races in your category.
