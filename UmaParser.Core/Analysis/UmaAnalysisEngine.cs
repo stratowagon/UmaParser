@@ -38,6 +38,15 @@ namespace UmaBlobber.Analysis
         public bool IsCurrentAce { get; init; }
         public bool IsSuggestedAce { get; set; }
         public string PotentialAceLabel { get; set; } = string.Empty;
+
+        /// <summary>Trimmed base score difference vs this team's current ace (+ = better than ace).</summary>
+        public double AceDelta { get; set; }
+
+        /// <summary>AceDelta as percent of the ace's trimmed average.</summary>
+        public double AceDeltaPercent { get; set; }
+
+        /// <summary>Formatted display for the Ace delta column, e.g. "+123 (+2.3%)" or "+0 (+0%)".</summary>
+        public string AceDeltaLabel { get; set; } = string.Empty;
         public double RetrainScore { get; init; }
         public RetrainPriorityLevel PriorityLevel { get; init; }
         public required string RetrainPriorityLabel { get; init; }
@@ -59,10 +68,20 @@ namespace UmaBlobber.Analysis
         public required string Note { get; init; }
     }
 
+    /// <summary>Information about running style duplication within a team for summary notes.</summary>
+    public sealed class TeamStyleOverlapRecommendation
+    {
+        public required string Distance { get; init; }
+        public TeamStyleOverlap Overlap { get; init; }
+        public required string SharedStyle { get; init; }
+        public required string Note { get; init; }
+    }
+
     public sealed class UmaAnalysisReport
     {
         public required IReadOnlyList<UmaAnalysisRow> Rows { get; init; }
         public required IReadOnlyList<TeamAceRecommendation> AceRecommendations { get; init; }
+        public required IReadOnlyList<TeamStyleOverlapRecommendation> StyleOverlapRecommendations { get; init; }
         public double TeamAverage { get; init; }
         public int TrialCount { get; init; }
     }
@@ -159,13 +178,18 @@ namespace UmaBlobber.Analysis
                     PriorityLevel = level,
                     RetrainPriorityLabel = FormatPriorityLabel(level, retrainScore),
                     RosterIndex = stat.RosterIndex,
-                    TeamIndex = stat.TeamIndex
+                    TeamIndex = stat.TeamIndex,
+                    // AceDelta* and AceDeltaLabel are populated by ApplyAceDeltas below
                 });
             }
+
+            ApplyAceDeltas(rows);
 
             var aceRecommendations = BuildAceRecommendations(rows, trialCount);
             ApplyPotentialAceLabels(rows, aceRecommendations);
             ApplyTeamStyleOverlap(rows);
+
+            var styleOverlapRecommendations = BuildStyleOverlapRecommendations(rows);
 
             rows.Sort((a, b) => a.RosterIndex.CompareTo(b.RosterIndex));
 
@@ -173,6 +197,7 @@ namespace UmaBlobber.Analysis
             {
                 Rows = rows,
                 AceRecommendations = aceRecommendations,
+                StyleOverlapRecommendations = styleOverlapRecommendations,
                 TeamAverage = Round(teamBenchmark),
                 TrialCount = trialCount
             };
@@ -209,6 +234,39 @@ namespace UmaBlobber.Analysis
             return $"{prefix} {delta} ({pct}%)";
         }
 
+        private static void ApplyAceDeltas(List<UmaAnalysisRow> rows)
+        {
+            foreach (var team in rows.GroupBy(r => r.TeamIndex))
+            {
+                var members = team.OrderBy(m => m.RosterIndex).ToList();
+                var ace = members.FirstOrDefault(m => m.IsCurrentAce);
+                if (ace == null) continue;
+
+                double aceTrimmed = ace.TrimmedAverage;
+
+                foreach (var row in members)
+                {
+                    if (row.IsCurrentAce)
+                    {
+                        row.AceDelta = 0;
+                        row.AceDeltaPercent = 0;
+                        row.AceDeltaLabel = "+0 (+0%)";
+                    }
+                    else
+                    {
+                        row.AceDelta = row.TrimmedAverage - aceTrimmed;
+                        row.AceDeltaPercent = aceTrimmed > 0
+                            ? row.AceDelta / aceTrimmed * 100
+                            : 0;
+
+                        string deltaStr = FormatDelta(row.AceDelta);
+                        string pct = row.AceDeltaPercent.ToString("0.#");
+                        row.AceDeltaLabel = $"{deltaStr} ({pct}%)";
+                    }
+                }
+            }
+        }
+
         private static string FormatDelta(double delta)
         {
             double abs = Math.Abs(delta);
@@ -217,7 +275,7 @@ namespace UmaBlobber.Analysis
                 return $"{(delta >= 0 ? "+" : "-")}{abs / 1000:0.#}k";
             }
 
-            return $"{(delta >= 0 ? "+" : "")}{abs:0}";
+            return $"{(delta >= 0 ? "+" : "-")}{abs:0}";
         }
 
         private static IReadOnlyList<TeamAceRecommendation> BuildAceRecommendations(
@@ -301,6 +359,55 @@ namespace UmaBlobber.Analysis
             }
         }
 
+        private static IReadOnlyList<TeamStyleOverlapRecommendation> BuildStyleOverlapRecommendations(List<UmaAnalysisRow> rows)
+        {
+            var recommendations = new List<TeamStyleOverlapRecommendation>();
+
+            foreach (var team in rows.GroupBy(r => r.TeamIndex).OrderBy(g => g.Key))
+            {
+                var members = team.ToList();
+                if (members.Count != 3)
+                {
+                    continue;
+                }
+
+                var byStyle = members.GroupBy(r => r.RunningStyleLabel)
+                    .OrderByDescending(g => g.Count())
+                    .First();
+
+                TeamStyleOverlap overlap = byStyle.Count() switch
+                {
+                    3 => TeamStyleOverlap.FullTeam,
+                    2 => TeamStyleOverlap.Pair,
+                    _ => TeamStyleOverlap.None
+                };
+
+                if (overlap == TeamStyleOverlap.None)
+                {
+                    continue;
+                }
+
+                string sharedStyle = byStyle.Key;
+
+                string note = overlap switch
+                {
+                    TeamStyleOverlap.FullTeam => $"All three share the same running style ({sharedStyle}). This reduces team effectiveness.",
+                    TeamStyleOverlap.Pair => $"Two share the same running style ({sharedStyle}).",
+                    _ => ""
+                };
+
+                recommendations.Add(new TeamStyleOverlapRecommendation
+                {
+                    Distance = members.First().Distance,
+                    Overlap = overlap,
+                    SharedStyle = sharedStyle,
+                    Note = note
+                });
+            }
+
+            return recommendations;
+        }
+
         private static (string Distance, string Role, string RunningStyleLabel, bool IsAce, int TeamIndex) GetRosterLayout(
             TeamTrialResult? source,
             int rosterIndex)
@@ -336,6 +443,7 @@ namespace UmaBlobber.Analysis
         {
             Rows = Array.Empty<UmaAnalysisRow>(),
             AceRecommendations = Array.Empty<TeamAceRecommendation>(),
+            StyleOverlapRecommendations = Array.Empty<TeamStyleOverlapRecommendation>(),
             TeamAverage = 0,
             TrialCount = 0
         };
@@ -507,5 +615,257 @@ namespace UmaBlobber.Analysis
                 return sorted[lo] + (sorted[hi] - sorted[lo]) * (rank - lo);
             }
         }
+    }
+}
+
+// Top-level types for track performance (to avoid complex nesting issues in the containing static class)
+namespace UmaBlobber.Analysis
+{
+    /// <summary>
+    /// Per-track performance breakdown for a specific uma across the provided trials.
+    /// </summary>
+    public static class TracksAnalyzer
+    {
+        public static TracksReport Analyze(
+            IEnumerable<TeamTrialResult> trials,
+            int trainedCharaId,
+            string umaName)
+        {
+            var catalog = UmaBlobber.MasterData.GameMasterService.Current.Catalog;
+            var trialList = trials.ToList();
+
+            int totalRaces = 0;
+            var perTrack = new Dictionary<(string Name, int Distance), TrackStats>();
+
+            foreach (var trial in trialList)
+            {
+                foreach (var appearance in trial.GetAppearances(trainedCharaId))
+                {
+                    totalRaces++;
+
+                    int raceInstanceId = 0;
+
+                    // Match the start params using the Round from the result (same logic as GetAppearances)
+                    var result = appearance.Result;
+                    var startParams = trial.Data?.RaceStartParamsArray?
+                        .FirstOrDefault(s => s.Round == result.Round);
+                    if (startParams != null)
+                    {
+                        raceInstanceId = startParams.RaceInstanceId;
+                    }
+
+                    catalog.TryGetRaceCourse(raceInstanceId, out var course);
+
+                    var key = course != null
+                        ? (course.Name, course.Distance)
+                        : ("Unknown", 0);
+
+                    if (!perTrack.TryGetValue(key, out var stats))
+                    {
+                        stats = new TrackStats
+                        {
+                            Name = course?.Name ?? "Unknown",
+                            Distance = course?.Distance ?? 0,
+                            Ground = course?.Ground ?? 0
+                        };
+                        perTrack[key] = stats;
+                    }
+
+                    // Spurt Rate calculation
+                    if (course != null && course.Distance > 0)
+                    {
+                        int horseIndex = appearance.Horse.FrameOrder - 1;
+                        if (horseIndex >= 0 && horseIndex < appearance.Simulation.HorseResults.Count)
+                        {
+                            var horseResult = appearance.Simulation.HorseResults[horseIndex];
+                            float lastSpurt = horseResult.LastSpurtStartDistance;
+                            if (lastSpurt < 0)
+                            {
+                                // -1 means the uma never began their spurt (insufficient HP)
+                                // → counts as a bad spurt (not good)
+                            }
+                            else
+                            {
+                                float idealSpurt = course.Distance * (2f / 3f);
+                                float delay = lastSpurt - idealSpurt;
+                                if (delay <= 3.0f)
+                                {
+                                    stats.GoodSpurtCount++;
+                                }
+                            }
+                        }
+                    }
+
+                    // Survival calculation: % of races where uma reached goal with >0 HP
+                    // (did not hit 0 HP before or in the frame where distance >= goal)
+                    if (course != null && course.Distance > 0)
+                    {
+                        int horseIndex = appearance.Horse.FrameOrder - 1;
+                        if (horseIndex >= 0 && appearance.Simulation.Frames.Count > 0 &&
+                            horseIndex < appearance.Simulation.Frames[0].HorseFrames.Count)
+                        {
+                            float raceDist = course.Distance;
+                            bool survived = true;
+                            foreach (var frame in appearance.Simulation.Frames)
+                            {
+                                var hf = frame.HorseFrames[horseIndex];
+                                if (hf.Hp <= 0 && hf.Distance < raceDist)
+                                {
+                                    survived = false;
+                                    break;
+                                }
+                                if (hf.Distance >= raceDist)
+                                {
+                                    if (hf.Hp <= 0)
+                                        survived = false;
+                                    break;
+                                }
+                            }
+                            if (survived)
+                            {
+                                stats.SurvivedCount++;
+                            }
+                        }
+                    }
+
+                    // Placement
+                    int? finishOrder = null;
+                    var raceResult = trial.FindRaceResultByUma(appearance.Horse);
+                    if (raceResult != null)
+                    {
+                        var charaRes = raceResult.CharaResultArray
+                            .FirstOrDefault(c => c.TrainedCharaId == trainedCharaId);
+                        finishOrder = charaRes?.FinishOrder;
+                    }
+
+                    if (finishOrder.HasValue)
+                    {
+                        stats.Placements.Add(finishOrder.Value);
+                    }
+
+                    // Total skill points this race (no bonuses)
+                    int raceSkillPoints = 0;
+                    foreach (var (_, points) in SkillRaceScoring.ScoreActivations(appearance))
+                    {
+                        raceSkillPoints += (int)points;
+                    }
+                    stats.TotalSkillPoints += raceSkillPoints;
+                    stats.RaceCount++;
+                }
+            }
+
+            var rows = perTrack.Values
+                .Select(s => s.ToRow())
+                .OrderBy(r => r.Track)
+                .ThenBy(r => r.Distance)
+                .ToList();
+
+            string teamType = DeriveTeamType(trialList, trainedCharaId);
+
+            return new TracksReport
+            {
+                UmaName = umaName,
+                TotalRaces = totalRaces,
+                TeamType = teamType,
+                Rows = rows
+            };
+        }
+
+        private static string DeriveTeamType(List<TeamTrialResult> trials, int trainedCharaId)
+        {
+            var counts = new int[6];
+            foreach (var trial in trials)
+            {
+                foreach (var appearance in trial.GetAppearances(trainedCharaId))
+                {
+                    var raceResult = trial.FindRaceResultByUma(appearance.Horse);
+                    int dt = raceResult?.DistanceType ?? 0;
+                    if (dt >= 1 && dt <= 5) counts[dt]++;
+                }
+            }
+
+            int max = counts.Skip(1).Max();
+            if (max == 0) return "—";
+
+            int best = Array.IndexOf(counts, max, 1);
+            return best switch
+            {
+                1 => "Sprint",
+                2 => "Mile",
+                3 => "Medium",
+                4 => "Long",
+                5 => "Dirt",
+                _ => "Mixed"
+            };
+        }
+
+        private sealed class TrackStats
+        {
+            public string Name { get; set; } = string.Empty;
+            public int Distance { get; set; }
+            public int Ground { get; set; }
+            public int RaceCount { get; set; }
+            public List<int> Placements { get; } = new();
+            public int TotalSkillPoints { get; set; }
+            public int GoodSpurtCount { get; set; }
+            public int SurvivedCount { get; set; }
+
+            public TracksRow ToRow()
+            {
+                int races = RaceCount;
+                double avgPlace = races > 0 && Placements.Count > 0
+                    ? Placements.Average()
+                    : 0;
+
+                int firsts = Placements.Count(p => p == 1);
+                int top3OrBetter = Placements.Count(p => p <= 3);
+                int top5OrBetter = Placements.Count(p => p <= 5);
+
+                double pctFirst = races > 0 ? firsts * 100.0 / races : 0;
+                double pctTop3 = races > 0 ? top3OrBetter * 100.0 / races : 0;
+                double pctTop5 = races > 0 ? top5OrBetter * 100.0 / races : 0;
+
+                double avgSkillPts = races > 0 ? TotalSkillPoints / (double)races : 0;
+
+                double spurtRate = races > 0 ? (GoodSpurtCount * 100.0 / races) : 0;
+                double survival = races > 0 ? (SurvivedCount * 100.0 / races) : 0;
+
+                return new TracksRow
+                {
+                    Track = Name,
+                    Distance = Distance,
+                    Races = races,
+                    AvgPlace = Math.Round(avgPlace, 2),
+                    PctFirst = Math.Round(pctFirst, 1),
+                    PctTop3 = Math.Round(pctTop3, 1),
+                    PctTop5 = Math.Round(pctTop5, 1),
+                    AvgSkillPointsPerRace = Math.Round(avgSkillPts, 0),
+                    SpurtRate = Math.Round(spurtRate, 1),
+                    Survival = Math.Round(survival, 1)
+                };
+            }
+        }
+    }
+
+    public sealed class TracksReport
+    {
+        public string UmaName { get; init; } = string.Empty;
+        public int TotalRaces { get; init; }
+        public string TeamType { get; init; } = "—";
+        public IReadOnlyList<TracksRow> Rows { get; init; } = Array.Empty<TracksRow>();
+    }
+
+    public sealed class TracksRow
+    {
+        public string Track { get; init; } = string.Empty;
+        public int Distance { get; init; }
+        public int Races { get; init; }
+        public double AvgPlace { get; init; }
+        public double PctFirst { get; init; }
+        public double PctTop3 { get; init; }
+        public double PctTop5 { get; init; }
+        public double AvgSkillPointsPerRace { get; init; }
+        public double SpurtRate { get; init; }
+        public double Survival { get; init; }
     }
 }

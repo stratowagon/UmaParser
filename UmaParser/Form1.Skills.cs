@@ -3,6 +3,7 @@ using System.Drawing;
 using UmaBlobber.Analysis;
 using UmaBlobber.MasterData;
 using UmaBlobber.ObjectModel;
+using UmaBlobber.Ui;
 
 namespace UmaBlobber
 {
@@ -226,6 +227,33 @@ namespace UmaBlobber
                 e.FormattingApplied = true;
             }
 
+            if (header == "Skill")
+            {
+                // Color code the skill name column by its inherent type (white/gold/unique).
+                // This takes precedence over any low-activation warning coloring for the name column.
+                double avg = row.ActivationCount > 0
+                    ? row.TotalPointsEarned / (double)row.ActivationCount
+                    : 0.0;
+
+                if (avg >= 1150 && avg <= 1250) // gold skill (~1200 pts)
+                {
+                    e.CellStyle.BackColor = AppColors.SkillGoldBack;
+                    e.CellStyle.ForeColor = AppColors.SkillGoldFore;
+                    e.CellStyle.SelectionBackColor = ControlPaint.Light(e.CellStyle.BackColor, 0.25f);
+                    e.CellStyle.SelectionForeColor = AppColors.SkillGoldFore;
+                }
+                else if (avg > 1250 || (avg > 0 && avg < 450)) // unique (variable, often higher or specific)
+                {
+                    e.CellStyle.BackColor = AppColors.SkillUniqueBack;
+                    e.CellStyle.ForeColor = AppColors.SkillUniqueFore;
+                    e.CellStyle.SelectionBackColor = ControlPaint.Light(e.CellStyle.BackColor, 0.25f);
+                    e.CellStyle.SelectionForeColor = AppColors.SkillUniqueFore;
+                }
+                // white/normal (~500) or zero observed procs: leave the default background we reset to above
+
+                return; // do not apply warning yellow to the name column
+            }
+
             if (row.IsUnderperformingVsWit)
             {
                 ApplySeverityStyle(e, SeverityNeedsWork);
@@ -263,9 +291,10 @@ namespace UmaBlobber
         private static void ApplySeverityStyle(DataGridViewCellFormattingEventArgs e, Color backColor)
         {
             e.CellStyle.BackColor = backColor;
-            e.CellStyle.ForeColor = SeverityForeground;
+            var fore = AppColors.SeverityForeFor(backColor);
+            e.CellStyle.ForeColor = fore;
             e.CellStyle.SelectionBackColor = ControlPaint.Light(backColor, 0.28f);
-            e.CellStyle.SelectionForeColor = SeverityForeground;
+            e.CellStyle.SelectionForeColor = fore;
         }
     }
 }

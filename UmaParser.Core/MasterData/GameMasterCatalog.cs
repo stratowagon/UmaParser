@@ -5,6 +5,7 @@ internal sealed class GameMasterCatalog
     private readonly Dictionary<MasterTextCategory, Dictionary<int, string>> _sections = new();
     private readonly Dictionary<int, SkillMasterEntry> _skills = new();
     private readonly Dictionary<int, int> _teamTrialsRawScores = new();
+    private readonly Dictionary<int, RaceCourseInfo> _raceCoursesByInstance = new();
 
     public IReadOnlyDictionary<MasterTextCategory, int> SectionCounts =>
         _sections.ToDictionary(kv => kv.Key, kv => kv.Value.Count);
@@ -120,6 +121,27 @@ internal sealed class GameMasterCatalog
 
     public IEnumerable<int> GetAllTeamTrialsRawScoreIds() => _teamTrialsRawScores.Keys;
 
+    public void SetRaceCourses(Dictionary<int, RaceCourseInfo> courses)
+    {
+        _raceCoursesByInstance.Clear();
+        if (courses != null)
+        {
+            foreach (var (instanceId, info) in courses)
+            {
+                _raceCoursesByInstance[instanceId] = info;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Looks up the resolved race course for a captured race_instance_id (from RaceStartParams).
+    /// </summary>
+    public bool TryGetRaceCourse(int raceInstanceId, out RaceCourseInfo info) =>
+        _raceCoursesByInstance.TryGetValue(raceInstanceId, out info!);
+
+    public IReadOnlyCollection<RaceCourseInfo> GetAllRaceCourses() =>
+        _raceCoursesByInstance.Values;
+
     public void ImportFromCache(MasterCacheFile cache)
     {
         _sections.Clear();
@@ -175,6 +197,25 @@ internal sealed class GameMasterCatalog
             }
             SetTeamTrialsRawScores(scores);
         }
+
+        if (cache.RaceCourses != null)
+        {
+            var courses = new Dictionary<int, RaceCourseInfo>();
+            foreach (var (key, cached) in cache.RaceCourses)
+            {
+                if (int.TryParse(key, out int instanceId))
+                {
+                    courses[instanceId] = new RaceCourseInfo(
+                        instanceId,
+                        cached.Name ?? string.Empty,
+                        cached.Distance,
+                        cached.Ground,
+                        cached.Turn,
+                        cached.InOut);
+                }
+            }
+            SetRaceCourses(courses);
+        }
     }
 
     public MasterCacheFile ExportToCache(string? sourcePath, DateTime? sourceLastWriteUtc)
@@ -202,6 +243,17 @@ internal sealed class GameMasterCatalog
         cache.TeamTrialsRawScores = _teamTrialsRawScores.ToDictionary(
             kv => kv.Key.ToString(),
             kv => kv.Value);
+
+        cache.RaceCourses = _raceCoursesByInstance.ToDictionary(
+            kv => kv.Key.ToString(),
+            kv => new CachedRaceCourse
+            {
+                Name = kv.Value.Name,
+                Distance = kv.Value.Distance,
+                Ground = kv.Value.Ground,
+                Turn = kv.Value.Turn,
+                InOut = kv.Value.InOut
+            });
 
         return cache;
     }

@@ -14,6 +14,21 @@ internal sealed class MasterCacheFile
 
     /// <summary>team_stadium_raw_score id (as string) → base score value.</summary>
     public Dictionary<string, int>? TeamTrialsRawScores { get; set; }
+
+    /// <summary>race_instance id (as string) → cached course info for offline use.</summary>
+    public Dictionary<string, CachedRaceCourse>? RaceCourses { get; set; }
+}
+
+/// <summary>
+/// Serializable form of RaceCourseInfo for the master cache / embedded fallback.
+/// </summary>
+internal sealed class CachedRaceCourse
+{
+    public string Name { get; set; } = string.Empty;
+    public int Distance { get; set; }
+    public int Ground { get; set; }
+    public int Turn { get; set; }
+    public int InOut { get; set; }
 }
 
 internal sealed class CachedSkillEntry

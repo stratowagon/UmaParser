@@ -12,10 +12,11 @@ namespace UmaBlobber
         private const int StatsTotalRowIndex = RosterRowCount;
         private const float TeamGroupBorderWidth = 2f;
 
-        private static readonly Color SeverityStable = Color.FromArgb(46, 125, 50);
-        private static readonly Color SeverityNeedsWork = Color.FromArgb(180, 134, 11);
-        private static readonly Color SeverityCritical = Color.FromArgb(183, 28, 28);
-        private static readonly Color SeverityForeground = Color.White;
+        // Legacy aliases kept for minimal diff in other files. Prefer AppColors.Severity* going forward.
+        private static Color SeverityStable => AppColors.SeverityStableBack;
+        private static Color SeverityNeedsWork => AppColors.SeverityNeedsWorkBack;
+        private static Color SeverityCritical => AppColors.SeverityCriticalBack;
+        private static Color SeverityForeground => AppColors.SeverityStableFore; // white in both modes for these backs
 
         private enum GridDisplayMode
         {
@@ -53,6 +54,9 @@ namespace UmaBlobber
             dataGridViewSkills.CellFormatting += DataGridViewSkills_CellFormatting;
             dataGridViewSkills.SortCompare += DataGridViewSkills_SortCompare;
             DataGridViewColumnHeaderPaint.EnableThemedSortGlyphs(dataGridViewSkills);
+            comboBoxTracksUma.SelectedIndexChanged += ComboBoxTracksUma_SelectedIndexChanged;
+            dataGridViewTracks.CellFormatting += DataGridViewTracks_CellFormatting;
+            DataGridViewColumnHeaderPaint.EnableThemedSortGlyphs(dataGridViewTracks);
             DataGridViewColumnHeaderPaint.EnableThemedSortGlyphs(dataGridViewAnalysis);
             DataGridViewColumnHeaderPaint.EnableThemedSortGlyphs(dataGridView1);
             InitializeViewMenu();

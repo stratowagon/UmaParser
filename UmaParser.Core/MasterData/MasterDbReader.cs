@@ -11,6 +11,7 @@ internal static class MasterDbReader
         MasterTextCategory.SkillName,
         MasterTextCategory.TeamTrialsScoreType,
         MasterTextCategory.TeamTrialsScoreDesc,
+        MasterTextCategory.RaceTrackName,
         MasterTextCategory.FactorSkillName,
         MasterTextCategory.ScoreBonusType,
     ];
@@ -36,6 +37,9 @@ internal static class MasterDbReader
 
             var rawScores = LoadTeamTrialsRawScores(dbPath);
             catalog.SetTeamTrialsRawScores(rawScores);
+
+            var raceCourses = LoadRaceCourses(dbPath);
+            catalog.SetRaceCourses(raceCourses);
 
             return true;
         }
@@ -147,4 +151,62 @@ internal static class MasterDbReader
 
         return result;
     }
+
+    /// <summary>
+    /// Loads race course information by following the chain:
+    /// race_instance.id (key for captures) → race_instance.race_id → race.id → race.course_set → race_course_set
+    /// race_course_set.race_track_id → text_data (category 35) for the short track name.
+    /// This produces a compressed view with the columns needed for performance tracking.
+    /// </summary>
+    private static Dictionary<int, RaceCourseInfo> LoadRaceCourses(string dbPath)
+    {
+        var result = new Dictionary<int, RaceCourseInfo>();
+        using var connection = new SqliteConnection($"Data Source={dbPath};Mode=ReadOnly");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        // One query doing the joins as described by the user.
+        // Keyed by race_instance.id because that's what appears in capture data (RaceStartParams.race_instance_id).
+        command.CommandText = @"
+            SELECT 
+                ri.id as instance_id,
+                COALESCE(t.text, 'Track#' || CAST(rcs.race_track_id AS TEXT)) as track_name,
+                rcs.distance,
+                rcs.ground,
+                rcs.turn,
+                rcs.inout
+            FROM race_instance ri
+            JOIN race r ON r.id = ri.race_id
+            JOIN race_course_set rcs ON rcs.id = r.course_set
+            LEFT JOIN text_data t ON t.category = 35 AND t.[index] = rcs.race_track_id
+            ORDER BY track_name, rcs.distance, rcs.ground";
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            int instanceId = reader.GetInt32(0);
+            string name = reader.GetString(1);
+            int distance = reader.GetInt32(2);
+            int ground = reader.GetInt32(3);
+            int turn = reader.GetInt32(4);
+            int inout = reader.GetInt32(5);
+
+            result[instanceId] = new RaceCourseInfo(instanceId, name, distance, ground, turn, inout);
+        }
+
+        return result;
+    }
 }
+
+/// <summary>
+/// Compressed race course / track information resolved via the master joins.
+/// Surface (Ground) is kept internally for uniqueness even if the UI often omits it.
+/// </summary>
+public sealed record RaceCourseInfo(
+    int InstanceId,      // race_instance.id - the key that appears in capture data
+    string Name,         // short name from text_data 35, e.g. "Chukyo"
+    int Distance,
+    int Ground,          // 1=Turf, 2=Dirt (typically)
+    int Turn,            // 1=Right, 2=Left (typically)
+    int InOut            // 1=Inner, 2=Outer (typically)
+);

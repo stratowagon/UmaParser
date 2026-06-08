@@ -1,7 +1,7 @@
 namespace UmaBlobber.Analysis;
 
 /// <summary>
-/// Pre-race wit lottery for skills with <c>skill_data.activate_lot = 1</c>.
+/// Pre-race wit activation chance for skills with <c>skill_data.activate_lot = 1</c>.
 /// Uses base wit (mood-adjusted in race); floor 20%.
 /// </summary>
 public static class WitSkillActivationChance

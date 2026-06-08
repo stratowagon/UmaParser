@@ -56,6 +56,12 @@ namespace UmaBlobber
             panelSkillsTop = new Panel();
             comboBoxSkillsUma = new ComboBox();
             labelSkillsUma = new Label();
+            tabPageTracks = new TabPage();
+            dataGridViewTracks = new DataGridView();
+            labelTracksSummary = new Label();
+            panelTracksTop = new Panel();
+            comboBoxTracksUma = new ComboBox();
+            labelTracksUma = new Label();
             menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)mainSplitContainer).BeginInit();
             mainSplitContainer.Panel1.SuspendLayout();
@@ -70,6 +76,9 @@ namespace UmaBlobber
             tabPageSkills.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewSkills).BeginInit();
             panelSkillsTop.SuspendLayout();
+            tabPageTracks.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridViewTracks).BeginInit();
+            panelTracksTop.SuspendLayout();
             SuspendLayout();
             // 
             // menuStrip1
@@ -193,6 +202,7 @@ namespace UmaBlobber
             mainTabControl.Controls.Add(tabPageResults);
             mainTabControl.Controls.Add(tabPageAnalysis);
             mainTabControl.Controls.Add(tabPageSkills);
+            mainTabControl.Controls.Add(tabPageTracks);
             mainTabControl.Dock = DockStyle.Fill;
             mainTabControl.Location = new Point(0, 0);
             mainTabControl.Name = "mainTabControl";
@@ -291,6 +301,73 @@ namespace UmaBlobber
             tabPageSkills.Text = "Skills";
             tabPageSkills.UseVisualStyleBackColor = true;
             // 
+            // tabPageTracks
+            // 
+            tabPageTracks.Controls.Add(dataGridViewTracks);
+            tabPageTracks.Controls.Add(labelTracksSummary);
+            tabPageTracks.Controls.Add(panelTracksTop);
+            tabPageTracks.Location = new Point(4, 24);
+            tabPageTracks.Name = "tabPageTracks";
+            tabPageTracks.Padding = new Padding(3);
+            tabPageTracks.Size = new Size(804, 427);
+            tabPageTracks.TabIndex = 3;
+            tabPageTracks.Text = "Tracks";
+            tabPageTracks.UseVisualStyleBackColor = true;
+            // 
+            // dataGridViewTracks
+            // 
+            dataGridViewTracks.AllowUserToAddRows = false;
+            dataGridViewTracks.AllowUserToDeleteRows = false;
+            dataGridViewTracks.AllowUserToResizeRows = false;
+            dataGridViewTracks.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            dataGridViewTracks.Dock = DockStyle.Fill;
+            dataGridViewTracks.EnableHeadersVisualStyles = false;
+            dataGridViewTracks.Location = new Point(3, 54);
+            dataGridViewTracks.Name = "dataGridViewTracks";
+            dataGridViewTracks.ReadOnly = true;
+            dataGridViewTracks.RowHeadersVisible = false;
+            dataGridViewTracks.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dataGridViewTracks.ShowCellToolTips = true;
+            dataGridViewTracks.Size = new Size(798, 370);
+            dataGridViewTracks.TabIndex = 2;
+            // 
+            // labelTracksSummary
+            // 
+            labelTracksSummary.Dock = DockStyle.Top;
+            labelTracksSummary.Location = new Point(3, 35);
+            labelTracksSummary.Name = "labelTracksSummary";
+            labelTracksSummary.Padding = new Padding(0, 0, 0, 4);
+            labelTracksSummary.Size = new Size(798, 19);
+            labelTracksSummary.TabIndex = 1;
+            // 
+            // panelTracksTop
+            // 
+            panelTracksTop.Controls.Add(comboBoxTracksUma);
+            panelTracksTop.Controls.Add(labelTracksUma);
+            panelTracksTop.Dock = DockStyle.Top;
+            panelTracksTop.Location = new Point(3, 3);
+            panelTracksTop.Name = "panelTracksTop";
+            panelTracksTop.Size = new Size(798, 32);
+            panelTracksTop.TabIndex = 0;
+            // 
+            // comboBoxTracksUma
+            // 
+            comboBoxTracksUma.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            comboBoxTracksUma.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBoxTracksUma.Location = new Point(44, 4);
+            comboBoxTracksUma.Name = "comboBoxTracksUma";
+            comboBoxTracksUma.Size = new Size(751, 23);
+            comboBoxTracksUma.TabIndex = 1;
+            // 
+            // labelTracksUma
+            // 
+            labelTracksUma.AutoSize = true;
+            labelTracksUma.Location = new Point(3, 8);
+            labelTracksUma.Name = "labelTracksUma";
+            labelTracksUma.Size = new Size(35, 15);
+            labelTracksUma.TabIndex = 0;
+            labelTracksUma.Text = "Uma:";
+            // 
             // dataGridViewSkills
             // 
             dataGridViewSkills.AllowUserToAddRows = false;
@@ -373,6 +450,10 @@ namespace UmaBlobber
             ((System.ComponentModel.ISupportInitialize)dataGridViewSkills).EndInit();
             panelSkillsTop.ResumeLayout(false);
             panelSkillsTop.PerformLayout();
+            tabPageTracks.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)dataGridViewTracks).EndInit();
+            panelTracksTop.ResumeLayout(false);
+            panelTracksTop.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -407,5 +488,13 @@ namespace UmaBlobber
         private Label labelSkillsSummary;
         private DataGridView dataGridViewSkills;
         private DataGridView dataGridView1;
+
+        // Tracks tab
+        private TabPage tabPageTracks;
+        private DataGridView dataGridViewTracks;
+        private Label labelTracksSummary;
+        private Panel panelTracksTop;
+        private ComboBox comboBoxTracksUma;
+        private Label labelTracksUma;
     }
 }

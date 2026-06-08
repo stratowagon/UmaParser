@@ -1,6 +1,7 @@
 using System.Drawing;
 using UmaBlobber.Analysis;
 using UmaBlobber.ObjectModel;
+using UmaBlobber.Ui;
 
 namespace UmaBlobber
 {
@@ -19,12 +20,13 @@ namespace UmaBlobber
             ["Floor"] = "10th percentile base score across trials.",
             ["Spread"] = "Ceiling minus floor — scoring range across trials.",
             ["Retrain"] = "Combined weakness score (85% gap, 15% adjusted CV). Higher = stronger rebuild candidate.",
-            ["Ace?"] = "Support that beats the current ace on trimmed base score. Maybe = small lead for the sample size.",
+            ["Ace delta"] = "Trimmed base score difference vs this team's current ace (+ = better than ace). Colored when positive and large enough to suggest a swap (strong = red, weak hint = amber).",
         };
 
         private UmaAnalysisReport? _lastAnalysisReport;
         private int _analysisRetrainColumnIndex = -1;
         private int _analysisStyleColumnIndex = -1;
+        private int _analysisAceDeltaColumnIndex = -1;
 
         private void PopulateAnalysis(Dictionary<string, TeamTrialResult> trialResults)
         {
@@ -43,6 +45,7 @@ namespace UmaBlobber
             _lastAnalysisReport = null;
             _analysisRetrainColumnIndex = -1;
             _analysisStyleColumnIndex = -1;
+            _analysisAceDeltaColumnIndex = -1;
             dataGridViewAnalysis.Rows.Clear();
             dataGridViewAnalysis.Columns.Clear();
         }
@@ -75,7 +78,7 @@ namespace UmaBlobber
             string[] headers =
             [
                 "Uma", "Style", "Avg", "Trimmed", "CV", "Adj CV", "Gap", "Ceiling", "Floor",
-                "Spread", "Retrain", "Ace?"
+                "Spread", "Retrain", "Ace delta"
             ];
 
             foreach (var header in headers)
@@ -103,11 +106,12 @@ namespace UmaBlobber
                     row.Floor,
                     row.CeilingFloorSpread,
                     row.RetrainPriorityLabel,
-                    row.PotentialAceLabel);
+                    row.AceDeltaLabel);
             }
 
             _analysisRetrainColumnIndex = dataGridViewAnalysis.Columns["Retrain"]?.Index ?? -1;
             _analysisStyleColumnIndex = dataGridViewAnalysis.Columns["Style"]?.Index ?? -1;
+            _analysisAceDeltaColumnIndex = dataGridViewAnalysis.Columns["Ace delta"]?.Index ?? -1;
             FinalizeAnalysisGrid();
         }
 
@@ -149,6 +153,14 @@ namespace UmaBlobber
                 }
             }
 
+            foreach (var overlap in report.StyleOverlapRecommendations)
+            {
+                if (!String.IsNullOrEmpty(overlap.Note))
+                {
+                    lines.Add($"{overlap.Distance}: {overlap.Note}");
+                }
+            }
+
             return string.Join(Environment.NewLine, lines);
         }
 
@@ -175,9 +187,10 @@ namespace UmaBlobber
                 };
 
                 e.CellStyle.BackColor = backColor;
-                e.CellStyle.ForeColor = SeverityForeground;
+                var fore = AppColors.SeverityForeFor(backColor);
+                e.CellStyle.ForeColor = fore;
                 e.CellStyle.SelectionBackColor = ControlPaint.Light(backColor, 0.28f);
-                e.CellStyle.SelectionForeColor = SeverityForeground;
+                e.CellStyle.SelectionForeColor = fore;
                 return;
             }
 
@@ -193,11 +206,35 @@ namespace UmaBlobber
                 if (overlapColor.HasValue)
                 {
                     e.CellStyle.BackColor = overlapColor.Value;
-                    e.CellStyle.ForeColor = SeverityForeground;
+                    var fore = AppColors.SeverityForeFor(overlapColor.Value);
+                    e.CellStyle.ForeColor = fore;
                     e.CellStyle.SelectionBackColor = ControlPaint.Light(overlapColor.Value, 0.28f);
-                    e.CellStyle.SelectionForeColor = SeverityForeground;
+                    e.CellStyle.SelectionForeColor = fore;
                     return;
                 }
+            }
+
+            if (e.ColumnIndex == _analysisAceDeltaColumnIndex)
+            {
+                // Only color when this support beats the ace (positive delta) and it qualifies as a hint/suggestion.
+                if (analysisRow.AceDelta > 0 && analysisRow.IsSuggestedAce)
+                {
+                    // Look up the recommendation to know if it was a strong or weak hint.
+                    var rec = _lastAnalysisReport.AceRecommendations
+                        .FirstOrDefault(r => r.Distance == analysisRow.Distance && r.BestSupport == analysisRow.Name);
+
+                    Color backColor = (rec != null && !rec.IsWeakSuggestion)
+                        ? SeverityCritical
+                        : SeverityNeedsWork;
+
+                    e.CellStyle.BackColor = backColor;
+                    var fore = AppColors.SeverityForeFor(backColor);
+                    e.CellStyle.ForeColor = fore;
+                    e.CellStyle.SelectionBackColor = ControlPaint.Light(backColor, 0.28f);
+                    e.CellStyle.SelectionForeColor = fore;
+                }
+                // Aces show "+0 (+0%)" with no special color. Negative deltas (worse than ace) also get no color.
+                return;
             }
 
             if (ShouldBoldAceName(dataGridViewAnalysis, e.RowIndex, e.ColumnIndex))

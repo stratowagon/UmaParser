@@ -41,6 +41,11 @@ internal sealed class GameMasterService
         _lastError = null;
         _resolvedDbPath = MasterDataPaths.ResolveMasterDbPath(_settings.CustomMasterDbPath);
         var catalog = new GameMasterCatalog();
+
+        // Apply embedded fallbacks first. They provide built-in defaults.
+        // Live DB or cache loads below will overlay fresher data (via MergeSection / Set* calls).
+        EmbeddedMasterFallback.Apply(catalog);
+
         MasterDataSourceKind source = MasterDataSourceKind.Embedded;
 
         if (File.Exists(_resolvedDbPath))
@@ -69,7 +74,6 @@ internal sealed class GameMasterService
             _lastError = "Master database not found; using built-in names.";
         }
 
-        EmbeddedMasterFallback.Apply(catalog);
         _catalog = catalog;
         _primarySource = source;
     }
@@ -106,11 +110,17 @@ internal sealed class GameMasterService
 
         int charaCount = _catalog.SectionCounts.GetValueOrDefault(MasterTextCategory.CharaShortName);
         int skillCount = _catalog.SectionCounts.GetValueOrDefault(MasterTextCategory.SkillName);
+        int raceCourseCount = _catalog.GetAllRaceCourses().Count;
 
         var parts = new List<string>
         {
             $"Names: {source} ({charaCount} umas, {skillCount} skills)"
         };
+
+        if (raceCourseCount > 0)
+        {
+            parts.Add($"({raceCourseCount} race courses)");
+        }
 
         if (!string.IsNullOrEmpty(_resolvedDbPath) && _primarySource == MasterDataSourceKind.LiveDatabase)
         {
@@ -147,6 +157,12 @@ internal sealed class GameMasterService
         foreach (var (category, count) in _catalog.SectionCounts.OrderBy(kv => kv.Key))
         {
             lines.Add($"  {category}: {count} entries");
+        }
+
+        int raceCourseCount = _catalog.GetAllRaceCourses().Count;
+        if (raceCourseCount > 0)
+        {
+            lines.Add($"  RaceCourses: {raceCourseCount} entries (from race_instance/race_course_set + text 35)");
         }
 
         if (_catalog.SkillActivateLotCount > 0)

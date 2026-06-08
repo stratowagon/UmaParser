@@ -32,7 +32,7 @@ public sealed class SkillActivationRow
 
     public SkillActivateLotKind ActivateLot { get; init; }
 
-    /// <summary>Pre-race wit lottery chance when <see cref="ActivateLot"/> is <see cref="SkillActivateLotKind.Wit"/>.</summary>
+    /// <summary>Pre-race wit activation chance when <see cref="ActivateLot"/> is <see cref="SkillActivateLotKind.Wit"/>.</summary>
     public double? ExpectedWitPercent { get; init; }
 
     /// <summary><see cref="PerRaceActivationRatePercent"/> − <see cref="ExpectedWitPercent"/> when wit-gated.</summary>
@@ -40,6 +40,6 @@ public sealed class SkillActivationRow
 
     public bool IsLowActivation { get; init; }
 
-    /// <summary>Per-race rate materially below wit lottery expectation.</summary>
+    /// <summary>Per-race rate materially below wit activation expectation.</summary>
     public bool IsUnderperformingVsWit { get; init; }
 }

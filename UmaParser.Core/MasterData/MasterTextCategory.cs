@@ -18,6 +18,9 @@ internal enum MasterTextCategory
     /// <summary>Team Trials score bucket descriptions (category 141).</summary>
     TeamTrialsScoreDesc = 141,
 
+    /// <summary>Race track short names, e.g. "Chukyo", "Tokyo" (category 35). Used via race_course_set.race_track_id.</summary>
+    RaceTrackName = 35,
+
     /// <summary>Parent factor / spark skill names (category 147).</summary>
     FactorSkillName = 147,
 

@@ -15,6 +15,7 @@ namespace UmaBlobber
             ClearGrid();
             ClearAnalysis();
             ClearSkills();
+            ClearTracks();
 
             switch (batch.Kind)
             {
@@ -91,6 +92,7 @@ namespace UmaBlobber
 
             PopulateAnalysis(trials.ToDictionary(kv => kv.Key, kv => kv.Value));
             PopulateSkills(trials.ToDictionary(kv => kv.Key, kv => kv.Value));
+            PopulateTracks(trials.ToDictionary(kv => kv.Key, kv => kv.Value));
         }
 
         private static string BuildImportStatusMessage(string primary, int skipped)
