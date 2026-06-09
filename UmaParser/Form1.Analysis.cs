@@ -40,14 +40,26 @@ namespace UmaBlobber
             mainTabControl.SelectedTab = tabPageAnalysis;
         }
 
-        private void ClearAnalysis()
+        private void ClearAnalysis(string? message = null)
         {
             _lastAnalysisReport = null;
             _analysisRetrainColumnIndex = -1;
             _analysisStyleColumnIndex = -1;
             _analysisAceDeltaColumnIndex = -1;
-            dataGridViewAnalysis.Rows.Clear();
-            dataGridViewAnalysis.Columns.Clear();
+
+            if (message != null && panelAnalysisEmpty != null && labelAnalysisMessage != null)
+            {
+                dataGridViewAnalysis.Visible = false;
+                panelAnalysisEmpty.Visible = true;
+                labelAnalysisMessage.Text = message;
+            }
+            else
+            {
+                if (panelAnalysisEmpty != null) panelAnalysisEmpty.Visible = false;
+                dataGridViewAnalysis.Visible = true;
+                dataGridViewAnalysis.Rows.Clear();
+                dataGridViewAnalysis.Columns.Clear();
+            }
         }
 
         private static List<IReadOnlyList<double>> BuildBaseScoreMatrix(

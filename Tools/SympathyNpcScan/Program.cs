@@ -626,5 +626,50 @@ class Program
         Console.WriteLine("  it suggests the game selects from type-specific pools of skill profiles (trained_chara_id).");
         Console.WriteLine("- Specialist profiles + sympathy specialists would support the idea that certain");
         Console.WriteLine("  skill sets (e.g. Sympathy) are preferentially used in races where they are useful.");
+
+        // === Probability of >=2 Sympathy NPCs per race type ===
+        // Assumption: for a race of a given type, 6 distinct profiles are chosen uniformly at random
+        // from the 10 dedicated to that type (hypergeometric, without replacement).
+        // This matches the observed use of many different combinations within each type's pool.
+        Console.WriteLine();
+        Console.WriteLine("=== Odds of 2+ Sympathy NPCs (for your scenario) ===");
+        Console.WriteLine("Assumption: 6 distinct profiles chosen uniformly from the type's 10-profile pool.");
+        Console.WriteLine("Hypergeometric: N=10, n=6, K=#Sympathy profiles in that type's pool.");
+        Console.WriteLine("Your case: 3 on your team + 0 opponent → need X>=2 from the 6 NPCs for 5+ total.");
+        Console.WriteLine();
+
+        // Hardcoded from scan: K per dt (all profiles are type specialists)
+        int[] K_sym = { 0, 3, 3, 4, 5, 3 }; // dt 1=Sprint ... 5=Dirt
+
+        long TotalWays = Binom(10, 6); // 210
+
+        for (int d = 1; d <= 5; d++)
+        {
+            int K = K_sym[d];
+            long waysGE2 = 0;
+            for (int x = 2; x <= Math.Min(6, K); x++)
+            {
+                waysGE2 += Binom(K, x) * Binom(10 - K, 6 - x);
+            }
+            double p = (double)waysGE2 / TotalWays;
+            double eX = 6.0 * K / 10.0;
+
+            Console.WriteLine($"{dtName[d],-8} (K={K} Sympathy profiles):");
+            Console.WriteLine($"  P(X >= 2) = {p * 100:F2}%   ({waysGE2}/{TotalWays} = {waysGE2}/{TotalWays})");
+            Console.WriteLine($"  E[X] = {eX:F2}   (expected # Sympathy NPCs in the 6)");
+            Console.WriteLine();
+        }
+    }
+
+    static long Binom(int n, int k)
+    {
+        if (k < 0 || k > n) return 0;
+        if (k == 0 || k == n) return 1;
+        long res = 1;
+        for (int i = 1; i <= k; i++)
+        {
+            res = res * (n - k + i) / i;
+        }
+        return res;
     }
 }

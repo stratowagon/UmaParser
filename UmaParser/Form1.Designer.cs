@@ -269,7 +269,7 @@ namespace UmaBlobber
             tabPageAnalysis.Padding = new Padding(3);
             tabPageAnalysis.Size = new Size(804, 427);
             tabPageAnalysis.TabIndex = 1;
-            tabPageAnalysis.Text = "Analysis";
+            tabPageAnalysis.Text = "Team Analysis";
             tabPageAnalysis.UseVisualStyleBackColor = true;
             // 
             // dataGridViewAnalysis

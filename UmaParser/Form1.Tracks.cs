@@ -1,6 +1,8 @@
 using System.ComponentModel;
 using System.Drawing;
 using UmaBlobber.Analysis;
+using UmaBlobber.DataModel.ResponseData;
+using UmaBlobber.Import;
 using UmaBlobber.ObjectModel;
 using UmaBlobber.Ui;
 
@@ -10,18 +12,18 @@ namespace UmaBlobber
     {
         private static readonly Dictionary<string, string> TracksColumnTooltips = new(StringComparer.Ordinal)
         {
-            ["Track"] = "Race course + distance. Surface is implied by the track (internally differentiated by ground).",
-            ["Races"] = "Number of times this uma ran this specific track+distance.",
-            ["Avg Place"] = "Average finish position (1 = 1st) across runs on this track.",
+            ["Track"] = "Race course + distance.",
+            ["Races"] = "Number of races on this specific track+distance.",
+            ["Avg Place"] = "Average finish position across runs on this track.",
             ["% 1st"] = "Percentage of races on this track where the uma finished 1st.",
             ["% Top 3"] = "Percentage of races finishing 3rd or better.",
             ["% Top 5"] = "Percentage of races finishing 5th or better.",
-            ["Spurt Rate"] = "% of races on this track where the uma started their final spurt no more than ~3m after the ideal 2/3 distance point (based on LastSpurtStartDistance in replay data). A value of -1 means the uma never attempted a spurt (insufficient stamina) and counts against the rate.",
-            ["Survival"] = "% of races on this track where the uma reached the goal with >0 HP remaining (never hit 0 HP before or at the goal line in the frame data).",
-            ["Avg Skill Pts/Race"] = "Average skill points earned per race on this track (condition-8 scores only, no bonuses).",
+            ["Spurt Rate"] = "% of races where final spurt was not delayed.",
+            ["Survival"] = "% of races where the uma did not run out of HP before the goal.",
+            ["Avg Skill Pts/Race"] = "Average skill points earned per race on this track (without bonuses).",
         };
 
-        private Dictionary<string, TeamTrialResult>? _tracksTrialResults;
+        private IReadOnlyDictionary<string, TeamTrialResult>? _tracksTrialResults;
         private List<(int TrainedCharaId, string Name)> _tracksRosterEntries = new();
         private TracksReport? _lastTracksReport;
 
@@ -60,32 +62,79 @@ namespace UmaBlobber
             dataGridViewTracks.Rows.Clear();
             dataGridViewTracks.Columns.Clear();
             labelTracksSummary.Text = string.Empty;
+
+            // Reset non-TT state
+            _currentSingleRaces?.Clear();
+            _currentNonTtIdentities?.Clear();
         }
 
         private void ComboBoxTracksUma_SelectedIndexChanged(object? sender, EventArgs e)
         {
-            if (_tracksTrialResults == null || comboBoxTracksUma.SelectedIndex < 0)
+            if (comboBoxTracksUma.SelectedIndex < 0)
+                return;
+
+            if (_tracksTrialResults != null && comboBoxTracksUma.SelectedIndex < _tracksRosterEntries.Count)
             {
+                // Classic TT path
+                var (trainedCharaId, name) = _tracksRosterEntries[comboBoxTracksUma.SelectedIndex];
+                _lastTracksReport = TracksAnalyzer.Analyze(
+                    _tracksTrialResults.Values,
+                    trainedCharaId,
+                    name);
+                BindTracksGrid(_lastTracksReport!);
                 return;
             }
 
-            if (comboBoxTracksUma.SelectedIndex >= _tracksRosterEntries.Count)
+            // Non-TT path
+            if (_currentNonTtIdentities != null && comboBoxTracksUma.SelectedIndex < _currentNonTtIdentities.Count && _currentSingleRaces != null)
             {
+                var selectedId = _currentNonTtIdentities[comboBoxTracksUma.SelectedIndex];
+                var displayName = selectedId.GetDisplayName();
+
+                var nonTtItems = new List<(RaceAppearance Appearance, int Distance, string TrackName)>();
+                foreach (var sr in _currentSingleRaces)
+                {
+                    foreach (var (id, horse) in sr.LocalPlayerHorses)
+                    {
+                        if (selectedId.IsSameUma(id))
+                        {
+                            // horse is already a fully materialized RaceHorseData
+                            var dummyResult = new RaceResult();
+                            var app = new RaceAppearance(dummyResult, sr.Simulation, horse);
+                            nonTtItems.Add((app, sr.Distance, sr.TrackName));
+                        }
+                    }
+                }
+
+                if (nonTtItems.Count > 0)
+                {
+                    _lastTracksReport = TracksAnalyzer.Analyze(nonTtItems, displayName);
+                    BindTracksGrid(_lastTracksReport!);
+                }
+                else
+                {
+                    labelTracksSummary.Text = $"{displayName}: No appearances found.";
+                    dataGridViewTracks.Rows.Clear();
+                    dataGridViewTracks.Columns.Clear();
+                }
                 return;
             }
 
-            var (trainedCharaId, name) = _tracksRosterEntries[comboBoxTracksUma.SelectedIndex];
-            _lastTracksReport = TracksAnalyzer.Analyze(
-                _tracksTrialResults.Values,
-                trainedCharaId,
-                name);
-            BindTracksGrid(_lastTracksReport!);
+            // Fallback
+            if (comboBoxTracksUma.SelectedIndex < _tracksRosterEntries.Count)
+            {
+                var (_, displayName) = _tracksRosterEntries[comboBoxTracksUma.SelectedIndex];
+                labelTracksSummary.Text = $"{displayName}: tracks analysis not available.";
+            }
         }
 
         private void BindTracksGrid(TracksReport report)
         {
             dataGridViewTracks.Columns.Clear();
             dataGridViewTracks.Rows.Clear();
+
+            bool isTt = _tracksTrialResults != null;
+            bool showSkillPts = isTt;  // no equivalent for non-TT
 
             AddTracksColumn("Track", typeof(string));
             AddTracksColumn("Distance", typeof(int));
@@ -96,7 +145,8 @@ namespace UmaBlobber
             AddTracksColumn("% Top 5", typeof(double));
             AddTracksColumn("Spurt Rate", typeof(double));
             AddTracksColumn("Survival", typeof(double));
-            AddTracksColumn("Avg Skill Pts/Race", typeof(double));
+            if (showSkillPts)
+                AddTracksColumn("Avg Skill Pts/Race", typeof(double));
 
             foreach (var row in report.Rows)
             {
@@ -111,8 +161,9 @@ namespace UmaBlobber
                     row.PctTop5,
                     row.SpurtRate,
                     row.Survival,
-                    row.AvgSkillPointsPerRace,
                 };
+                if (showSkillPts)
+                    values.Add(row.AvgSkillPointsPerRace);
 
                 int rowIndex = dataGridViewTracks.Rows.Add(values.Cast<object>().ToArray());
                 dataGridViewTracks.Rows[rowIndex].Tag = row;

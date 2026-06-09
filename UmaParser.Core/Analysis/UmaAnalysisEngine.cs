@@ -771,6 +771,196 @@ namespace UmaBlobber.Analysis
             };
         }
 
+        /// <summary>
+        /// Version for non-TT single-race data.
+        /// Course/distance info is limited (no raceInstanceId), so tracks are grouped generically.
+        /// Spurt/survival still work from simulation. Skill points are TT-only and will be 0.
+        /// Placements come from the simulation HorseResults.
+        /// </summary>
+        public static TracksReport Analyze(
+            IEnumerable<RaceAppearance> appearances,
+            string umaName)
+        {
+            var appList = appearances.ToList();
+            int totalRaces = 0;
+            var perTrack = new Dictionary<(string Name, int Distance), TrackStats>();
+
+            foreach (var appearance in appList)
+            {
+                totalRaces++;
+
+                // For non-TT we don't have reliable raceInstanceId / master course lookup.
+                // Use a generic name + distance 0 (or we could parse per-file metadata in future).
+                var key = ("Single Race / Practice", 0);
+
+                if (!perTrack.TryGetValue(key, out var stats))
+                {
+                    stats = new TrackStats
+                    {
+                        Name = key.Item1,
+                        Distance = key.Item2,
+                        Ground = 0
+                    };
+                    perTrack[key] = stats;
+                }
+
+                int horseIndex = appearance.Horse.FrameOrder - 1;
+                if (horseIndex < 0 || horseIndex >= appearance.Simulation.HorseResults.Count)
+                    continue;
+
+                var horseResult = appearance.Simulation.HorseResults[horseIndex];
+
+                // Placement from simulation (reliable for non-TT)
+                int finishOrder = horseResult.FinishOrder + 1; // 0-based -> 1-based
+                stats.Placements.Add(finishOrder);
+
+                // Spurt rate (use a reasonable default distance if unknown; 2000m is common for many CM)
+                int effectiveDistance = key.Item2 > 0 ? key.Item2 : 2000;
+                float lastSpurt = horseResult.LastSpurtStartDistance;
+                if (lastSpurt >= 0)
+                {
+                    float idealSpurt = effectiveDistance * (2f / 3f);
+                    float delay = lastSpurt - idealSpurt;
+                    if (delay <= 3.0f)
+                    {
+                        stats.GoodSpurtCount++;
+                    }
+                }
+
+                // Survival from frames
+                if (appearance.Simulation.Frames.Count > 0 &&
+                    horseIndex < appearance.Simulation.Frames[0].HorseFrames.Count)
+                {
+                    float raceDist = effectiveDistance;
+                    bool survived = true;
+                    foreach (var frame in appearance.Simulation.Frames)
+                    {
+                        if (horseIndex >= frame.HorseFrames.Count) break;
+                        var hf = frame.HorseFrames[horseIndex];
+                        if (hf.Hp <= 0 && hf.Distance < raceDist)
+                        {
+                            survived = false;
+                            break;
+                        }
+                        if (hf.Distance >= raceDist)
+                        {
+                            if (hf.Hp <= 0) survived = false;
+                            break;
+                        }
+                    }
+                    if (survived) stats.SurvivedCount++;
+                }
+
+                // Skill points: TT-specific, leave at 0 for non-TT
+                stats.RaceCount++;
+            }
+
+            var rows = perTrack.Values
+                .Select(s => s.ToRow())
+                .OrderBy(r => r.Track)
+                .ThenBy(r => r.Distance)
+                .ToList();
+
+            return new TracksReport
+            {
+                UmaName = umaName,
+                TotalRaces = totalRaces,
+                TeamType = "Non-TT (CM/Room/Practice)",
+                Rows = rows
+            };
+        }
+
+        /// <summary>
+        /// Non-TT overload that receives per-race course metadata (parsed from the capture files).
+        /// </summary>
+        public static TracksReport Analyze(
+            IEnumerable<(RaceAppearance Appearance, int Distance, string TrackName)> items,
+            string umaName)
+        {
+            var itemList = items.ToList();
+            int totalRaces = 0;
+            var perTrack = new Dictionary<(string Name, int Distance), TrackStats>();
+
+            foreach (var (appearance, distance, trackName) in itemList)
+            {
+                totalRaces++;
+
+                int effDist = distance > 0 ? distance : 2000; // fallback for spurt calc
+                string name = string.IsNullOrWhiteSpace(trackName) ? "Single Race" : trackName;
+
+                var key = (name, effDist);
+
+                if (!perTrack.TryGetValue(key, out var stats))
+                {
+                    stats = new TrackStats
+                    {
+                        Name = name,
+                        Distance = effDist,
+                        Ground = 0
+                    };
+                    perTrack[key] = stats;
+                }
+
+                int horseIndex = appearance.Horse.FrameOrder - 1;
+                if (horseIndex < 0 || horseIndex >= appearance.Simulation.HorseResults.Count)
+                    continue;
+
+                var horseResult = appearance.Simulation.HorseResults[horseIndex];
+
+                int finishOrder = horseResult.FinishOrder + 1;
+                stats.Placements.Add(finishOrder);
+
+                // Spurt
+                float lastSpurt = horseResult.LastSpurtStartDistance;
+                if (lastSpurt >= 0)
+                {
+                    float idealSpurt = effDist * (2f / 3f);
+                    float delay = lastSpurt - idealSpurt;
+                    if (delay <= 3.0f)
+                        stats.GoodSpurtCount++;
+                }
+
+                // Survival
+                if (appearance.Simulation.Frames.Count > 0 && horseIndex < appearance.Simulation.Frames[0].HorseFrames.Count)
+                {
+                    bool survived = true;
+                    float raceDist = effDist;
+                    foreach (var frame in appearance.Simulation.Frames)
+                    {
+                        if (horseIndex >= frame.HorseFrames.Count) break;
+                        var hf = frame.HorseFrames[horseIndex];
+                        if (hf.Hp <= 0 && hf.Distance < raceDist)
+                        {
+                            survived = false;
+                            break;
+                        }
+                        if (hf.Distance >= raceDist)
+                        {
+                            if (hf.Hp <= 0) survived = false;
+                            break;
+                        }
+                    }
+                    if (survived) stats.SurvivedCount++;
+                }
+
+                stats.RaceCount++;
+            }
+
+            var rows = perTrack.Values
+                .Select(s => s.ToRow())
+                .OrderBy(r => r.Track)
+                .ThenBy(r => r.Distance)
+                .ToList();
+
+            return new TracksReport
+            {
+                UmaName = umaName,
+                TotalRaces = totalRaces,
+                TeamType = "Non-TT (CM/Room/Practice)",
+                Rows = rows
+            };
+        }
+
         private static string DeriveTeamType(List<TeamTrialResult> trials, int trainedCharaId)
         {
             var counts = new int[6];

@@ -28,6 +28,14 @@ namespace UmaBlobber
         private GridDisplayMode _gridDisplayMode = GridDisplayMode.None;
         private readonly AceNameFontCache _aceNameFontCache = new();
 
+        // For RosterMismatch highlighting of outlier cells (minority files only)
+        private bool[,] _mismatchOutliers;
+        private int _mismatchFileCount;
+
+        // Empty state for Team Analysis tab (non-uniform TT or non-TT loads)
+        private Panel panelAnalysisEmpty;
+        private Label labelAnalysisMessage;
+
         public Form1()
         {
             InitializeComponent();
@@ -35,6 +43,7 @@ namespace UmaBlobber
             labelResultsWelcome.Text = ResultsWelcomeMessage;
             RestoreWindowLayout();
             ClearGrid();
+            InitializeAnalysisEmptyState();
 
             this.AllowDrop = true;
 
@@ -86,11 +95,11 @@ namespace UmaBlobber
             var imports = files.Select(CaptureImportService.TryImportPath).ToList();
             var batch = TeamTrialBatchBuilder.Build(imports);
 
-            if (batch.Kind == TeamTrialBatchKind.Empty)
+            if (!batch.HasAnyData)
             {
                 SetStatus(batch.SkippedFileCount > 0
-                    ? $"No team trial files loaded ({batch.SkippedFileCount} file(s) skipped)."
-                    : "No team trial files loaded.");
+                    ? $"No supported race files loaded ({batch.SkippedFileCount} file(s) skipped)."
+                    : "No supported race files loaded.");
                 return;
             }
 
@@ -104,9 +113,42 @@ namespace UmaBlobber
         private void ClearGrid()
         {
             _gridDisplayMode = GridDisplayMode.None;
+            _mismatchOutliers = null;
+            _mismatchFileCount = 0;
             dataGridView1.Rows.Clear();
             dataGridView1.Columns.Clear();
             UpdateResultsEmptyState();
+        }
+
+        private void InitializeAnalysisEmptyState()
+        {
+            panelAnalysisEmpty = new Panel();
+            labelAnalysisMessage = new Label();
+
+            panelAnalysisEmpty.SuspendLayout();
+
+            panelAnalysisEmpty.Controls.Add(labelAnalysisMessage);
+            panelAnalysisEmpty.Dock = DockStyle.Fill;
+            panelAnalysisEmpty.Location = new Point(3, 3);
+            panelAnalysisEmpty.Name = "panelAnalysisEmpty";
+            panelAnalysisEmpty.Size = new Size(798, 421);
+            panelAnalysisEmpty.TabIndex = 1;
+            panelAnalysisEmpty.Visible = false;
+
+            labelAnalysisMessage.Dock = DockStyle.Fill;
+            labelAnalysisMessage.ForeColor = SystemColors.GrayText;
+            labelAnalysisMessage.Location = new Point(0, 0);
+            labelAnalysisMessage.Name = "labelAnalysisMessage";
+            labelAnalysisMessage.Padding = new Padding(24);
+            labelAnalysisMessage.Size = new Size(798, 421);
+            labelAnalysisMessage.TabIndex = 0;
+            labelAnalysisMessage.TextAlign = ContentAlignment.MiddleCenter;
+
+            panelAnalysisEmpty.ResumeLayout(false);
+
+            tabPageAnalysis.Controls.Add(panelAnalysisEmpty);
+            // Ensure grid is on top when visible; panel will be shown/hidden as needed
+            dataGridViewAnalysis.BringToFront();
         }
 
         private void UpdateResultsEmptyState()
@@ -132,6 +174,23 @@ namespace UmaBlobber
             if (ShouldBoldAceName(dataGridView1, e.RowIndex, e.ColumnIndex))
             {
                 e.CellStyle.Font = _aceNameFontCache.GetBoldFont(dataGridView1);
+            }
+
+            // Highlight outlier cells in minority files for RosterMismatch.
+            // Cells may be highlighted even if the short name matches the majority (see cases in BindRosterMismatch).
+            if (_gridDisplayMode == GridDisplayMode.RosterMismatch &&
+                _mismatchOutliers != null &&
+                e.ColumnIndex < _mismatchFileCount &&
+                e.RowIndex < 15 &&
+                _mismatchOutliers[e.ColumnIndex, e.RowIndex])
+            {
+                // Theme-aware highlight for outlier cells in minority files.
+                // Pale yellow is fine in light; too bright/glaring in dark, so use a muted dark amber.
+                Color back = AppColors.IsDark
+                    ? Color.FromArgb(90, 80, 30)   // muted dark yellow-brown for dark mode
+                    : Color.FromArgb(255, 255, 200); // pale yellow for light mode
+                e.CellStyle.BackColor = back;
+                e.CellStyle.ForeColor = AppColors.SeverityForeFor(back);
             }
         }
 

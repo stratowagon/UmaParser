@@ -103,6 +103,18 @@ namespace UmaBlobber.ObjectModel
             RaceRoster.Select(uma => GameMasterService.Current.Catalog.FormatCharaShortName(uma.Value.CharaId)).ToList();
 
         /// <summary>
+        /// Trained chara IDs in the fixed roster order (used for accurate roster matching across files,
+        /// including distinguishing different veterans of the same character).
+        /// </summary>
+        public IReadOnlyList<int> RosterTrainedCharaIds => RaceRoster.Keys.ToList();
+
+        /// <summary>
+        /// Running styles (as raw int values from the capture) in the fixed roster order (used to detect
+        /// style changes for the same veteran across files).
+        /// </summary>
+        public IReadOnlyList<int> RosterRunningStyles => RaceRoster.Values.Select(v => v.RunningStyle).ToList();
+
+        /// <summary>
         /// Races in this trial where the given roster uma ran (team 1), with parsed scenario data.
         /// </summary>
         public IEnumerable<RaceAppearance> GetAppearances(int trainedCharaId)

@@ -3,27 +3,61 @@
 A janky app for analyzing Team Trials scores.
 
 ## Prereqs
-You will need to have a tool installed that can capture your Team Trials results, such as Ayaliz's HorseACT: https://github.com/ayaliz/horseACT
-(HorseACT will save TT races but by default this is disabled, you will have to enable it after setup).
+You will need to have a tool installed that can capture your Team Trials results,
+such as Ayaliz's HorseACT: https://github.com/ayaliz/horseACT
+(After setting it up, you will need to enable TT race saves in the settings)
 
-Other tools capable of saving TT responses in json or raw msgpack .bin formats should also work, but I haven't tested them.
-
-The tool will try to read the game database from the default location to keep character and skill names up to date.  If you have the database in a different location, use the menu to browse for it.
-If you don't have the game database at all, the app has hardcoded data as a fallback but may be out of date.
+If you have the global Steam client installed, the app will try to read up-to-date
+names and skill data from the master mdb.  You can use the menu to browse for the mdb if
+you want to use it from a different location.  If you do not have an mdb available, it
+will fall back to hard coded data from the time of release.
 
 ## Usage
-Drag and drop one or more .json files containing TT results onto the app.  Every time you drop it will reset everything, so the best use is to drop a stack of races at once.
+Drag and drop one or more .json files containing TT results onto the app.  Every time you drop
+it will reset everything, so the best use is to drop a stack of races at once.
 
-If all of the results use the same roster, it will display all individual scores for every character in a normalized order.  These cells can be copy-pasted into spreadsheets for analysis.
-(for example, @harubanana's spreadsheet which was the inspiration for this tool: https://docs.google.com/spreadsheets/d/18NIXEu4MCYM5yRaQwRx5fSQxP9oarDotrn3oQHf2K94/edit?gid=733213549#gid=733213549
+### Team Trials
+The main use of this app is for analyzing Team Trials scores over a sufficient sample size to
+get an idea of who might be underperforming and is a candidate for replacing.
 
-If any of the dropped files have different rosters, the filenames and character names will be shown instead, to make it easy to spot the outliers and separate them.
+For full analysis, drop multiple Team Trials files that all contain the same team members.
+Any files with different teams will disable some of the analysis, but the Results tab will help
+identify which files are different.
 
-Besides the individual scores in table format, there are some built in analysis tools too:
+### Champions Meet, Room Match, and Practice Room
+These files can also be dropped in (but not mixed with Team Trials).  They will show skill and
+track data for all local player umas found in the files.  Duplicate veterans are differentiated
+by their rating score.
 
-The Analyze tab shows averaged normalized scores (opponent, support, and ace bonuses removed) to help see which characters are performing better or worse.
 
-It will also show hints if you have any characters that might be better for the ace position, but take this with a grain of salt if you don't have a large sample size.
+### Results Tab
+If you drop multiple Team Trials captures and they all contain the exact same roster, the
+Results tab will show individual and total scores in a normalized order grid for easy copy-paste into your
+favorite spreadsheet application.
+(for example, @harubanana's spreadsheet which was the inspiration for this tool: https://docs.google.com/spreadsheets/d/18NIXEu4MCYM5yRaQwRx5fSQxP9oarDotrn3oQHf2K94/edit?gid=733213549#gid=733213549)
 
-The Skills tab will show skill performance for individual characters.  You can sort this table by any of the columns.
-This can identify skills that are underperforming, such as proccing much less frequently than expected.
+If any of the dropped files have different rosters, the Results tab will show the filenames and character
+names will be shown instead, with any outliers (different umas, different running style, etc) highlighted.
+The Team Analysis tab will not be available, and the Skills/Tracks tabs will be limited to showing
+stats only for umas that are common to all of the files.  This allows you to examine larger
+samples for individual umas who have been on the team for a while even if other umas have
+changed.
+
+### Team Analysis Tab
+This tab is only active when you drop Team Trials files that all have the same team members.
+It shows different statistics on performance of each uma, with the scores normalized (bonuses
+removed) to make for more consistent comparison.
+
+If two or more umas are using the same running style in the same team, this will be highlighted.
+
+### Skills Tab
+This tab provides detailed information for an uma's skill activations across multiple races.
+This can be used to identify skills that are not proccing frequently enough, and which skills are
+underperforming in terms of average points per race.
+
+Select a specific uma from the dropdown.  The columns can be sorted.
+
+### Tracks Tab
+This tab provides detailed breakdowns of the uma's performance on individual tracks.  This can
+be used to identify tracks that are causing problems, especially if your uma is running out
+of stamina on the longer ones.

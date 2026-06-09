@@ -1,6 +1,8 @@
 using System.ComponentModel;
 using System.Drawing;
 using UmaBlobber.Analysis;
+using UmaBlobber.DataModel.ResponseData;
+using UmaBlobber.Import;
 using UmaBlobber.MasterData;
 using UmaBlobber.ObjectModel;
 using UmaBlobber.Ui;
@@ -12,14 +14,14 @@ namespace UmaBlobber
         private static readonly Dictionary<string, string> SkillsColumnTooltips = new(StringComparer.Ordinal)
         {
             ["Skill"] = "Skill name from master data.",
-            ["Pts/race"] = "Observed team-trial skill points per race (attributed score points ÷ races). Individual score values (500 white / 1200 gold / variable unique) are paired 1:1 to co-timed skill procs using event order (no sum-and-split). 1 Hz bulk ticks mean shared FrameTimes are common. Good-start bonus is excluded.",
-            ["Activations"] = "Total times this skill activated across all races in the sample.",
+            ["Pts/race"] = "Observed team-trial skill points per race (attributed score points ÷ races).",
+            ["Activations"] = "Total times this skill activated across all races.",
             ["≥1/race %"] = "Percent of races where the skill activated at least once.",
             ["Procs/race %"] = "Total activations ÷ races. Can exceed 100% when a skill procs more than once in a race.",
-            ["Δ wit"] = "≥1/race % minus expected wit activation rate for this uma. — = skill is not wit-gated.",
+            ["Δ wit"] = "≥1/race % minus expected wit rate for this uma. — = skill is not wit-gated.",
         };
 
-        private Dictionary<string, TeamTrialResult>? _skillsTrialResults;
+        private IReadOnlyDictionary<string, TeamTrialResult>? _skillsTrialResults;
         private List<(int TrainedCharaId, string Name)> _skillsRosterEntries = new();
         private SkillActivationReport? _lastSkillReport;
         private int _skillsWitDeltaColumnIndex = -1;
@@ -60,26 +62,70 @@ namespace UmaBlobber
             dataGridViewSkills.Rows.Clear();
             dataGridViewSkills.Columns.Clear();
             labelSkillsSummary.Text = string.Empty;
+
+            // Reset non-TT state so old data doesn't leak into TT loads
+            _currentSingleRaces?.Clear();
+            _currentNonTtIdentities?.Clear();
         }
 
         private void ComboBoxSkillsUma_SelectedIndexChanged(object? sender, EventArgs e)
         {
-            if (_skillsTrialResults == null || comboBoxSkillsUma.SelectedIndex < 0)
+            if (comboBoxSkillsUma.SelectedIndex < 0)
+                return;
+
+            if (_skillsTrialResults != null && comboBoxSkillsUma.SelectedIndex < _skillsRosterEntries.Count)
             {
+                // Classic TT path
+                var (trainedCharaId, name) = _skillsRosterEntries[comboBoxSkillsUma.SelectedIndex];
+                _lastSkillReport = SkillActivationAnalyzer.Analyze(
+                    _skillsTrialResults.Values,
+                    trainedCharaId,
+                    name);
+                BindSkillsGrid(_lastSkillReport);
                 return;
             }
 
-            if (comboBoxSkillsUma.SelectedIndex >= _skillsRosterEntries.Count)
+            // Non-TT path
+            if (_currentNonTtIdentities != null && comboBoxSkillsUma.SelectedIndex < _currentNonTtIdentities.Count && _currentSingleRaces != null)
             {
+                var selectedId = _currentNonTtIdentities[comboBoxSkillsUma.SelectedIndex];
+                var displayName = selectedId.GetDisplayName();
+
+                var apps = new List<RaceAppearance>();
+                foreach (var sr in _currentSingleRaces)
+                {
+                    foreach (var (id, horse) in sr.LocalPlayerHorses)
+                    {
+                        if (selectedId.IsSameUma(id))
+                        {
+                            // horse is already a fully materialized RaceHorseData (no JsonDocument dependency)
+                            // Minimal result is sufficient for Skills (only simulation events + horse stats are used)
+                            var dummyResult = new RaceResult();
+                            apps.Add(new RaceAppearance(dummyResult, sr.Simulation, horse));
+                        }
+                    }
+                }
+
+                if (apps.Count > 0)
+                {
+                    _lastSkillReport = SkillActivationAnalyzer.Analyze(apps, displayName);
+                    BindSkillsGrid(_lastSkillReport);
+                }
+                else
+                {
+                    labelSkillsSummary.Text = $"{displayName}: No appearances found.";
+                    dataGridViewSkills.Rows.Clear();
+                    dataGridViewSkills.Columns.Clear();
+                }
                 return;
             }
 
-            var (trainedCharaId, name) = _skillsRosterEntries[comboBoxSkillsUma.SelectedIndex];
-            _lastSkillReport = SkillActivationAnalyzer.Analyze(
-                _skillsTrialResults.Values,
-                trainedCharaId,
-                name);
-            BindSkillsGrid(_lastSkillReport);
+            // Fallback placeholder
+            if (comboBoxSkillsUma.SelectedIndex < _skillsRosterEntries.Count)
+            {
+                var (_, displayName) = _skillsRosterEntries[comboBoxSkillsUma.SelectedIndex];
+                labelSkillsSummary.Text = $"{displayName}: analysis not available for this selection.";
+            }
         }
 
         private void BindSkillsGrid(SkillActivationReport report)
@@ -88,8 +134,12 @@ namespace UmaBlobber
             dataGridViewSkills.Rows.Clear();
             _skillsWitDeltaColumnIndex = -1;
 
+            bool isTt = _skillsTrialResults != null;
+            bool showPoints = isTt;  // suppress Pts/race for non-TT (no equivalent scoring)
+
             AddSkillsColumn("Skill", typeof(string));
-            AddSkillsColumn("Pts/race", typeof(double));
+            if (showPoints)
+                AddSkillsColumn("Pts/race", typeof(double));
             AddSkillsColumn("Activations", typeof(int));
             AddSkillsColumn("≥1/race %", typeof(double));
             AddSkillsColumn("Procs/race %", typeof(double));
@@ -104,11 +154,12 @@ namespace UmaBlobber
                 var values = new List<object?>
                 {
                     row.SkillName,
-                    row.PointsPerRace,
-                    row.ActivationCount,
-                    row.PerRaceActivationRatePercent,
-                    row.ActivationRatePercent,
                 };
+                if (showPoints)
+                    values.Add(row.PointsPerRace);
+                values.Add(row.ActivationCount);
+                values.Add(row.PerRaceActivationRatePercent);
+                values.Add(row.ActivationRatePercent);
 
                 if (report.HasSkillLotMetadata)
                 {
@@ -119,15 +170,10 @@ namespace UmaBlobber
                 dataGridViewSkills.Rows[rowIndex].Tag = row;
             }
 
-            string lotNote = report.HasSkillLotMetadata
-                ? "Δ wit compares ≥1/race % to expected wit activation (— = not wit-gated)."
-                : "Regenerate embedded master data to enable wit delta column.";
-
             labelSkillsSummary.Text =
                 $"{report.UmaName}: {report.Rows.Count} skills, {report.RaceCount} race(s). " +
                 $"Click column headers to sort. " +
-                $"Avg wit {report.AverageWit} → {report.ExpectedWitPercentForUma:0.#}% activation rate when wit-gated. " +
-                $"Procs/race can exceed 100%. Good-start bonus (Focus/Concentration) is excluded. {lotNote}";
+                $"Avg wit {report.AverageWit} → {report.ExpectedWitPercentForUma:0.#}% activation rate. ";
 
             var ptsColumn = dataGridViewSkills.Columns["Pts/race"];
             if (ptsColumn != null)
