@@ -108,7 +108,9 @@ namespace UmaBlobber
                 .ThenByDescending(i => i.RankScore)
                 .ToList();
 
-            foreach (var id in ordered)
+            _currentNonTtIdentities = ordered;
+
+            foreach (var id in _currentNonTtIdentities)
             {
                 _skillsRosterEntries.Add((id.TrainedCharaId, id.GetDisplayName()));
                 comboBoxSkillsUma.Items.Add(id.GetDisplayName());
@@ -119,7 +121,7 @@ namespace UmaBlobber
             _tracksRosterEntries.Clear();
             comboBoxTracksUma.Items.Clear();
 
-            foreach (var id in ordered)
+            foreach (var id in _currentNonTtIdentities)
             {
                 _tracksRosterEntries.Add((id.TrainedCharaId, id.GetDisplayName()));
                 comboBoxTracksUma.Items.Add(id.GetDisplayName());
