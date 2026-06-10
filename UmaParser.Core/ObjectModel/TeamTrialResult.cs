@@ -58,6 +58,8 @@ namespace UmaBlobber.ObjectModel
 
         private Dictionary<int, RaceHorseData>? _raceRoster;
         private Dictionary<int, CharaResult>? _results;
+        private Dictionary<int, (int DistanceType, int RunningStyle)>? _rosterDetails;
+        private string? _rosterKey;
 
         /// <summary>
         /// Searches for the race result that corresponts to a given uma.
@@ -81,6 +83,7 @@ namespace UmaBlobber.ObjectModel
                 if (_raceRoster == null && Data != null)
                 {
                     _raceRoster = new();
+                    _rosterDetails = new();
                     var umas = Data.RaceStartParamsArray
                         .SelectMany(raceStart => raceStart.RaceHorseDataArray
                             .Where(uma => uma.TeamId == 1))
@@ -89,7 +92,10 @@ namespace UmaBlobber.ObjectModel
                         .ToList();
                     foreach (var uma in umas)
                     {
+                        int dist = FindRaceResultByUma(uma)?.DistanceType ?? 0;
+                        int style = uma.RunningStyle;
                         _raceRoster.Add(uma.TrainedCharaId, uma);
+                        _rosterDetails[uma.TrainedCharaId] = (dist, style);
                     }
                 }
                 return _raceRoster ?? new();
@@ -113,6 +119,37 @@ namespace UmaBlobber.ObjectModel
         /// style changes for the same veteran across files).
         /// </summary>
         public IReadOnlyList<int> RosterRunningStyles => RaceRoster.Values.Select(v => v.RunningStyle).ToList();
+
+        public string RosterCompositionKey
+        {
+            get
+            {
+                if (_rosterKey == null)
+                {
+                    var details = RosterDetails;  // force build if needed
+                    if (details.Count > 0)
+                    {
+                        var parts = details
+                            .OrderBy(kv => kv.Key)
+                            .Select(kv => $"{kv.Key}:{kv.Value.DistanceType}:{kv.Value.RunningStyle}");
+                        _rosterKey = string.Join("|", parts);
+                    }
+                }
+                return _rosterKey ?? string.Empty;
+            }
+        }
+
+        public IReadOnlyDictionary<int, (int DistanceType, int RunningStyle)> RosterDetails
+        {
+            get
+            {
+                if (_rosterDetails == null)
+                {
+                    _ = RaceRoster; // force build of details
+                }
+                return _rosterDetails ?? new Dictionary<int, (int DistanceType, int RunningStyle)>();
+            }
+        }
 
         /// <summary>
         /// Races in this trial where the given roster uma ran (team 1), with parsed scenario data.

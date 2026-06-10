@@ -44,11 +44,22 @@ samples for individual umas who have been on the team for a while even if other 
 changed.
 
 ### Team Analysis Tab
-This tab is only active when you drop Team Trials files that all have the same team members.
-It shows different statistics on performance of each uma, with the scores normalized (bonuses
-removed) to make for more consistent comparison.
+This tab is for comparing the performance of all 15 umas in your Team Trials squad across
+the sample set.  All scores on this tab are not including bonuses to make the comparisons
+more consistent.
 
-If two or more umas are using the same running style in the same team, this will be highlighted.
+Recommendations will be made for which umas are the least stable, conflicting running styles,
+and comparitive average within their team (for picking your ace).
+
+This tab is only active when you drop Team Trials files that all have a consistent roster.
+"Consistent" means that every uma on the roster:
+1. Is present in every file.
+2. Has the same running style in every file.
+3. Remains on the same team in every file (moving within the team is OK, even the ace slot).
+
+If all 15 umas are consistent, the team analysis tab will be enabled.
+If not all 15 umas are consistent, the team analysis tab will be disabled but the skills
+and tracks tabs will still be available for the consistent umas.
 
 ### Skills Tab
 This tab provides detailed information for an uma's skill activations across multiple races.

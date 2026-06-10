@@ -31,8 +31,9 @@ namespace UmaBlobber
         private void PopulateAnalysis(Dictionary<string, TeamTrialResult> trialResults)
         {
             var first = trialResults.First().Value;
+            var canonicalIds = first.RosterTrainedCharaIds;
             var rosterNames = first.RosterNames;
-            var scoreMatrix = BuildBaseScoreMatrix(trialResults.Values, rosterNames.Count);
+            var scoreMatrix = BuildBaseScoreMatrix(trialResults.Values, canonicalIds);
 
             _lastAnalysisReport = UmaAnalysisEngine.Analyze(rosterNames, scoreMatrix, first);
             BindAnalysisGrid(_lastAnalysisReport);
@@ -64,17 +65,36 @@ namespace UmaBlobber
 
         private static List<IReadOnlyList<double>> BuildBaseScoreMatrix(
             IEnumerable<TeamTrialResult> trials,
-            int umaCount)
+            IReadOnlyList<int> canonicalIds)
         {
-            var matrix = new List<IReadOnlyList<double>>(umaCount);
+            var matrix = new List<IReadOnlyList<double>>(canonicalIds.Count);
             var trialList = trials.ToList();
 
-            for (int uma = 0; uma < umaCount; uma++)
+            // Build id -> baseScore map per trial so we align by trainedCharaId (UmaIdentity)
+            // rather than by roster list position. This is required for cases where two umas
+            // on the same distance team swapped positions (incl. ace) between trials; their
+            // TeamMemberId changes, which permutes the order of RaceRoster / RosterBaseScores
+            // (sorted by DistanceType then TeamMemberId) while the set of (id, dist, style) is stable.
+            var trialBaseMaps = new List<Dictionary<int, int>>(trialList.Count);
+            foreach (var t in trialList)
             {
+                var ids = t.RosterTrainedCharaIds;
+                var bases = t.RosterBaseScores;
+                var map = new Dictionary<int, int>(ids.Count);
+                for (int j = 0; j < ids.Count; j++)
+                {
+                    map[ids[j]] = bases[j];
+                }
+                trialBaseMaps.Add(map);
+            }
+
+            for (int i = 0; i < canonicalIds.Count; i++)
+            {
+                int id = canonicalIds[i];
                 var scores = new double[trialList.Count];
                 for (int t = 0; t < trialList.Count; t++)
                 {
-                    scores[t] = trialList[t].RosterBaseScores[uma];
+                    scores[t] = trialBaseMaps[t].TryGetValue(id, out var b) ? b : 0;
                 }
                 matrix.Add(scores);
             }

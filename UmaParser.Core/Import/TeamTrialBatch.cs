@@ -72,8 +72,8 @@ public static class TeamTrialBatchBuilder
         }
 
         // Pure TT (original behavior preserved)
-        var firstRoster = trials.First().Value.RosterTrainedCharaIds;
-        bool rostersMatch = trials.Values.All(t => t.RosterTrainedCharaIds.SequenceEqual(firstRoster));
+        var firstKey = trials.First().Value.RosterCompositionKey;
+        bool rostersMatch = trials.Values.All(t => t.RosterCompositionKey == firstKey);
 
         return new TeamTrialBatch
         {

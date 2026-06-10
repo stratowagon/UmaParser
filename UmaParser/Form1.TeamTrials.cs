@@ -213,33 +213,39 @@ namespace UmaBlobber
             }
 
             // Compute stable core for Skills/Tracks in this mismatch TT batch:
-            // only umas that are present in EVERY file, in the exact same position (team),
-            // with the exact same running style.
+            // only umas that are present in EVERY file, always on the same team (distance),
+            // with the same running style. Position within the team may vary.
             // This allows useful analysis of long-term consistent umas without full roster uniformity.
+            // If one uma in a team changes, the other two can still be stable/pure.
             var stableCore = new List<(int TrainedCharaId, string DisplayName)>();
             if (n > 0)
             {
-                var firstIds = fileEntries[0].Value.RosterTrainedCharaIds;
+                var firstDetails = fileEntries[0].Value.RosterDetails;
                 var firstNames = fileEntries[0].Value.RosterNames;
-                var firstStyles = fileEntries[0].Value.RosterRunningStyles;
-                for (int p = 0; p < 15; p++)
+                var firstIds = fileEntries[0].Value.RosterTrainedCharaIds;
+                var nameById = new Dictionary<int, string>();
+                for (int i = 0; i < firstIds.Count; i++)
+                    nameById[firstIds[i]] = firstNames[i];
+
+                foreach (var (id, (dist, style)) in firstDetails)
                 {
-                    int refId = firstIds[p];
-                    int refStyle = firstStyles[p];
                     bool consistent = true;
                     for (int fi = 1; fi < n && consistent; fi++)
                     {
-                        var ids = fileEntries[fi].Value.RosterTrainedCharaIds;
-                        var styles = fileEntries[fi].Value.RosterRunningStyles;
-                        if (ids[p] != refId || styles[p] != refStyle)
+                        var otherDetails = fileEntries[fi].Value.RosterDetails;
+                        if (!otherDetails.TryGetValue(id, out var other) ||
+                            other.DistanceType != dist ||
+                            other.RunningStyle != style)
+                        {
                             consistent = false;
+                        }
                     }
                     if (consistent)
                     {
-                        string team = GetTeamNameForPosition(p);
-                        string styleStr = FormatRunningStyle(refStyle);
-                        string display = $"{team}: {firstNames[p]} ({styleStr})";
-                        stableCore.Add((refId, display));
+                        string team = GetTeamNameForPositionByDistance(dist);
+                        string styleStr = FormatRunningStyle(style);
+                        string display = $"{team}: {nameById[id]} ({styleStr})";
+                        stableCore.Add((id, display));
                     }
                 }
             }
@@ -263,7 +269,7 @@ namespace UmaBlobber
                 if (comboBoxTracksUma.Items.Count > 0)
                     comboBoxTracksUma.SelectedIndex = 0;
 
-                labelSkillsSummary.Text = $"{stableCore.Count} consistent uma(s) across all {n} files (same position + style).";
+                labelSkillsSummary.Text = $"{stableCore.Count} consistent uma(s) across all {n} files (same team + style; position within team may vary).";
                 labelTracksSummary.Text = $"{stableCore.Count} consistent uma(s) for track performance.";
             }
             else
@@ -301,6 +307,19 @@ namespace UmaBlobber
             };
         }
 
+        private string GetTeamNameForPositionByDistance(int distanceType)
+        {
+            return distanceType switch
+            {
+                1 => "Sprint",
+                2 => "Mile",
+                3 => "Medium",
+                4 => "Long",
+                5 => "Dirt",
+                _ => "?"
+            };
+        }
+
         private string FormatRunningStyle(int style)
         {
             return style switch
@@ -331,10 +350,13 @@ namespace UmaBlobber
 
             SetGridSize(columnNames, 16);
 
-            var names = trials.First().Value.RosterNames;
-            for (int i = 0; i < names.Count; i++)
+            var first = trials.First().Value;
+            var canonicalIds = first.RosterTrainedCharaIds;
+            var canonicalNames = first.RosterNames;
+
+            for (int i = 0; i < canonicalNames.Count; i++)
             {
-                SetCellValue(0, i, names[i]);
+                SetCellValue(0, i, canonicalNames[i]);
             }
 
             SetCellValue(0, 15, "Total");
@@ -342,10 +364,19 @@ namespace UmaBlobber
             int scoreColumn = 1;
             foreach (var trial in trials.Values)
             {
-                var scores = trial.RosterScores;
-                for (int i = 0; i < scores.Count; i++)
+                var tIds = trial.RosterTrainedCharaIds;
+                var tScores = trial.RosterScores;
+                var scoreMap = new Dictionary<int, int>();
+                for (int j = 0; j < tIds.Count; j++)
                 {
-                    SetCellValue(scoreColumn, i, scores[i]);
+                    scoreMap[tIds[j]] = tScores[j];
+                }
+
+                for (int i = 0; i < canonicalIds.Count; i++)
+                {
+                    int id = canonicalIds[i];
+                    int sc = scoreMap.TryGetValue(id, out var s) ? s : 0;
+                    SetCellValue(scoreColumn, i, sc);
                 }
 
                 SetCellValue(scoreColumn, 15, trial.TotalScore);
