@@ -13,13 +13,9 @@ namespace UmaBlobber
 
         private void UpdateViewMenuChecks(string active)
         {
-            viewSystemMenuItem.Checked = active == AppColorMode.System;
             viewLightMenuItem.Checked = active == AppColorMode.Light;
             viewDarkMenuItem.Checked = active == AppColorMode.Dark;
         }
-
-        private void ViewSystemMenuItem_Click(object? sender, EventArgs e) =>
-            ApplyViewColorMode(AppColorMode.System);
 
         private void ViewLightMenuItem_Click(object? sender, EventArgs e) =>
             ApplyViewColorMode(AppColorMode.Light);

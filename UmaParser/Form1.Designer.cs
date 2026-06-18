@@ -31,7 +31,6 @@ namespace UmaBlobber
             backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             menuStrip1 = new MenuStrip();
             viewToolStripMenuItem = new ToolStripMenuItem();
-            viewSystemMenuItem = new ToolStripMenuItem();
             viewLightMenuItem = new ToolStripMenuItem();
             viewDarkMenuItem = new ToolStripMenuItem();
             masterDataToolStripMenuItem = new ToolStripMenuItem();
@@ -43,7 +42,7 @@ namespace UmaBlobber
             masterDataOpenFolderMenuItem = new ToolStripMenuItem();
             mainSplitContainer = new SplitContainer();
             statusTextBox = new TextBox();
-            mainTabControl = new TabControl();
+            mainTabControl = new Ui.ThemedTabControl();
             tabPageResults = new TabPage();
             panelResultsEmpty = new Panel();
             labelResultsWelcome = new Label();
@@ -92,17 +91,10 @@ namespace UmaBlobber
             // 
             // viewToolStripMenuItem
             // 
-            viewToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { viewSystemMenuItem, viewLightMenuItem, viewDarkMenuItem });
+            viewToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { viewLightMenuItem, viewDarkMenuItem });
             viewToolStripMenuItem.Name = "viewToolStripMenuItem";
             viewToolStripMenuItem.Size = new Size(44, 20);
             viewToolStripMenuItem.Text = "View";
-            // 
-            // viewSystemMenuItem
-            // 
-            viewSystemMenuItem.Name = "viewSystemMenuItem";
-            viewSystemMenuItem.Size = new Size(180, 22);
-            viewSystemMenuItem.Text = "System";
-            viewSystemMenuItem.Click += ViewSystemMenuItem_Click;
             // 
             // viewLightMenuItem
             // 
@@ -462,7 +454,6 @@ namespace UmaBlobber
 
         private MenuStrip menuStrip1;
         private ToolStripMenuItem viewToolStripMenuItem;
-        private ToolStripMenuItem viewSystemMenuItem;
         private ToolStripMenuItem viewLightMenuItem;
         private ToolStripMenuItem viewDarkMenuItem;
         private ToolStripMenuItem masterDataToolStripMenuItem;
@@ -475,7 +466,7 @@ namespace UmaBlobber
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private SplitContainer mainSplitContainer;
         private TextBox statusTextBox;
-        private TabControl mainTabControl;
+        private Ui.ThemedTabControl mainTabControl;
         private TabPage tabPageResults;
         private Panel panelResultsEmpty;
         private Label labelResultsWelcome;

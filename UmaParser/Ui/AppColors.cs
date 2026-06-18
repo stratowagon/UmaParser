@@ -1,11 +1,9 @@
 using System.Drawing;
-using UmaBlobber.Ui;
 
 namespace UmaBlobber.Ui;
 
 /// <summary>
-/// Centralized semantic color palette that adapts to the current light/dark mode
-/// (including when ColorMode is set to "System").
+/// Centralized semantic color palette that adapts to the selected light/dark mode.
 /// 
 /// Use these for consistent severity / status backgrounds across tabs (Analysis, Skills, Performance, etc.).
 /// Foreground is chosen for good contrast on the corresponding background.
@@ -28,8 +26,27 @@ internal static class AppColors
     private static readonly Color DarkNeedsWorkFore = Color.Black;   // amber is light enough for dark text
     private static readonly Color DarkCriticalFore = Color.White;
 
-    /// <summary>True when the app is currently in (or following system) dark mode.</summary>
     public static bool IsDark => AppColorMode.IsDarkMode;
+
+    // ===== Shell / chrome palette =====
+
+    public static Color WindowBack => IsDark ? Color.FromArgb(32, 32, 32) : SystemColors.Control;
+    public static Color WindowFore => IsDark ? Color.FromArgb(241, 241, 241) : SystemColors.ControlText;
+    public static Color MutedFore => IsDark ? Color.FromArgb(160, 160, 160) : SystemColors.GrayText;
+    public static Color InputBack => IsDark ? Color.FromArgb(45, 45, 48) : SystemColors.Window;
+    public static Color InputFore => IsDark ? Color.FromArgb(241, 241, 241) : SystemColors.WindowText;
+    public static Color MenuBack => IsDark ? Color.FromArgb(45, 45, 48) : SystemColors.Menu;
+    public static Color MenuFore => IsDark ? Color.FromArgb(241, 241, 241) : SystemColors.MenuText;
+    public static Color TabInactiveBack => IsDark ? Color.FromArgb(55, 55, 58) : SystemColors.ControlLight;
+    public static Color SplitterBack => IsDark ? Color.FromArgb(60, 60, 60) : SystemColors.ControlDark;
+
+    public static Color GridBack => IsDark ? Color.FromArgb(32, 32, 32) : SystemColors.Window;
+    public static Color GridFore => IsDark ? Color.FromArgb(241, 241, 241) : SystemColors.WindowText;
+    public static Color GridHeaderBack => IsDark ? Color.FromArgb(55, 55, 58) : SystemColors.Control;
+    public static Color GridHeaderFore => IsDark ? Color.FromArgb(241, 241, 241) : SystemColors.ControlText;
+    public static Color GridLine => IsDark ? Color.FromArgb(70, 70, 74) : SystemColors.ControlDark;
+    public static Color GridSelectionBack => IsDark ? Color.FromArgb(38, 79, 120) : SystemColors.Highlight;
+    public static Color GridSelectionFore => IsDark ? Color.White : SystemColors.HighlightText;
 
     // ===== Public semantic colors (backgrounds for severity / status) =====
 

@@ -15,7 +15,7 @@ internal sealed class GameMasterSettings
     /// <summary><see cref="FormWindowState"/> name, e.g. Normal or Maximized.</summary>
     public string? WindowState { get; set; }
 
-    /// <summary>Appearance: System, Light, or Dark. Null/empty = System.</summary>
+    /// <summary>Appearance: Light or Dark. Null/empty/System = Light.</summary>
     public string? ColorMode { get; set; }
 
     public static GameMasterSettings Load()

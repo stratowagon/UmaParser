@@ -2,12 +2,23 @@ using System.Text.Json;
 using UmaBlobber.Analysis;
 using UmaBlobber.DataModel.RaceScenario;
 using UmaBlobber.DataModel.ResponseData;
+using UmaBlobber.Import;
 using UmaBlobber.MasterData;
 using UmaBlobber.ObjectModel;
 
 string path = args.Length > 0
     ? args[0]
-    : @"C:\Users\strat\Documents\Saved races\Team Trials\TT-20260603_104707_088.json";
+    : Directory.EnumerateFiles(CapturePaths.DefaultTeamTrialsSaveFolder, "*.json", SearchOption.AllDirectories)
+        .OrderByDescending(File.GetLastWriteTimeUtc)
+        .FirstOrDefault()
+    ?? string.Empty;
+
+if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+{
+    Console.WriteLine("Usage: SkillProbe <path-to-tt-json>");
+    Console.WriteLine($"Default folder: {CapturePaths.DefaultTeamTrialsSaveFolder}");
+    return 1;
+}
 
 GameMasterService.Current.Initialize();
 
@@ -27,14 +38,12 @@ int gate = appearance.Horse.FrameOrder;
 Console.WriteLine($"Uma chara={horse.CharaId} trained={horse.TrainedCharaId} frame_order={gate}");
 Console.WriteLine($"Skills on card: {appearance.Horse.SkillArray.Count}");
 
-var skillEvents = appearance.Simulation.Events
-    .Where(e => e.Type == SimulateEventType.Skill && e.Params.Count >= 2)
-    .ToList();
+var skillEvents = appearance.Simulation.SkillEvents.ToList();
 
 Console.WriteLine($"Total skill events in race: {skillEvents.Count}");
-foreach (var g in skillEvents.GroupBy(e => e.Params[0]).OrderBy(g => g.Key))
+foreach (var g in skillEvents.GroupBy(e => e.HorseIndex).OrderBy(g => g.Key))
 {
-    Console.WriteLine($"  param0={g.Key}: {g.Count()} events, ids={string.Join(",", g.Select(e => e.Params[1]).Distinct().Take(6))}");
+    Console.WriteLine($"  horseIndex={g.Key}: {g.Count()} events, ids={string.Join(",", g.Select(e => e.SkillId).Distinct().Take(6))}");
 }
 
 var report = SkillActivationAnalyzer.Analyze([tt], horse.TrainedCharaId, "probe");

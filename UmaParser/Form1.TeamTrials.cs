@@ -1,6 +1,7 @@
 using System.Text.Json;
 using UmaBlobber.Import;
 using UmaBlobber.ObjectModel;
+using UmaBlobber.Ui;
 
 namespace UmaBlobber
 {
@@ -150,6 +151,8 @@ namespace UmaBlobber
         {
             var trials = batch.Trials;
             _gridDisplayMode = GridDisplayMode.RosterMismatch;
+            ResultsGridHeaders.ApplyCompactHeaderLayout(dataGridView1);
+            dataGridView1.ShowCellToolTips = true;
             SetStatus(BuildImportStatusMessage(
                 "Roster mismatch — compare columns to find outlier files. Analysis skipped.",
                 batch.SkippedFileCount));
@@ -175,7 +178,6 @@ namespace UmaBlobber
 
             // Largest group is the "majority" roster
             var majorityEntry = rosterGroups.OrderByDescending(g => g.Value.Count).First();
-            string majKey = majorityEntry.Key;
             var majFileIndices = majorityEntry.Value;
 
             var majTrial = fileEntries[majFileIndices[0]].Value;
@@ -197,17 +199,18 @@ namespace UmaBlobber
             for (int fi = 0; fi < n; fi++)
             {
                 var trial = fileEntries[fi].Value;
+                if (trial.RosterCompositionKey == majTrial.RosterCompositionKey)
+                {
+                    continue;
+                }
+
                 var fIds = trial.RosterTrainedCharaIds;
                 var fStyles = trial.RosterRunningStyles;
-
-                string thisKey = string.Join(",", fIds);
-                if (thisKey == majKey)
-                    continue; // no highlights for files in the majority group
 
                 for (int p = 0; p < 15; p++)
                 {
                     bool idDiff = fIds[p] != majIds[p];
-                    bool styleDiff = !idDiff && fStyles[p] != refStyles[p];
+                    bool styleDiff = fStyles[p] != refStyles[p];
                     _mismatchOutliers[fi, p] = idDiff || styleDiff;
                 }
             }
@@ -282,7 +285,8 @@ namespace UmaBlobber
             for (int c = 0; c < n; c++)
             {
                 var (fileName, trial) = fileEntries[c];
-                dataGridView1.Columns[c].HeaderText = fileName;
+                dataGridView1.Columns[c].HeaderText = ResultsGridHeaders.FormatCompact(fileName);
+                dataGridView1.Columns[c].ToolTipText = fileName;
                 for (int row = 0; row < trial.RosterNames.Count; row++)
                 {
                     SetCellValue(c, row, trial.RosterNames[row]);
@@ -335,6 +339,7 @@ namespace UmaBlobber
         private void BindRosterStats(TeamTrialBatch batch)
         {
             var trials = batch.Trials;
+            var fileEntries = trials.ToList();
             _gridDisplayMode = GridDisplayMode.RosterStats;
             _mismatchOutliers = null;
             _mismatchFileCount = 0;
@@ -342,15 +347,20 @@ namespace UmaBlobber
                 $"{trials.Count} team trial file(s) loaded.",
                 batch.SkippedFileCount));
 
+            ResultsGridHeaders.ApplyCompactHeaderLayout(dataGridView1);
+            dataGridView1.ShowCellToolTips = true;
+
             var columnNames = new List<string> { "Name" };
-            for (int i = 0; i < trials.Count; i++)
-            {
-                columnNames.Add((i + 1).ToString());
-            }
+            columnNames.AddRange(fileEntries.Select(entry => ResultsGridHeaders.FormatCompact(entry.Key)));
 
             SetGridSize(columnNames, 16);
 
-            var first = trials.First().Value;
+            for (int i = 0; i < fileEntries.Count; i++)
+            {
+                dataGridView1.Columns[i + 1].ToolTipText = fileEntries[i].Key;
+            }
+
+            var first = fileEntries[0].Value;
             var canonicalIds = first.RosterTrainedCharaIds;
             var canonicalNames = first.RosterNames;
 
@@ -362,7 +372,7 @@ namespace UmaBlobber
             SetCellValue(0, 15, "Total");
 
             int scoreColumn = 1;
-            foreach (var trial in trials.Values)
+            foreach (var (_, trial) in fileEntries)
             {
                 var tIds = trial.RosterTrainedCharaIds;
                 var tScores = trial.RosterScores;

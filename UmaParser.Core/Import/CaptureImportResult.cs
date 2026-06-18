@@ -5,6 +5,10 @@ namespace UmaBlobber.Import;
 public sealed class CaptureImportResult
 {
     public required string FileName { get; init; }
+
+    /// <summary>UTC last-write time of the source file on disk, when imported via path.</summary>
+    public DateTime? SourceFileLastWriteTimeUtc { get; init; }
+
     public ImportStatus Status { get; init; }
     public UmaApiResponse? Response { get; init; }
     public string? ResponseTypeName { get; init; }
@@ -39,4 +43,18 @@ public sealed class CaptureImportResult
     /// Best-effort label for the kind of single race (e.g. "Champions", "RoomMatch", "Practice").
     /// </summary>
     public string? SingleRaceType { get; init; }
+
+    public CaptureImportResult WithFileTimestamp(DateTime utc) => new()
+    {
+        FileName = FileName,
+        SourceFileLastWriteTimeUtc = utc,
+        Status = Status,
+        Response = Response,
+        ResponseTypeName = ResponseTypeName,
+        ErrorMessage = ErrorMessage,
+        IsSingleRace = IsSingleRace,
+        SingleRaceNormalizedJson = SingleRaceNormalizedJson,
+        SingleRaceSimDataBase64 = SingleRaceSimDataBase64,
+        SingleRaceType = SingleRaceType,
+    };
 }

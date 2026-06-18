@@ -31,7 +31,7 @@ public static class TeamTrialBatchBuilder
 {
     public static TeamTrialBatch Build(IEnumerable<CaptureImportResult> imports)
     {
-        var trials = new Dictionary<string, TeamTrialResult>();
+        var trialImports = new List<(CaptureImportResult Import, TeamTrialResult Trial)>();
         var singleRaces = new List<CaptureImportResult>();
         int skipped = 0;
 
@@ -39,7 +39,7 @@ public static class TeamTrialBatchBuilder
         {
             if (import.Response is TeamTrialResult trial)
             {
-                trials[import.FileName] = trial;
+                trialImports.Add((import, trial));
             }
             else if (import.IsSingleRace && import.Status == ImportStatus.Success && !string.IsNullOrWhiteSpace(import.SingleRaceSimDataBase64))
             {
@@ -51,13 +51,22 @@ public static class TeamTrialBatchBuilder
             }
         }
 
-        if (trials.Count == 0 && singleRaces.Count == 0)
+        if (trialImports.Count == 0 && singleRaces.Count == 0)
         {
             return new TeamTrialBatch
             {
                 Kind = TeamTrialBatchKind.Empty,
                 SkippedFileCount = skipped,
             };
+        }
+
+        trialImports.Sort((a, b) => CompareImportsChronologically(a.Import, b.Import));
+        singleRaces.Sort(CompareImportsChronologically);
+
+        var trials = new Dictionary<string, TeamTrialResult>();
+        foreach (var (import, trial) in trialImports)
+        {
+            trials[import.FileName] = trial;
         }
 
         if (singleRaces.Count > 0)
@@ -72,8 +81,8 @@ public static class TeamTrialBatchBuilder
         }
 
         // Pure TT (original behavior preserved)
-        var firstKey = trials.First().Value.RosterCompositionKey;
-        bool rostersMatch = trials.Values.All(t => t.RosterCompositionKey == firstKey);
+        var firstKey = trialImports[0].Trial.RosterCompositionKey;
+        bool rostersMatch = trialImports.All(entry => entry.Trial.RosterCompositionKey == firstKey);
 
         return new TeamTrialBatch
         {
@@ -82,5 +91,15 @@ public static class TeamTrialBatchBuilder
             SingleRaceImports = Array.Empty<CaptureImportResult>(),
             SkippedFileCount = skipped,
         };
+    }
+
+    private static int CompareImportsChronologically(CaptureImportResult a, CaptureImportResult b)
+    {
+        DateTime aTime = a.SourceFileLastWriteTimeUtc ?? DateTime.MaxValue;
+        DateTime bTime = b.SourceFileLastWriteTimeUtc ?? DateTime.MaxValue;
+        int timeCompare = aTime.CompareTo(bTime);
+        return timeCompare != 0
+            ? timeCompare
+            : string.Compare(a.FileName, b.FileName, StringComparison.OrdinalIgnoreCase);
     }
 }

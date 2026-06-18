@@ -141,14 +141,23 @@ namespace UmaBlobber.DataModel.RaceScenario
 
         private static RaceSimulateEventData ReadEvent(BinaryReader br)
         {
-            var ev = new RaceSimulateEventData
+            float frameTime = br.ReadSingle();
+            var type = (SimulateEventType)br.ReadByte();
+            byte paramCount = br.ReadByte();
+
+            var ev = type switch
             {
-                FrameTime = br.ReadSingle(),
-                Type = (SimulateEventType)br.ReadByte(),
-                ParamCount = br.ReadByte()
+                SimulateEventType.Skill => new SkillSimulateEvent(),
+                SimulateEventType.Score => new ScoreSimulateEvent(),
+                // Add more specific subclasses here as their Params layouts are reverse-engineered.
+                _ => new RaceSimulateEventData()
             };
 
-            for (int p = 0; p < ev.ParamCount; p++)
+            ev.FrameTime = frameTime;
+            ev.Type = type;
+            ev.ParamCount = paramCount;
+
+            for (int p = 0; p < paramCount; p++)
             {
                 ev.Params.Add(br.ReadInt32());
             }

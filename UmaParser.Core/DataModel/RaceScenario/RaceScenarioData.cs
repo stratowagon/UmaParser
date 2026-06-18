@@ -102,8 +102,21 @@ namespace UmaBlobber.DataModel.RaceScenario
 
         /// <summary>
         /// Array of events that occurred during the race.
+        /// The concrete type of each element may be a more specific subclass (e.g. <see cref="SkillSimulateEvent"/>)
+        /// depending on <see cref="RaceSimulateEventData.Type"/>.
         /// </summary>
         public List<RaceSimulateEventData> Events { get; set; } = new();
+
+        /// <summary>
+        /// Strongly-typed view over all <see cref="SimulateEventType.Skill"/> events in this race.
+        /// Use this (or LINQ <c>OfType&lt;SkillSimulateEvent&gt;()</c>) instead of manually filtering by Type + indexing Params.
+        /// </summary>
+        public IEnumerable<SkillSimulateEvent> SkillEvents => Events.OfType<SkillSimulateEvent>();
+
+        /// <summary>
+        /// Strongly-typed view over all <see cref="SimulateEventType.Score"/> events in this race.
+        /// </summary>
+        public IEnumerable<ScoreSimulateEvent> ScoreEvents => Events.OfType<ScoreSimulateEvent>();
 
         // Unknown/padding regions
         public int PaddingSize1 { get; set; }
@@ -324,7 +337,64 @@ namespace UmaBlobber.DataModel.RaceScenario
 
         /// <summary>
         /// List of int32 parameters for this event.  Size and meaning depend on event type.
+        /// Raw access is provided for debugging and for event types that do not yet have a dedicated subclass.
         /// </summary>
         public List<int> Params { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Skill activation event (<see cref="SimulateEventType.Skill"/>).
+    /// <para>
+    /// Params layout: <c>[horseIndex (0-based, gate order), skillId]</c>
+    /// </para>
+    /// </summary>
+    public sealed class SkillSimulateEvent : RaceSimulateEventData
+    {
+        /// <summary>0-based horse index in gate order (matches <see cref="RaceHorseData.FrameOrder"/> - 1).</summary>
+        public int HorseIndex => Params.Count > 0 ? Params[0] : -1;
+
+        /// <summary>The activated skill's master ID.</summary>
+        public int SkillId => Params.Count > 1 ? Params[1] : 0;
+
+        /// <summary>
+        /// Skill duration, in 10000ths of a second (0.1ms).  Modifers already included.
+        /// Frame-0 skills like greens can be -1, but triggered skills like groundwork
+        /// may also report -1 in frame 0.
+        /// </summary>
+        public int Duration => Params.Count > 2 ? Params[2] : -2;
+
+        /// <summary>
+        /// Version of skill effect, if there is more than 1.
+        /// </summary>
+        public int Version => Params.Count > 3 ? Params[3] : -1;
+
+        /// <summary>
+        /// Bitmask of targets for effect 1.  If skills have more than 1 effect, the targets
+        /// are not included :(
+        /// </summary>
+        public int Targets => Params.Count > 4 ? Params[4] : -1;
+    }
+
+    /// <summary>
+    /// Score / point award event (<see cref="SimulateEventType.Score"/>).
+    /// Primarily used in Team Trials for attributing skill activation points (condition type 8)
+    /// and other race performance scoring.
+    /// <para>
+    /// Params layout: <c>[horseIndex (0-based), rawScoreId (see team_stadium_raw_score.id), points]</c>
+    /// </para>
+    /// </summary>
+    public sealed class ScoreSimulateEvent : RaceSimulateEventData
+    {
+        /// <summary>0-based horse index in gate order.</summary>
+        public int HorseIndex => Params.Count > 0 ? Params[0] : -1;
+
+        /// <summary>
+        /// The raw score type ID (from team_stadium_raw_score). For skill activations this is the
+        /// condition-8 bucket (historically 26-57, now loaded from master data).
+        /// </summary>
+        public int RawScoreId => Params.Count > 1 ? Params[1] : 0;
+
+        /// <summary>Points awarded by this score event.</summary>
+        public int Points => Params.Count > 2 ? Params[2] : 0;
     }
 }

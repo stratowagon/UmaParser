@@ -10,24 +10,22 @@ public static class CaptureImportService
     {
         string fileName = Path.GetFileName(filePath);
         string extension = Path.GetExtension(filePath);
+        DateTime lastWriteUtc = File.GetLastWriteTimeUtc(filePath);
 
         try
         {
-            if (extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
+            CaptureImportResult result = extension.ToLowerInvariant() switch
             {
-                return TryImport(fileName, jsonText: File.ReadAllText(filePath));
-            }
+                ".json" => TryImport(fileName, jsonText: File.ReadAllText(filePath)),
+                ".bin" => TryImport(fileName, binData: File.ReadAllBytes(filePath)),
+                _ => UnsupportedExtension(fileName, extension),
+            };
 
-            if (extension.Equals(".bin", StringComparison.OrdinalIgnoreCase))
-            {
-                return TryImport(fileName, binData: File.ReadAllBytes(filePath));
-            }
-
-            return UnsupportedExtension(fileName, extension);
+            return result.WithFileTimestamp(lastWriteUtc);
         }
         catch (Exception ex)
         {
-            return Failed(fileName, ImportStatus.InvalidFormat, ex.Message);
+            return Failed(fileName, ImportStatus.InvalidFormat, ex.Message).WithFileTimestamp(lastWriteUtc);
         }
     }
 

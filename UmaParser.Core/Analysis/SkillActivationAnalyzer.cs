@@ -245,19 +245,12 @@ public static class SkillActivationAnalyzer
     {
         int gate = appearance.Horse.FrameOrder;
 
-        foreach (var ev in appearance.Simulation.Events)
+        foreach (var skill in appearance.Simulation.SkillEvents)
         {
-            if (ev.Type != SimulateEventType.Skill || ev.Params.Count < 2)
+            if (MatchesGate(gate, skill.HorseIndex))
             {
-                continue;
+                yield return skill.SkillId;
             }
-
-            if (!MatchesGate(gate, ev.Params[0]))
-            {
-                continue;
-            }
-
-            yield return ev.Params[1];
         }
     }
 

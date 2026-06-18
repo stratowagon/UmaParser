@@ -70,6 +70,7 @@ namespace UmaBlobber
             DataGridViewColumnHeaderPaint.EnableThemedSortGlyphs(dataGridView1);
             InitializeViewMenu();
             InitializeMasterDataUi();
+            AppThemeApplier.Apply(this);
         }
 
         private void Form1_DragEnter(object sender, DragEventArgs e)
@@ -302,7 +303,15 @@ namespace UmaBlobber
                 column.SortMode = DataGridViewColumnSortMode.NotSortable;
             }
 
-            dataGridView1.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+            if (_gridDisplayMode is GridDisplayMode.RosterStats or GridDisplayMode.RosterMismatch)
+            {
+                dataGridView1.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCellsExceptHeader);
+            }
+            else
+            {
+                dataGridView1.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+            }
+
             ClearGridSelection(dataGridView1);
         }
 

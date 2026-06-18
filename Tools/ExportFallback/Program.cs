@@ -169,6 +169,209 @@ if (analyzeMode)
     return 0;
 }
 
+bool skillMode = args.Any(a => a.Equals("--skill-set", StringComparison.OrdinalIgnoreCase) || a.Equals("--tt-npcs", StringComparison.OrdinalIgnoreCase) || a.Equals("--npc-skills", StringComparison.OrdinalIgnoreCase));
+if (skillMode)
+{
+    Console.WriteLine("=== skill_set table inspection (looking for TT NPC pools) ===");
+
+    // Print schema
+    using (var cmd = connection.CreateCommand())
+    {
+        cmd.CommandText = "PRAGMA table_info(skill_set);";
+        using var r = cmd.ExecuteReader();
+        Console.WriteLine("Columns in skill_set:");
+        while (r.Read())
+        {
+            Console.WriteLine($"  col{r.GetInt32(0)}: {r.GetString(1)} ({r.GetString(2)})");
+        }
+    }
+
+    // Total rows
+    using (var cmd = connection.CreateCommand())
+    {
+        cmd.CommandText = "SELECT COUNT(*) FROM skill_set;";
+        long count = (long)cmd.ExecuteScalar();
+        Console.WriteLine($"\nTotal rows in skill_set: {count}");
+    }
+
+    // Sample some rows
+    Console.WriteLine("\nSample rows (first 30):");
+    using (var cmd = connection.CreateCommand())
+    {
+        cmd.CommandText = "SELECT * FROM skill_set LIMIT 30;";
+        using var r = cmd.ExecuteReader();
+        int row = 0;
+        while (r.Read())
+        {
+            row++;
+            var vals = new List<string>();
+            for (int i = 0; i < r.FieldCount; i++)
+            {
+                vals.Add($"{r.GetName(i)}={r.GetValue(i)}");
+            }
+            Console.WriteLine($"  [{row}] {string.Join(" | ", vals)}");
+        }
+    }
+
+    // Find related tables for TT / NPC / trained chara skill sets
+    Console.WriteLine("\nRelevant tables (skill, npc, team_stadium, trained, chara):");
+    using (var cmd = connection.CreateCommand())
+    {
+        cmd.CommandText = @"
+            SELECT name FROM sqlite_master 
+            WHERE type='table' 
+            AND (name LIKE '%skill%' 
+                 OR name LIKE '%npc%' 
+                 OR name LIKE '%team_stadium%' 
+                 OR name LIKE '%trained%' 
+                 OR name LIKE '%chara%')
+            ORDER BY name;";
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+        {
+            Console.WriteLine($"  {r.GetString(0)}");
+        }
+    }
+
+    // Try to find if skill_set has a 'type' or scenario or condition for TT
+    Console.WriteLine("\nDistinct values in potential filter columns (if exist):");
+    string[] possibleCols = { "type", "scenario", "mode", "category", "team_stadium", "condition", "race_type", "npc" };
+    foreach (string col in possibleCols)
+    {
+        try
+        {
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText = $"SELECT DISTINCT [{col}] FROM skill_set WHERE [{col}] IS NOT NULL LIMIT 20;";
+            using var r = cmd.ExecuteReader();
+            var vals = new List<string>();
+            while (r.Read()) vals.Add(r.GetValue(0).ToString());
+            if (vals.Count > 0)
+                Console.WriteLine($"  {col}: {string.Join(", ", vals)}");
+        }
+        catch { }
+    }
+
+    // Look for TT specific tables
+    Console.WriteLine("\nTrying to find TT NPC skill set references (tables with 'team' or 'stadium' or 'npc' + skill):");
+    using (var cmd = connection.CreateCommand())
+    {
+        cmd.CommandText = @"
+            SELECT name FROM sqlite_master 
+            WHERE type IN ('table','view') 
+            AND (name LIKE '%team%' OR name LIKE '%stadium%' OR name LIKE '%npc%')
+            ORDER BY name;";
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+        {
+            string tname = r.GetString(0);
+            Console.WriteLine($"  Table: {tname}");
+            try
+            {
+                using var c2 = connection.CreateCommand();
+                c2.CommandText = $"PRAGMA table_info({tname});";
+                using var r2 = c2.ExecuteReader();
+                var cols = new List<string>();
+                while (r2.Read()) cols.Add(r2.GetString(1));
+                Console.WriteLine($"    cols: {string.Join(", ", cols)}");
+                // Sample
+                using var c3 = connection.CreateCommand();
+                c3.CommandText = $"SELECT * FROM {tname} LIMIT 5;";
+                using var r3 = c3.ExecuteReader();
+                int s = 0;
+                while (r3.Read() && s < 3)
+                {
+                    s++;
+                    var v = new List<string>();
+                    for(int i=0; i< r3.FieldCount && i<5; i++) v.Add(r3.GetName(i)+"="+r3.GetValue(i));
+                    Console.WriteLine($"    sample: {string.Join(" | ", v)}");
+                }
+            }
+            catch(Exception ex) { Console.WriteLine($"    (query error: {ex.Message})"); }
+        }
+    }
+
+    Console.WriteLine("\n=== skill_set inspection complete ===");
+
+    // Additional: find skill sets specifically used for team_stadium (TT) NPCs
+    Console.WriteLine("\n\n=== TT (team_stadium) specific NPC skill sets ===");
+    try
+    {
+        // Find tables related to team_stadium that reference skill_set
+        using (var cmd = connection.CreateCommand())
+        {
+            cmd.CommandText = @"
+                SELECT name FROM sqlite_master 
+                WHERE type='table' AND name LIKE '%team_stadium%' 
+                ORDER BY name;";
+            using var r = cmd.ExecuteReader();
+            while (r.Read())
+            {
+                string t = r.GetString(0);
+                try
+                {
+                    using var c2 = connection.CreateCommand();
+                    c2.CommandText = $"PRAGMA table_info({t});";
+                    using var r2 = c2.ExecuteReader();
+                    bool hasSkillSet = false;
+                    var cols = new List<string>();
+                    while (r2.Read())
+                    {
+                        string cn = r2.GetString(1);
+                        cols.Add(cn);
+                        if (cn.ToLower().Contains("skill_set")) hasSkillSet = true;
+                    }
+                    if (hasSkillSet)
+                    {
+                        Console.WriteLine($"Table {t} has skill_set reference. Cols: {string.Join(", ", cols)}");
+                        // Get distinct skill_set_ids
+                        using var c3 = connection.CreateCommand();
+                        c3.CommandText = $"SELECT DISTINCT skill_set_id FROM {t} WHERE skill_set_id IS NOT NULL AND skill_set_id > 0 LIMIT 100;";
+                        using var r3 = c3.ExecuteReader();
+                        var ssids = new List<int>();
+                        while (r3.Read()) ssids.Add(r3.GetInt32(0));
+                        Console.WriteLine($"  Distinct skill_set_id in {t}: {ssids.Count}");
+                        if (ssids.Count > 0)
+                        {
+                            Console.WriteLine("  First few: " + string.Join(", ", ssids.Take(30)));
+                            // Dump the actual sets for these
+                            string idsIn = string.Join(",", ssids.Distinct().Take(100));
+                            using var c4 = connection.CreateCommand();
+                            c4.CommandText = $"SELECT id, " +
+                                "skill_id1,skill_level1,skill_id2,skill_level2,skill_id3,skill_level3,skill_id4,skill_level4,skill_id5,skill_level5," +
+                                "skill_id6,skill_level6,skill_id7,skill_level7,skill_id8,skill_level8,skill_id9,skill_level9,skill_id10,skill_level10 " +
+                                $"FROM skill_set WHERE id IN ({idsIn}) ORDER BY id;";
+                            using var r4 = c4.ExecuteReader();
+                            Console.WriteLine($"  Skill sets used in {t}:");
+                            int shown = 0;
+                            while (r4.Read() && shown < 50)
+                            {
+                                shown++;
+                                int sid = r4.GetInt32(0);
+                                var sks = new List<string>();
+                                for (int i = 1; i <= 19; i += 2)
+                                {
+                                    int skill = r4.GetInt32(i);
+                                    int lvl = r4.GetInt32(i + 1);
+                                    if (skill > 0) sks.Add($"{skill}@{lvl}");
+                                }
+                                Console.WriteLine($"    skill_set_id={sid}: {string.Join(" ", sks)}");
+                            }
+                            if (shown >= 50) Console.WriteLine("    ... (more)");
+                        }
+                    }
+                }
+                catch { }
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error during TT specific query: {ex.Message}");
+    }
+
+    return 0;
+}
+
 var sb = new StringBuilder();
 sb.AppendLine("namespace UmaBlobber.MasterData;");
 sb.AppendLine();

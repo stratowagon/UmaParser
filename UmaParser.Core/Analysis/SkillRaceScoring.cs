@@ -53,38 +53,32 @@ internal static class SkillRaceScoring
         // with names from text_data 140 and descriptions from 141. Falls back to the old 26-57 range.
         var allowedRawScoreIds = GetSkillActivationRawScoreIds();
         var scoresByTime = new Dictionary<float, Queue<int>>();
-        foreach (var e in appearance.Simulation.Events)
+        foreach (var score in appearance.Simulation.ScoreEvents)
         {
-            if (e.Type != SimulateEventType.Score || e.Params.Count < 3 || e.Params[0] != horseIndex)
+            if (score.HorseIndex != horseIndex || !allowedRawScoreIds.Contains(score.RawScoreId))
             {
                 continue;
             }
-            int raw = e.Params[1];
-            if (!allowedRawScoreIds.Contains(raw))
-            {
-                continue;
-            }
-            int points = e.Params[2];
-            if (!scoresByTime.TryGetValue(e.FrameTime, out var q))
+            if (!scoresByTime.TryGetValue(score.FrameTime, out var q))
             {
                 q = new Queue<int>();
-                scoresByTime[e.FrameTime] = q;
+                scoresByTime[score.FrameTime] = q;
             }
-            q.Enqueue(points);
+            q.Enqueue(score.Points);
         }
 
         // Walk events in recorded order. For each Skill event belonging to this horse, consume
         // the next available score point value that was recorded at the exact same FrameTime (if any).
         // This gives a deterministic 1:1 pairing based on emit order within each coarse tick.
-        foreach (var ev in appearance.Simulation.Events)
+        foreach (var skill in appearance.Simulation.SkillEvents)
         {
-            if (ev.Type != SimulateEventType.Skill || ev.Params.Count < 2 || ev.Params[0] != horseIndex)
+            if (skill.HorseIndex != horseIndex)
             {
                 continue;
             }
 
-            float t = ev.FrameTime;
-            int skillId = ev.Params[1];
+            float t = skill.FrameTime;
+            int skillId = skill.SkillId;
 
             if (scoresByTime.TryGetValue(t, out var q) && q.Count > 0)
             {
