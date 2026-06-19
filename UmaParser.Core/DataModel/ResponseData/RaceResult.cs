@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace UmaBlobber.DataModel.ResponseData
+namespace UmaParser.DataModel.ResponseData
 {
     /// <summary>
     /// Data structure for results of one race in a team trials match.

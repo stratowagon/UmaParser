@@ -1,8 +1,8 @@
-using System.Text.Encodings.Web;
+﻿using System.Text.Encodings.Web;
 using System.Text.Json;
 using MessagePack;
 
-namespace UmaBlobber.Import;
+namespace UmaParser.Import;
 
 /// <summary>
 /// Normalizes capture files to a JSON string (in memory). Supports .json text and legacy .bin MessagePack.

@@ -1,8 +1,8 @@
-using System.Collections.Generic;
-using UmaBlobber.DataModel.RaceScenario;
-using UmaBlobber.MasterData;
+﻿using System.Collections.Generic;
+using UmaParser.DataModel.RaceScenario;
+using UmaParser.MasterData;
 
-namespace UmaBlobber.Analysis;
+namespace UmaParser.Analysis;
 
 /// <summary>
 /// Team Trials skill points recorded in <see cref="SimulateEventType.Score"/> events.

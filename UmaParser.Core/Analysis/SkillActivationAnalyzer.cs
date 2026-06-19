@@ -1,9 +1,9 @@
-using UmaBlobber.DataModel.RaceScenario;
-using UmaBlobber.DataModel.ResponseData;
-using UmaBlobber.MasterData;
-using UmaBlobber.ObjectModel;
+﻿using UmaParser.DataModel.RaceScenario;
+using UmaParser.DataModel.ResponseData;
+using UmaParser.MasterData;
+using UmaParser.ObjectModel;
 
-namespace UmaBlobber.Analysis;
+namespace UmaParser.Analysis;
 
 public static class SkillActivationAnalyzer
 {

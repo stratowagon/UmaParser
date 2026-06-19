@@ -1,9 +1,9 @@
-using System.Drawing;
-using UmaBlobber.Analysis;
-using UmaBlobber.ObjectModel;
-using UmaBlobber.Ui;
+﻿using System.Drawing;
+using UmaParser.Analysis;
+using UmaParser.ObjectModel;
+using UmaParser.Ui;
 
-namespace UmaBlobber
+namespace UmaParser
 {
     public partial class Form1
     {
@@ -202,7 +202,8 @@ namespace UmaBlobber
         private void DataGridViewAnalysis_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
         {
             if (_lastAnalysisReport == null || e.RowIndex < 0 || e.ColumnIndex < 0
-                || e.RowIndex >= _lastAnalysisReport.Rows.Count)
+                || e.RowIndex >= _lastAnalysisReport.Rows.Count
+                || e.CellStyle == null)
             {
                 return;
             }

@@ -1,8 +1,8 @@
-using System.Drawing;
-using UmaBlobber.Import;
-using UmaBlobber.Ui;
+﻿using System.Drawing;
+using UmaParser.Import;
+using UmaParser.Ui;
 
-namespace UmaBlobber
+namespace UmaParser
 {
     public partial class Form1 : Form
     {
@@ -29,12 +29,12 @@ namespace UmaBlobber
         private readonly AceNameFontCache _aceNameFontCache = new();
 
         // For RosterMismatch highlighting of outlier cells (minority files only)
-        private bool[,] _mismatchOutliers;
+        private bool[,]? _mismatchOutliers;
         private int _mismatchFileCount;
 
         // Empty state for Team Analysis tab (non-uniform TT or non-TT loads)
-        private Panel panelAnalysisEmpty;
-        private Label labelAnalysisMessage;
+        private Panel panelAnalysisEmpty = null!;
+        private Label labelAnalysisMessage = null!;
 
         public Form1()
         {
@@ -73,10 +73,10 @@ namespace UmaBlobber
             AppThemeApplier.Apply(this);
         }
 
-        private void Form1_DragEnter(object sender, DragEventArgs e)
+        private void Form1_DragEnter(object? sender, DragEventArgs e)
         {
             // Check if the dragged data contains files
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data?.GetDataPresent(DataFormats.FileDrop) == true)
             {
                 e.Effect = DragDropEffects.Copy;   // Show copy cursor
             }
@@ -86,7 +86,7 @@ namespace UmaBlobber
             }
         }
 
-        private void Form1_DragDrop(object sender, DragEventArgs e)
+        private void Form1_DragDrop(object? sender, DragEventArgs e)
         {
             if (e.Data?.GetData(DataFormats.FileDrop) is not string[] files || files.Length == 0)
             {
@@ -161,7 +161,8 @@ namespace UmaBlobber
 
         private void DataGridView1_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
         {
-            if (_gridDisplayMode == GridDisplayMode.None || e.RowIndex < 0 || e.ColumnIndex < 0)
+            if (_gridDisplayMode == GridDisplayMode.None || e.RowIndex < 0 || e.ColumnIndex < 0
+                || e.CellStyle == null)
             {
                 return;
             }

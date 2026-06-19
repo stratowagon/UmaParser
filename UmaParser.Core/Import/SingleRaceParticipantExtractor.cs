@@ -1,10 +1,10 @@
-using System.Text.Json;
-using UmaBlobber.DataModel.RaceScenario;
-using UmaBlobber.DataModel.ResponseData;
-using UmaBlobber.MasterData;
-using UmaBlobber.ObjectModel;
+﻿using System.Text.Json;
+using UmaParser.DataModel.RaceScenario;
+using UmaParser.DataModel.ResponseData;
+using UmaParser.MasterData;
+using UmaParser.ObjectModel;
 
-namespace UmaBlobber.Import;
+namespace UmaParser.Import;
 
 /// <summary>
 /// Helpers to pull participant / ownership information out of the normalized JSON

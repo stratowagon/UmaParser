@@ -1,8 +1,8 @@
-using System.Windows.Forms;
-using UmaBlobber.DataModel.ResponseData;
-using UmaBlobber.MasterData;
+﻿using System.Windows.Forms;
+using UmaParser.DataModel.ResponseData;
+using UmaParser.MasterData;
 
-namespace UmaBlobber
+namespace UmaParser
 {
     internal static class Program
     {

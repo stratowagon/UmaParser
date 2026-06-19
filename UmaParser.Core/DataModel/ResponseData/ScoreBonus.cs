@@ -1,4 +1,4 @@
-﻿namespace UmaBlobber.DataModel.ResponseData
+﻿namespace UmaParser.DataModel.ResponseData
 {
     using System.Text.Json.Serialization;
 

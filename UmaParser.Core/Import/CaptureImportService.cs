@@ -1,8 +1,8 @@
-using System.Text.Json;
-using UmaBlobber.DataModel.ResponseData;
-using UmaBlobber.ObjectModel;
+﻿using System.Text.Json;
+using UmaParser.DataModel.ResponseData;
+using UmaParser.ObjectModel;
 
-namespace UmaBlobber.Import;
+namespace UmaParser.Import;
 
 public static class CaptureImportService
 {

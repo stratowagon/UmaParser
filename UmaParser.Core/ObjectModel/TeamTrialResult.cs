@@ -1,12 +1,12 @@
 ﻿using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using UmaBlobber.Analysis;
-using UmaBlobber.DataModel.RaceScenario;
-using UmaBlobber.DataModel.ResponseData;
-using UmaBlobber.MasterData;
+using UmaParser.Analysis;
+using UmaParser.DataModel.RaceScenario;
+using UmaParser.DataModel.ResponseData;
+using UmaParser.MasterData;
 
-namespace UmaBlobber.ObjectModel
+namespace UmaParser.ObjectModel
 {
     /// <summary>
     /// Complete wrapper for a Team Trials result api response.

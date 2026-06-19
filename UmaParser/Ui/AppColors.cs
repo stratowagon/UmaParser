@@ -1,6 +1,6 @@
-using System.Drawing;
+﻿using System.Drawing;
 
-namespace UmaBlobber.Ui;
+namespace UmaParser.Ui;
 
 /// <summary>
 /// Centralized semantic color palette that adapts to the selected light/dark mode.

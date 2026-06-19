@@ -1,6 +1,6 @@
-using UmaBlobber.AppStatus;
+﻿using UmaParser.AppStatus;
 
-namespace UmaBlobber.Ui;
+namespace UmaParser.Ui;
 
 internal sealed class WinFormsAppStatusPresenter(TextBox textBox) : IAppStatusPresenter
 {

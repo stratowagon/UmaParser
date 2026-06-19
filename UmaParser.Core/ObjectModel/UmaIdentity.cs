@@ -1,6 +1,6 @@
-using UmaBlobber.MasterData;
+﻿using UmaParser.MasterData;
 
-namespace UmaBlobber.ObjectModel;
+namespace UmaParser.ObjectModel;
 
 /// <summary>
 /// Stable identity for a specific veteran uma (trained character) across multiple races and capture files.

@@ -1,4 +1,4 @@
-namespace UmaBlobber.Analysis;
+﻿namespace UmaParser.Analysis;
 
 /// <summary>
 /// Pre-race wit activation chance for skills with <c>skill_data.activate_lot = 1</c>.

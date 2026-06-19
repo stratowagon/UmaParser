@@ -1,6 +1,6 @@
-using UmaBlobber.ObjectModel;
+﻿using UmaParser.ObjectModel;
 
-namespace UmaBlobber.Analysis
+namespace UmaParser.Analysis
 {
     public enum RetrainPriorityLevel
     {
@@ -619,7 +619,7 @@ namespace UmaBlobber.Analysis
 }
 
 // Top-level types for track performance (to avoid complex nesting issues in the containing static class)
-namespace UmaBlobber.Analysis
+namespace UmaParser.Analysis
 {
     /// <summary>
     /// Per-track performance breakdown for a specific uma across the provided trials.
@@ -631,7 +631,7 @@ namespace UmaBlobber.Analysis
             int trainedCharaId,
             string umaName)
         {
-            var catalog = UmaBlobber.MasterData.GameMasterService.Current.Catalog;
+            var catalog = UmaParser.MasterData.GameMasterService.Current.Catalog;
             var trialList = trials.ToList();
 
             int totalRaces = 0;

@@ -1,8 +1,8 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using UmaBlobber.ObjectModel;
+using UmaParser.ObjectModel;
 
-namespace UmaBlobber.DataModel.ResponseData
+namespace UmaParser.DataModel.ResponseData
 {
     public abstract class UmaApiResponse
     {

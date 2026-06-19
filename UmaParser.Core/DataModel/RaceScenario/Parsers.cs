@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO.Compression;
 using System.Text;
-using static UmaBlobber.DataModel.RaceScenario.RaceScenarioData;
+using static UmaParser.DataModel.RaceScenario.RaceScenarioData;
 
-namespace UmaBlobber.DataModel.RaceScenario
+namespace UmaParser.DataModel.RaceScenario
 {
     public static class RaceScenarioParser
     {

@@ -1,6 +1,6 @@
-using Microsoft.Data.Sqlite;
+﻿using Microsoft.Data.Sqlite;
 
-namespace UmaBlobber.MasterData;
+namespace UmaParser.MasterData;
 
 internal static class MasterDbReader
 {
@@ -35,8 +35,13 @@ internal static class MasterDbReader
 
             ApplySkillMetadata(catalog, sections, LoadSkillActivateLot(dbPath));
 
+            sections.TryGetValue(MasterTextCategory.TeamTrialsScoreType, out var scoreNames);
+            sections.TryGetValue(MasterTextCategory.TeamTrialsScoreDesc, out var scoreDescriptions);
             var rawScores = LoadTeamTrialsRawScores(dbPath);
-            catalog.SetTeamTrialsRawScores(rawScores);
+            catalog.SetTeamTrialsScores(TeamTrialsScoreEntry.Merge(
+                scoreNames ?? new Dictionary<int, string>(),
+                scoreDescriptions ?? new Dictionary<int, string>(),
+                rawScores));
 
             var raceCourses = LoadRaceCourses(dbPath);
             catalog.SetRaceCourses(raceCourses);

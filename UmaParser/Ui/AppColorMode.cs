@@ -1,7 +1,7 @@
-using System.Windows.Forms;
-using UmaBlobber.MasterData;
+﻿using System.Windows.Forms;
+using UmaParser.MasterData;
 
-namespace UmaBlobber.Ui;
+namespace UmaParser.Ui;
 
 internal static class AppColorMode
 {

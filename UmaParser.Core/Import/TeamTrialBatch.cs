@@ -1,6 +1,6 @@
-using UmaBlobber.ObjectModel;
+﻿using UmaParser.ObjectModel;
 
-namespace UmaBlobber.Import;
+namespace UmaParser.Import;
 
 public enum TeamTrialBatchKind
 {

@@ -1,7 +1,7 @@
-using System.Drawing;
+﻿using System.Drawing;
 using System.Windows.Forms;
 
-namespace UmaBlobber.Ui;
+namespace UmaParser.Ui;
 
 /// <summary>Caches a bold variant of a grid's default cell font for ace name highlighting.</summary>
 internal sealed class AceNameFontCache : IDisposable

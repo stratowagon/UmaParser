@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
-using UmaBlobber.Import;
+using UmaParser.Import;
 
 class Program
 {
@@ -488,10 +488,6 @@ class Program
         Console.WriteLine();
         Console.WriteLine("Note: Under mob_id, 0/612 had consistent skills. Under trained_chara_id we see the numbers above.");
         Console.WriteLine("If trained_chara_id shows many with 1 skill set, it is a better stable key for the NPC's loadout.");
-
-        // Also report if trained_chara_id + visual is even more stable.
-        int trainedStableIdentity = 0; // those with 1 mob + 1 skill + 1 visual? (rough)
-        // For simplicity, just note the counts.
 
         // ==================== Pool behavior with trained_chara_id (stable profiles) ====================
         Console.WriteLine();

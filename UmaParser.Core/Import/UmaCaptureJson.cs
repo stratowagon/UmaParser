@@ -1,8 +1,8 @@
-using System.Text.Encodings.Web;
+﻿using System.Text.Encodings.Web;
 using System.Text.Json;
-using UmaBlobber.DataModel.ResponseData;
+using UmaParser.DataModel.ResponseData;
 
-namespace UmaBlobber.Import;
+namespace UmaParser.Import;
 
 internal static class UmaCaptureJson
 {

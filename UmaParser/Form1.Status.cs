@@ -1,6 +1,6 @@
-using UmaBlobber.AppStatus;
+﻿using UmaParser.AppStatus;
 
-namespace UmaBlobber
+namespace UmaParser
 {
     public partial class Form1
     {

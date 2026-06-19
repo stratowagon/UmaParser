@@ -1,10 +1,10 @@
-namespace UmaBlobber.MasterData;
+﻿namespace UmaParser.MasterData;
 
 internal sealed class GameMasterCatalog
 {
     private readonly Dictionary<MasterTextCategory, Dictionary<int, string>> _sections = new();
     private readonly Dictionary<int, SkillMasterEntry> _skills = new();
-    private readonly Dictionary<int, int> _teamTrialsRawScores = new();
+    private readonly Dictionary<int, TeamTrialsScoreEntry> _teamTrialsScores = new();
     private readonly Dictionary<int, RaceCourseInfo> _raceCoursesByInstance = new();
 
     public IReadOnlyDictionary<MasterTextCategory, int> SectionCounts =>
@@ -97,29 +97,45 @@ internal sealed class GameMasterCatalog
     public int SkillActivateLotCount =>
         _skills.Values.Count(e => e.ActivateLot != SkillActivateLotKind.Unknown);
 
-    public void SetTeamTrialsRawScores(Dictionary<int, int> scores)
+    public void SetTeamTrialsScores(IReadOnlyDictionary<int, TeamTrialsScoreEntry> scores)
     {
-        _teamTrialsRawScores.Clear();
-        if (scores != null)
+        _teamTrialsScores.Clear();
+        if (scores == null)
         {
-            foreach (var (id, score) in scores)
+            return;
+        }
+
+        foreach (var (id, entry) in scores)
+        {
+            _teamTrialsScores[id] = entry;
+            if (!string.IsNullOrEmpty(entry.Name))
             {
-                _teamTrialsRawScores[id] = score;
+                MergeSection(MasterTextCategory.TeamTrialsScoreType, [new KeyValuePair<int, string>(id, entry.Name)]);
+            }
+
+            if (!string.IsNullOrEmpty(entry.Description))
+            {
+                MergeSection(MasterTextCategory.TeamTrialsScoreDesc, [new KeyValuePair<int, string>(id, entry.Description)]);
             }
         }
     }
+
+    public bool TryGetTeamTrialsScore(int rawScoreId, out TeamTrialsScoreEntry score) =>
+        _teamTrialsScores.TryGetValue(rawScoreId, out score);
+
+    public IReadOnlyDictionary<int, TeamTrialsScoreEntry> TeamTrialsScores => _teamTrialsScores;
 
     /// <summary>
     /// Base score value for a team_stadium_raw_score id (from the master table).
     /// 500 for typical white skill activations, 1200 for gold, variable for uniques.
     /// </summary>
     public int GetTeamTrialsRawScoreValue(int rawScoreId) =>
-        _teamTrialsRawScores.GetValueOrDefault(rawScoreId, 0);
+        _teamTrialsScores.TryGetValue(rawScoreId, out var entry) ? entry.BaseScore : 0;
 
     public bool HasTeamTrialsRawScore(int rawScoreId) =>
-        _teamTrialsRawScores.ContainsKey(rawScoreId);
+        _teamTrialsScores.ContainsKey(rawScoreId);
 
-    public IEnumerable<int> GetAllTeamTrialsRawScoreIds() => _teamTrialsRawScores.Keys;
+    public IEnumerable<int> GetAllTeamTrialsRawScoreIds() => _teamTrialsScores.Keys;
 
     public void SetRaceCourses(Dictionary<int, RaceCourseInfo> courses)
     {
@@ -185,17 +201,42 @@ internal sealed class GameMasterCatalog
             MergeSkillActivateLot(lots);
         }
 
-        if (cache.TeamTrialsRawScores != null)
+        if (cache.TeamTrialsScores != null)
         {
-            var scores = new Dictionary<int, int>();
+            var scores = new Dictionary<int, TeamTrialsScoreEntry>();
+            foreach (var (key, cached) in cache.TeamTrialsScores)
+            {
+                if (!int.TryParse(key, out int id))
+                {
+                    continue;
+                }
+
+                scores[id] = new TeamTrialsScoreEntry(
+                    id,
+                    cached.Name ?? string.Empty,
+                    cached.Description ?? string.Empty,
+                    cached.BaseScore);
+            }
+
+            SetTeamTrialsScores(scores);
+        }
+        else if (cache.TeamTrialsRawScores != null)
+        {
+            var baseScores = new Dictionary<int, int>();
             foreach (var (key, value) in cache.TeamTrialsRawScores)
             {
                 if (int.TryParse(key, out int id))
                 {
-                    scores[id] = value;
+                    baseScores[id] = value;
                 }
             }
-            SetTeamTrialsRawScores(scores);
+
+            _sections.TryGetValue(MasterTextCategory.TeamTrialsScoreType, out var names);
+            _sections.TryGetValue(MasterTextCategory.TeamTrialsScoreDesc, out var descriptions);
+            SetTeamTrialsScores(TeamTrialsScoreEntry.Merge(
+                names ?? new Dictionary<int, string>(),
+                descriptions ?? new Dictionary<int, string>(),
+                baseScores));
         }
 
         if (cache.RaceCourses != null)
@@ -240,9 +281,18 @@ internal sealed class GameMasterCatalog
                 ActivateLot = kv.Value.ActivateLot.ToString(),
             });
 
-        cache.TeamTrialsRawScores = _teamTrialsRawScores.ToDictionary(
+        cache.TeamTrialsScores = _teamTrialsScores.ToDictionary(
             kv => kv.Key.ToString(),
-            kv => kv.Value);
+            kv => new CachedTeamTrialsScore
+            {
+                Name = kv.Value.Name,
+                Description = kv.Value.Description,
+                BaseScore = kv.Value.BaseScore,
+            });
+
+        cache.TeamTrialsRawScores = _teamTrialsScores.ToDictionary(
+            kv => kv.Key.ToString(),
+            kv => kv.Value.BaseScore);
 
         cache.RaceCourses = _raceCoursesByInstance.ToDictionary(
             kv => kv.Key.ToString(),

@@ -1,4 +1,4 @@
-namespace UmaBlobber.AppStatus;
+﻿namespace UmaParser.AppStatus;
 
 /// <summary>
 /// Application status / log line for user-facing messages (imports, master data, analysis summary).

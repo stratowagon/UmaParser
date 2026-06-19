@@ -1,4 +1,4 @@
-namespace UmaBlobber.MasterData;
+﻿namespace UmaParser.MasterData;
 
 /// <summary>
 /// <c>text_data.category</c> values in <c>master.mdb</c> (SQLite).

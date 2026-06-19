@@ -1,12 +1,12 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Drawing;
-using UmaBlobber.Analysis;
-using UmaBlobber.DataModel.ResponseData;
-using UmaBlobber.Import;
-using UmaBlobber.ObjectModel;
-using UmaBlobber.Ui;
+using UmaParser.Analysis;
+using UmaParser.DataModel.ResponseData;
+using UmaParser.Import;
+using UmaParser.ObjectModel;
+using UmaParser.Ui;
 
-namespace UmaBlobber
+namespace UmaParser
 {
     public partial class Form1
     {
@@ -198,6 +198,7 @@ namespace UmaBlobber
         private void DataGridViewTracks_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
         {
             if (e.RowIndex < 0
+                || e.CellStyle == null
                 || dataGridViewTracks.Rows[e.RowIndex].Tag is not TracksRow row)
             {
                 return;

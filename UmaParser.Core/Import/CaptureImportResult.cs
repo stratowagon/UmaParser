@@ -1,6 +1,6 @@
-using UmaBlobber.DataModel.ResponseData;
+﻿using UmaParser.DataModel.ResponseData;
 
-namespace UmaBlobber.Import;
+namespace UmaParser.Import;
 
 public sealed class CaptureImportResult
 {

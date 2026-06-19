@@ -1,13 +1,13 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Drawing;
-using UmaBlobber.Analysis;
-using UmaBlobber.DataModel.ResponseData;
-using UmaBlobber.Import;
-using UmaBlobber.MasterData;
-using UmaBlobber.ObjectModel;
-using UmaBlobber.Ui;
+using UmaParser.Analysis;
+using UmaParser.DataModel.ResponseData;
+using UmaParser.Import;
+using UmaParser.MasterData;
+using UmaParser.ObjectModel;
+using UmaParser.Ui;
 
-namespace UmaBlobber
+namespace UmaParser
 {
     public partial class Form1
     {
@@ -237,6 +237,7 @@ namespace UmaBlobber
         private void DataGridViewSkills_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
         {
             if (e.RowIndex < 0
+                || e.CellStyle == null
                 || dataGridViewSkills.Rows[e.RowIndex].Tag is not SkillActivationRow row)
             {
                 return;
@@ -336,6 +337,11 @@ namespace UmaBlobber
 
         private static void ApplySeverityStyle(DataGridViewCellFormattingEventArgs e, Color backColor)
         {
+            if (e.CellStyle == null)
+            {
+                return;
+            }
+
             e.CellStyle.BackColor = backColor;
             var fore = AppColors.SeverityForeFor(backColor);
             e.CellStyle.ForeColor = fore;

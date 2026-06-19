@@ -1,8 +1,8 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using UmaBlobber.ObjectModel;
+using UmaParser.ObjectModel;
 
-namespace UmaBlobber.DataModel.ResponseData
+namespace UmaParser.DataModel.ResponseData
 {
     /// <summary>
     /// Polymorphic converter that automatically normalizes both:
@@ -32,8 +32,10 @@ namespace UmaBlobber.DataModel.ResponseData
             if (IsTeamTrialResponse(payload))
             {
                 var teamData = JsonSerializer.Deserialize<TeamRaceData>(payloadJson, options);
-                var ttResult = new TeamTrialResult(teamData);
-                return ttResult;
+                if (teamData != null)
+                {
+                    return new TeamTrialResult(teamData);
+                }
             }
 
             // Fallback for unknown response types

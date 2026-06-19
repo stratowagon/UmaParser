@@ -1,9 +1,9 @@
-using System.Text.Json;
-using UmaBlobber.Import;
-using UmaBlobber.ObjectModel;
-using UmaBlobber.Ui;
+﻿using System.Text.Json;
+using UmaParser.Import;
+using UmaParser.ObjectModel;
+using UmaParser.Ui;
 
-namespace UmaBlobber
+namespace UmaParser
 {
     public partial class Form1
     {
@@ -63,7 +63,7 @@ namespace UmaBlobber
                 {
                     try
                     {
-                        var sim = UmaBlobber.DataModel.RaceScenario.RaceScenarioParser.Parse(sr.SingleRaceSimDataBase64);
+                        var sim = UmaParser.DataModel.RaceScenario.RaceScenarioParser.Parse(sr.SingleRaceSimDataBase64);
                         totalHorsesAcrossRaces += sim.HorseNum;
                         successfullyParsedSims++;
                     }

@@ -1,4 +1,4 @@
-namespace UmaBlobber
+﻿namespace UmaParser
 {
     partial class Form1
     {

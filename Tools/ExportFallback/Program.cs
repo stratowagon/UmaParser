@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using Microsoft.Data.Sqlite;
 
 string dbPath = args.FirstOrDefault(a => !a.StartsWith("-") && a.EndsWith(".mdb", StringComparison.OrdinalIgnoreCase))
@@ -21,8 +21,6 @@ var categories = new (int Id, string FieldName, MasterTextCategory Category)[]
 {
     (6, "CharaShortNames", MasterTextCategory.CharaShortName),
     (35, "RaceTrackNames", MasterTextCategory.RaceTrackName),
-    (140, "TeamTrialsScoreTypes", MasterTextCategory.TeamTrialsScoreType),
-    (141, "TeamTrialsScoreDescs", MasterTextCategory.TeamTrialsScoreDesc),
 };
 
 using var connection = new SqliteConnection($"Data Source={dbPath};Mode=ReadOnly");
@@ -373,7 +371,7 @@ if (skillMode)
 }
 
 var sb = new StringBuilder();
-sb.AppendLine("namespace UmaBlobber.MasterData;");
+sb.AppendLine("namespace UmaParser.MasterData;");
 sb.AppendLine();
 sb.AppendLine("/// <summary>");
 sb.AppendLine("/// Built-in fallback when <c>master.mdb</c> is unavailable.");
@@ -385,10 +383,8 @@ sb.AppendLine("    public static void Apply(GameMasterCatalog catalog)");
 sb.AppendLine("    {");
 sb.AppendLine("        catalog.MergeSection(MasterTextCategory.CharaShortName, CharaShortNames);");
 sb.AppendLine("        catalog.MergeSection(MasterTextCategory.RaceTrackName, RaceTrackNames);");
-sb.AppendLine("        catalog.MergeSection(MasterTextCategory.TeamTrialsScoreType, TeamTrialsScoreTypes);");
-sb.AppendLine("        catalog.MergeSection(MasterTextCategory.TeamTrialsScoreDesc, TeamTrialsScoreDescs);");
 sb.AppendLine("        catalog.MergeSkillEntries(Skills);");
-sb.AppendLine("        catalog.SetTeamTrialsRawScores(TeamTrialsRawScores);");
+sb.AppendLine("        catalog.SetTeamTrialsScores(TeamTrialsScores);");
 sb.AppendLine("        catalog.SetRaceCourses(RaceCourses);");
 sb.AppendLine("    }");
 sb.AppendLine();
@@ -440,7 +436,10 @@ using (var skillCommand = connection.CreateCommand())
 sb.AppendLine("    };");
 sb.AppendLine();
 
-sb.AppendLine("    private static readonly Dictionary<int, int> TeamTrialsRawScores = new()");
+var scoreNames = LoadTextSection(connection, 140);
+var scoreDescriptions = LoadTextSection(connection, 141);
+
+sb.AppendLine("    private static readonly Dictionary<int, TeamTrialsScoreEntry> TeamTrialsScores = new()");
 sb.AppendLine("    {");
 using (var rawScoreCommand = connection.CreateCommand())
 {
@@ -450,7 +449,10 @@ using (var rawScoreCommand = connection.CreateCommand())
     {
         int id = reader.GetInt32(0);
         int score = reader.GetInt32(1);
-        sb.AppendLine($"        {{ {id}, {score} }},");
+        scoreNames.TryGetValue(id, out string name);
+        scoreDescriptions.TryGetValue(id, out string description);
+        sb.AppendLine(
+            $"        {{ {id}, new TeamTrialsScoreEntry({id}, {ToLiteral(name ?? string.Empty)}, {ToLiteral(description ?? string.Empty)}, {score}) }},");
     }
 }
 sb.AppendLine("    };");
@@ -498,6 +500,21 @@ return 0;
 
 static string ToLiteral(string value) =>
     "\"" + value.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+
+static Dictionary<int, string> LoadTextSection(SqliteConnection connection, int category)
+{
+    var result = new Dictionary<int, string>();
+    using var command = connection.CreateCommand();
+    command.CommandText = "SELECT [index], text FROM text_data WHERE category = $cat ORDER BY [index]";
+    command.Parameters.AddWithValue("$cat", category);
+    using var reader = command.ExecuteReader();
+    while (reader.Read())
+    {
+        result[reader.GetInt32(0)] = reader.GetString(1);
+    }
+
+    return result;
+}
 
 enum MasterTextCategory
 {

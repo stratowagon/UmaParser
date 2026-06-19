@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace UmaBlobber.DataModel.ResponseData
+namespace UmaParser.DataModel.ResponseData
 {
     // Team Race (TT)
     public class TeamRaceData

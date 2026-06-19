@@ -1,7 +1,7 @@
-using System.Drawing;
+﻿using System.Drawing;
 using System.Windows.Forms;
 
-namespace UmaBlobber.Ui;
+namespace UmaParser.Ui;
 
 internal static class DataGridViewTeamGroupPaint
 {

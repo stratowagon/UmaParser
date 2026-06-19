@@ -1,4 +1,4 @@
-namespace UmaBlobber.Analysis;
+﻿namespace UmaParser.Analysis;
 
 public sealed class SkillActivationReport
 {

@@ -1,6 +1,6 @@
-using UmaBlobber.MasterData;
+﻿using UmaParser.MasterData;
 
-namespace UmaBlobber.Analysis;
+namespace UmaParser.Analysis;
 
 public sealed class SkillActivationRow
 {

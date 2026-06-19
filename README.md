@@ -1,28 +1,30 @@
 # UmaParser
 
-A janky app for analyzing Team Trials scores.
+Advanced performance analysis for uma trainers.  The main goal is to give better visibility into
+detailed performance data for Team Trials, to help identify where  to best target your efforts
+in improving your team.
+
+Some of the features are also useful for CMs, Room matches, and Practice rooms.
 
 ## Prereqs
-You will need to have a tool installed that can capture your Team Trials results,
-such as Ayaliz's HorseACT: https://github.com/ayaliz/horseACT
-(After setting it up, you will need to enable TT race saves in the settings)
+You will need to have a tool to collect json API captures of races to use this.
+One example is [HorseACT](https://github.com/ayaliz/horseACT), but other tools may work as well
+as long as they preserve the same json structure.
 
-If you have the global Steam client installed, the app will try to read up-to-date
-names and skill data from the master mdb.  You can use the menu to browse for the mdb if
-you want to use it from a different location.  If you do not have an mdb available, it
-will fall back to hard coded data from the time of release.
+If you have the global Steam client installed, this app will try to read up-to-date
+names and skill data from the master mdb at the default location or a custom location.
+Otherwise it will use the embedded fallback master data, which may not be up-to-date.
 
 ## Usage
 Drag and drop one or more .json files containing TT results onto the app.  Every time you drop
 it will reset everything, so the best use is to drop a stack of races at once.
 
 ### Team Trials
-The main use of this app is for analyzing Team Trials scores over a sufficient sample size to
-get an idea of who might be underperforming and is a candidate for replacing.
-
 For full analysis, drop multiple Team Trials files that all contain the same team members.
 Any files with different teams will disable some of the analysis, but the Results tab will help
 identify which files are different.
+
+The header of each column in the Results tab will show the full filename for that column.
 
 ### Champions Meet, Room Match, and Practice Room
 These files can also be dropped in (but not mixed with Team Trials).  They will show skill and
@@ -32,43 +34,38 @@ by their rating score.
 
 ### Results Tab
 If you drop multiple Team Trials captures and they all contain the exact same roster, the
-Results tab will show individual and total scores in a normalized order grid for easy copy-paste into your
-favorite spreadsheet application.
-(for example, @harubanana's spreadsheet which was the inspiration for this tool: https://docs.google.com/spreadsheets/d/18NIXEu4MCYM5yRaQwRx5fSQxP9oarDotrn3oQHf2K94/edit?gid=733213549#gid=733213549)
+Results tab will show individual and total scores in a fixed roster-order grid for easy
+copying into any spreadsheet.
 
-If any of the dropped files have different rosters, the Results tab will show the filenames and character
-names will be shown instead, with any outliers (different umas, different running style, etc) highlighted.
-The Team Analysis tab will not be available, and the Skills/Tracks tabs will be limited to showing
-stats only for umas that are common to all of the files.  This allows you to examine larger
-samples for individual umas who have been on the team for a while even if other umas have
-changed.
+If there are any differences in the rosters (different umas, changed running style, different team
+assignment) then the Results tab will show the filenames in the header and character names in the
+rows, with any outliers highlighted.  This allows you to still use the Results tab to identify
+which files are different.  Uma moves within the same team (including ace swaps) are OK.
+
+In both cases, the columns are sorted by file timestamps, and the full filenames are visible as
+tooltips on the headers.
 
 ### Team Analysis Tab
 This tab is for comparing the performance of all 15 umas in your Team Trials squad across
 the sample set.  All scores on this tab are not including bonuses to make the comparisons
 more consistent.
 
-Recommendations will be made for which umas are the least stable, conflicting running styles,
-and comparitive average within their team (for picking your ace).
+This tab is only enabled for Team Trials files when they all have the same roster.
 
-This tab is only active when you drop Team Trials files that all have a consistent roster.
-"Consistent" means that every uma on the roster:
-1. Is present in every file.
-2. Has the same running style in every file.
-3. Remains on the same team in every file (moving within the team is OK, even the ace slot).
+All scores on this tab are normalized by removing support, opponent, and ace bonuses to make
+comparisons consistent.  Each column header has a tooltip to explain what it is showing.
 
-If all 15 umas are consistent, the team analysis tab will be enabled.
-If not all 15 umas are consistent, the team analysis tab will be disabled but the skills
-and tracks tabs will still be available for the consistent umas.
+The "Ace Delta" column is comparing the umas within one team to their ace to see if you might
+be better off swapping aces.  However this requires a decently large sample size to be meaningful,
+so take the recommendations with a grain of salt.
 
 ### Skills Tab
 This tab provides detailed information for an uma's skill activations across multiple races.
-This can be used to identify skills that are not proccing frequently enough, and which skills are
-underperforming in terms of average points per race.
+This can be used to identify skills that are not proccing frequently enough, which can be useful
+for both Team Trials and Champions Meet.
 
-Select a specific uma from the dropdown.  The columns can be sorted.
+Any uma in the dropped files can be selected from the dropdown, including non-TT files.
 
 ### Tracks Tab
-This tab provides detailed breakdowns of the uma's performance on individual tracks.  This can
-be used to identify tracks that are causing problems, especially if your uma is running out
-of stamina on the longer ones.
+This tab provides detailed breakdowns of the uma's performance on individual tracks.  For TT,
+this requires a decent sample size to be useful because of the random track selection.

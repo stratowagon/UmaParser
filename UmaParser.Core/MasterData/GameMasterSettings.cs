@@ -1,6 +1,6 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
-namespace UmaBlobber.MasterData;
+namespace UmaParser.MasterData;
 
 internal sealed class GameMasterSettings
 {

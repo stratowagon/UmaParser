@@ -1,7 +1,7 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace UmaBlobber.Ui;
+namespace UmaParser.Ui;
 
 /// <summary>
 /// Applies OS-level dark/light chrome that WinForms cannot set via BackColor alone

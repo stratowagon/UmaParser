@@ -1,8 +1,8 @@
-using System.Drawing;
+﻿using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace UmaBlobber.Ui;
+namespace UmaParser.Ui;
 
 /// <summary>
 /// TabControl that paints its own chrome so dark mode does not leave native white

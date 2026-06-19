@@ -1,6 +1,6 @@
-using UmaBlobber.MasterData;
+﻿using UmaParser.MasterData;
 
-namespace UmaBlobber
+namespace UmaParser
 {
     public partial class Form1
     {

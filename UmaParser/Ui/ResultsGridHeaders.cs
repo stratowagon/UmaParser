@@ -1,4 +1,4 @@
-namespace UmaBlobber.Ui;
+﻿namespace UmaParser.Ui;
 
 internal static class ResultsGridHeaders
 {

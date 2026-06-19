@@ -1,4 +1,4 @@
-namespace UmaBlobber.MasterData;
+﻿namespace UmaParser.MasterData;
 
 internal static class MasterDataPaths
 {

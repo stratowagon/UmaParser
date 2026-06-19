@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace UmaBlobber.DataModel.ResponseData
+namespace UmaParser.DataModel.ResponseData
 {
     /// <summary>
     /// Data model for a trained character.  Primarily used for player's veteran umas, but can appear in other contexts,

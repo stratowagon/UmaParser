@@ -1,4 +1,4 @@
-namespace UmaBlobber.MasterData;
+﻿namespace UmaParser.MasterData;
 
 internal sealed class MasterCacheFile
 {
@@ -12,7 +12,10 @@ internal sealed class MasterCacheFile
     /// <summary>Legacy cache format: skill id → <see cref="SkillActivateLotKind"/> name.</summary>
     public Dictionary<string, string>? SkillActivateLot { get; set; }
 
-    /// <summary>team_stadium_raw_score id (as string) → base score value.</summary>
+    /// <summary>team_stadium_raw_score id (as string) → merged master entry.</summary>
+    public Dictionary<string, CachedTeamTrialsScore>? TeamTrialsScores { get; set; }
+
+    /// <summary>Legacy cache format: team_stadium_raw_score id (as string) → base score value.</summary>
     public Dictionary<string, int>? TeamTrialsRawScores { get; set; }
 
     /// <summary>race_instance id (as string) → cached course info for offline use.</summary>
@@ -35,4 +38,11 @@ internal sealed class CachedSkillEntry
 {
     public string Name { get; set; } = string.Empty;
     public string ActivateLot { get; set; } = nameof(SkillActivateLotKind.Unknown);
+}
+
+internal sealed class CachedTeamTrialsScore
+{
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public int BaseScore { get; set; }
 }

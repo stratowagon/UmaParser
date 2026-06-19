@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace UmaBlobber.DataModel.ResponseData
+namespace UmaParser.DataModel.ResponseData
 {
 
     /// <summary>

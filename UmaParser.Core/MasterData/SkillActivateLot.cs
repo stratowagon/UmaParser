@@ -1,4 +1,4 @@
-namespace UmaBlobber.MasterData;
+﻿namespace UmaParser.MasterData;
 
 /// <summary>
 /// Whether a skill requires a wit check (<c>skill_data.activate_lot</c>).

@@ -7,7 +7,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>UmaParser</AssemblyName>
-    <RootNamespace>UmaBlobber</RootNamespace>
+    <RootNamespace>UmaParser</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

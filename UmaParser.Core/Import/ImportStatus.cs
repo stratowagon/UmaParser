@@ -1,4 +1,4 @@
-namespace UmaBlobber.Import;
+﻿namespace UmaParser.Import;
 
 public enum ImportStatus
 {

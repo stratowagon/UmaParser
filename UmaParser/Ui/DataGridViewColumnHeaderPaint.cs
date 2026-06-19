@@ -1,7 +1,7 @@
-using System.Drawing;
+﻿using System.Drawing;
 using System.Windows.Forms;
 
-namespace UmaBlobber.Ui;
+namespace UmaParser.Ui;
 
 /// <summary>
 /// With <see cref="DataGridView.EnableHeadersVisualStyles"/> disabled, header sort glyphs

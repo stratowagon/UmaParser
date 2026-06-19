@@ -1,10 +1,10 @@
-using System.Text.Json;
-using UmaBlobber.Analysis;
-using UmaBlobber.DataModel.RaceScenario;
-using UmaBlobber.DataModel.ResponseData;
-using UmaBlobber.Import;
-using UmaBlobber.MasterData;
-using UmaBlobber.ObjectModel;
+﻿using System.Text.Json;
+using UmaParser.Analysis;
+using UmaParser.DataModel.RaceScenario;
+using UmaParser.DataModel.ResponseData;
+using UmaParser.Import;
+using UmaParser.MasterData;
+using UmaParser.ObjectModel;
 
 string path = args.Length > 0
     ? args[0]

@@ -1,7 +1,7 @@
-using UmaBlobber.DataModel.RaceScenario;
-using UmaBlobber.DataModel.ResponseData;
+﻿using UmaParser.DataModel.RaceScenario;
+using UmaParser.DataModel.ResponseData;
 
-namespace UmaBlobber.Analysis;
+namespace UmaParser.Analysis;
 
 /// <summary>
 /// One race in a trial where a specific roster uma participated.
