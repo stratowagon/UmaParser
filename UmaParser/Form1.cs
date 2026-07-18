@@ -28,10 +28,6 @@ namespace UmaParser
         private GridDisplayMode _gridDisplayMode = GridDisplayMode.None;
         private readonly AceNameFontCache _aceNameFontCache = new();
 
-        // For RosterMismatch highlighting of outlier cells (minority files only)
-        private bool[,]? _mismatchOutliers;
-        private int _mismatchFileCount;
-
         // Empty state for Team Analysis tab (non-uniform TT or non-TT loads)
         private Panel panelAnalysisEmpty = null!;
         private Label labelAnalysisMessage = null!;
@@ -55,20 +51,24 @@ namespace UmaParser
                 SaveWindowLayout();
                 _aceNameFontCache.Dispose();
             };
-            dataGridViewAnalysis.CellPainting += DataGridViewAnalysis_CellPainting;
-            dataGridView1.CellFormatting += DataGridView1_CellFormatting;
-            dataGridView1.CellPainting += DataGridView1_CellPainting;
+            dataGridViewAnalysis.RowPostPaint += DataGridViewAnalysis_RowPostPaint;
+            dataGridView1.RowPostPaint += DataGridView1_RowPostPaint;
             dataGridViewAnalysis.CellFormatting += DataGridViewAnalysis_CellFormatting;
+            DataGridViewOptimizations.EnableDoubleBuffering(dataGridView1);
+            DataGridViewOptimizations.EnableDoubleBuffering(dataGridViewAnalysis);
             comboBoxSkillsUma.SelectedIndexChanged += ComboBoxSkillsUma_SelectedIndexChanged;
             dataGridViewSkills.CellFormatting += DataGridViewSkills_CellFormatting;
             dataGridViewSkills.SortCompare += DataGridViewSkills_SortCompare;
             DataGridViewColumnHeaderPaint.EnableThemedSortGlyphs(dataGridViewSkills);
             comboBoxTracksUma.SelectedIndexChanged += ComboBoxTracksUma_SelectedIndexChanged;
             dataGridViewTracks.CellFormatting += DataGridViewTracks_CellFormatting;
+            dataGridViewTracks.SortCompare += DataGridViewTracks_SortCompare;
+            dataGridViewTracks.Sorted += DataGridViewTracks_Sorted;
             DataGridViewColumnHeaderPaint.EnableThemedSortGlyphs(dataGridViewTracks);
             DataGridViewColumnHeaderPaint.EnableThemedSortGlyphs(dataGridViewAnalysis);
             DataGridViewColumnHeaderPaint.EnableThemedSortGlyphs(dataGridView1);
             InitializeViewMenu();
+            InitializeOptionsMenu();
             InitializeMasterDataUi();
             AppThemeApplier.Apply(this);
         }
@@ -114,8 +114,6 @@ namespace UmaParser
         private void ClearGrid()
         {
             _gridDisplayMode = GridDisplayMode.None;
-            _mismatchOutliers = null;
-            _mismatchFileCount = 0;
             dataGridView1.Rows.Clear();
             dataGridView1.Columns.Clear();
             UpdateResultsEmptyState();
@@ -159,43 +157,6 @@ namespace UmaParser
             panelResultsEmpty.Visible = !showGrid;
         }
 
-        private void DataGridView1_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
-        {
-            if (_gridDisplayMode == GridDisplayMode.None || e.RowIndex < 0 || e.ColumnIndex < 0
-                || e.CellStyle == null)
-            {
-                return;
-            }
-
-            if (_gridDisplayMode == GridDisplayMode.RosterStats && e.RowIndex == StatsTotalRowIndex)
-            {
-                ApplyHeaderLikeStyle(e.CellStyle);
-                return;
-            }
-
-            if (ShouldBoldAceName(dataGridView1, e.RowIndex, e.ColumnIndex))
-            {
-                e.CellStyle.Font = _aceNameFontCache.GetBoldFont(dataGridView1);
-            }
-
-            // Highlight outlier cells in minority files for RosterMismatch.
-            // Cells may be highlighted even if the short name matches the majority (see cases in BindRosterMismatch).
-            if (_gridDisplayMode == GridDisplayMode.RosterMismatch &&
-                _mismatchOutliers != null &&
-                e.ColumnIndex < _mismatchFileCount &&
-                e.RowIndex < 15 &&
-                _mismatchOutliers[e.ColumnIndex, e.RowIndex])
-            {
-                // Theme-aware highlight for outlier cells in minority files.
-                // Pale yellow is fine in light; too bright/glaring in dark, so use a muted dark amber.
-                Color back = AppColors.IsDark
-                    ? Color.FromArgb(90, 80, 30)   // muted dark yellow-brown for dark mode
-                    : Color.FromArgb(255, 255, 200); // pale yellow for light mode
-                e.CellStyle.BackColor = back;
-                e.CellStyle.ForeColor = AppColors.SeverityForeFor(back);
-            }
-        }
-
         private bool ShouldBoldAceName(DataGridView grid, int rowIndex, int columnIndex)
         {
             if (!IsAceRow(rowIndex))
@@ -205,7 +166,9 @@ namespace UmaParser
 
             if (grid == dataGridViewAnalysis)
             {
-                return columnIndex == 0;
+                return columnIndex >= 0
+                    && columnIndex < grid.Columns.Count
+                    && grid.Columns[columnIndex].Name == GridColumnIds.Analysis.Uma;
             }
 
             if (grid == dataGridView1)
@@ -219,23 +182,18 @@ namespace UmaParser
         private static bool IsAceRow(int rowIndex) =>
             rowIndex >= 0 && rowIndex < RosterRowCount && rowIndex % UmaPerTeam == 0;
 
-        private void DataGridView1_CellPainting(object? sender, DataGridViewCellPaintingEventArgs e)
+        private void DataGridView1_RowPostPaint(object? sender, DataGridViewRowPostPaintEventArgs e)
         {
-            if (_gridDisplayMode == GridDisplayMode.None || e.RowIndex < 0 || e.ColumnIndex < 0)
+            if (_gridDisplayMode == GridDisplayMode.None)
             {
                 return;
             }
 
-            DataGridViewTeamGroupPaint.PaintDefaultTeamBoundaries(dataGridView1, e, TeamGroupBorderWidth);
+            DataGridViewTeamGroupPaint.PaintDefaultRowTopBorders(dataGridView1, e, TeamGroupBorderWidth);
 
-            if (e.Handled)
+            if (_gridDisplayMode == GridDisplayMode.RosterStats)
             {
-                return;
-            }
-
-            if (_gridDisplayMode == GridDisplayMode.RosterStats && e.RowIndex == StatsTotalRowIndex)
-            {
-                DataGridViewTeamGroupPaint.PaintTopBorder(
+                DataGridViewTeamGroupPaint.PaintRowTopBorders(
                     dataGridView1,
                     e,
                     TeamGroupBorderWidth,
@@ -243,28 +201,9 @@ namespace UmaParser
             }
         }
 
-        private void DataGridViewAnalysis_CellPainting(object? sender, DataGridViewCellPaintingEventArgs e)
+        private void DataGridViewAnalysis_RowPostPaint(object? sender, DataGridViewRowPostPaintEventArgs e)
         {
-            DataGridViewTeamGroupPaint.PaintDefaultTeamBoundaries(dataGridViewAnalysis, e, TeamGroupBorderWidth);
-        }
-
-        private void ApplyHeaderLikeStyle(DataGridViewCellStyle cellStyle)
-        {
-            var headerStyle = dataGridView1.ColumnHeadersDefaultCellStyle;
-            cellStyle.BackColor = headerStyle.BackColor;
-            cellStyle.ForeColor = headerStyle.ForeColor;
-            cellStyle.Font = headerStyle.Font;
-            cellStyle.SelectionBackColor = ControlPaint.Dark(headerStyle.BackColor);
-            cellStyle.SelectionForeColor = headerStyle.ForeColor;
-        }
-
-        private static Color BlendColors(Color from, Color to, float amount)
-        {
-            amount = Math.Clamp(amount, 0f, 1f);
-            int r = (int)(from.R + (to.R - from.R) * amount);
-            int g = (int)(from.G + (to.G - from.G) * amount);
-            int b = (int)(from.B + (to.B - from.B) * amount);
-            return Color.FromArgb(from.A, r, g, b);
+            DataGridViewTeamGroupPaint.PaintDefaultRowTopBorders(dataGridViewAnalysis, e, TeamGroupBorderWidth);
         }
 
         private void SetGridSize(List<string> columnNames, int rows)

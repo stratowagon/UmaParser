@@ -4,24 +4,14 @@ using UmaParser.Analysis;
 using UmaParser.DataModel.ResponseData;
 using UmaParser.Import;
 using UmaParser.ObjectModel;
+using UmaParser.Settings;
 using UmaParser.Ui;
 
 namespace UmaParser
 {
     public partial class Form1
     {
-        private static readonly Dictionary<string, string> TracksColumnTooltips = new(StringComparer.Ordinal)
-        {
-            ["Track"] = "Race course + distance.",
-            ["Races"] = "Number of races on this specific track+distance.",
-            ["Avg Place"] = "Average finish position across runs on this track.",
-            ["% 1st"] = "Percentage of races on this track where the uma finished 1st.",
-            ["% Top 3"] = "Percentage of races finishing 3rd or better.",
-            ["% Top 5"] = "Percentage of races finishing 5th or better.",
-            ["Spurt Rate"] = "% of races where final spurt was not delayed.",
-            ["Survival"] = "% of races where the uma did not run out of HP before the goal.",
-            ["Avg Skill Pts/Race"] = "Average skill points earned per race on this track (without bonuses).",
-        };
+        private static readonly object TracksFooterRowTag = new();
 
         private IReadOnlyDictionary<string, TeamTrialResult>? _tracksTrialResults;
         private List<(int TrainedCharaId, string Name)> _tracksRosterEntries = new();
@@ -63,7 +53,6 @@ namespace UmaParser
             dataGridViewTracks.Columns.Clear();
             labelTracksSummary.Text = string.Empty;
 
-            // Reset non-TT state
             _currentSingleRaces?.Clear();
             _currentNonTtIdentities?.Clear();
         }
@@ -75,17 +64,16 @@ namespace UmaParser
 
             if (_tracksTrialResults != null && comboBoxTracksUma.SelectedIndex < _tracksRosterEntries.Count)
             {
-                // Classic TT path
                 var (trainedCharaId, name) = _tracksRosterEntries[comboBoxTracksUma.SelectedIndex];
                 _lastTracksReport = TracksAnalyzer.Analyze(
                     _tracksTrialResults.Values,
                     trainedCharaId,
                     name);
                 BindTracksGrid(_lastTracksReport!);
+                _openOptionsDialog?.RefreshAvailability();
                 return;
             }
 
-            // Non-TT path
             if (_currentNonTtIdentities != null && comboBoxTracksUma.SelectedIndex < _currentNonTtIdentities.Count && _currentSingleRaces != null)
             {
                 var selectedId = _currentNonTtIdentities[comboBoxTracksUma.SelectedIndex];
@@ -98,7 +86,6 @@ namespace UmaParser
                     {
                         if (selectedId.IsSameUma(id))
                         {
-                            // horse is already a fully materialized RaceHorseData
                             var dummyResult = new RaceResult();
                             var app = new RaceAppearance(dummyResult, sr.Simulation, horse);
                             nonTtItems.Add((app, sr.Distance, sr.TrackName));
@@ -110,6 +97,7 @@ namespace UmaParser
                 {
                     _lastTracksReport = TracksAnalyzer.Analyze(nonTtItems, displayName);
                     BindTracksGrid(_lastTracksReport!);
+                    _openOptionsDialog?.RefreshAvailability();
                 }
                 else
                 {
@@ -120,7 +108,6 @@ namespace UmaParser
                 return;
             }
 
-            // Fallback
             if (comboBoxTracksUma.SelectedIndex < _tracksRosterEntries.Count)
             {
                 var (_, displayName) = _tracksRosterEntries[comboBoxTracksUma.SelectedIndex];
@@ -130,104 +117,221 @@ namespace UmaParser
 
         private void BindTracksGrid(TracksReport report)
         {
-            dataGridViewTracks.Columns.Clear();
-            dataGridViewTracks.Rows.Clear();
-
-            bool isTt = _tracksTrialResults != null;
-            bool showSkillPts = isTt;  // no equivalent for non-TT
-
-            AddTracksColumn("Track", typeof(string));
-            AddTracksColumn("Distance", typeof(int));
-            AddTracksColumn("Races", typeof(int));
-            AddTracksColumn("Avg Place", typeof(double));
-            AddTracksColumn("% 1st", typeof(double));
-            AddTracksColumn("% Top 3", typeof(double));
-            AddTracksColumn("% Top 5", typeof(double));
-            AddTracksColumn("Spurt Rate", typeof(double));
-            AddTracksColumn("Survival", typeof(double));
-            if (showSkillPts)
-                AddTracksColumn("Avg Skill Pts/Race", typeof(double));
-
-            foreach (var row in report.Rows)
+            var prefs = LoadGridColumnPreferences<TracksRow>(GridKeys.Tracks);
+            var context = new GridColumnContext
             {
-                var values = new List<object?>
-                {
-                    row.Track,
-                    row.Distance,
-                    row.Races,
-                    row.AvgPlace,
-                    row.PctFirst,
-                    row.PctTop3,
-                    row.PctTop5,
-                    row.SpurtRate,
-                    row.Survival,
-                };
-                if (showSkillPts)
-                    values.Add(row.AvgSkillPointsPerRace);
+                IsTeamTrial = _tracksTrialResults != null,
+            };
 
-                int rowIndex = dataGridViewTracks.Rows.Add(values.Cast<object>().ToArray());
-                dataGridViewTracks.Rows[rowIndex].Tag = row;
+            GridColumnBinder.Bind(
+                dataGridViewTracks,
+                TracksColumnSet.All,
+                prefs,
+                context,
+                report.Rows,
+                DataGridViewColumnSortMode.Automatic,
+                (row, data) => row.Tag = data);
+
+            if (report.Rows.Count > 0)
+            {
+                AddTracksFooterRow(ComputeTracksTotals(report.Rows, context.IsTeamTrial), prefs, context);
             }
 
-            // Auto-width adjustment after populating the grid, like the other tabs (Skills, Analysis)
             FinalizeTracksGrid();
 
             labelTracksSummary.Text =
                 $"{report.UmaName}: {report.Rows.Count} tracks, {report.TotalRaces} race(s) total. Team type: {report.TeamType}. ";
 
-            if (dataGridViewTracks.Columns.Count > 0)
+            if (report.Rows.Count > 0)
             {
-                dataGridViewTracks.Sort(dataGridViewTracks.Columns[0], ListSortDirection.Ascending);
+                GridColumnBinder.ApplyDefaultSortAscending(dataGridViewTracks, GridColumnIds.Tracks.Track);
             }
         }
 
-        private int AddTracksColumn(string header, Type valueType)
+        private void AddTracksFooterRow(TracksTotals totals, GridColumnGridPreferences prefs, GridColumnContext context)
         {
-            int col = dataGridViewTracks.Columns.Add(header, header);
-            var column = dataGridViewTracks.Columns[col];
-            column.ValueType = valueType;
-            column.SortMode = DataGridViewColumnSortMode.Automatic;
-            if (TracksColumnTooltips.TryGetValue(header, out string? tip))
+            var effective = GridColumnBinder.ResolveEffectiveColumns(TracksColumnSet.All, prefs, context);
+            var values = GridColumnBinder.BuildRowValues(effective, id => id switch
             {
-                column.ToolTipText = tip;
-            }
+                GridColumnIds.Tracks.Track => "Total",
+                GridColumnIds.Tracks.Distance => null,
+                GridColumnIds.Tracks.Races => totals.Races,
+                GridColumnIds.Tracks.AvgPlace => totals.AvgPlace,
+                GridColumnIds.Tracks.PctFirst => totals.PctFirst,
+                GridColumnIds.Tracks.PctTop3 => totals.PctTop3,
+                GridColumnIds.Tracks.PctTop5 => totals.PctTop5,
+                GridColumnIds.Tracks.SpurtRate => totals.SpurtRate,
+                GridColumnIds.Tracks.Survival => totals.Survival,
+                GridColumnIds.Tracks.AvgSkillPts => context.IsTeamTrial ? totals.AvgSkillPointsPerRace : null,
+                _ => null,
+            });
 
-            return col;
+            int rowIndex = dataGridViewTracks.Rows.Add(values);
+            var footerRow = dataGridViewTracks.Rows[rowIndex];
+            footerRow.Tag = TracksFooterRowTag;
+            ApplyTracksFooterRowStyle(footerRow);
         }
 
-        private void DataGridViewTracks_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
+        private static TracksTotals ComputeTracksTotals(IReadOnlyList<TracksRow> rows, bool includeSkillPts)
         {
-            if (e.RowIndex < 0
-                || e.CellStyle == null
-                || dataGridViewTracks.Rows[e.RowIndex].Tag is not TracksRow row)
+            int totalRaces = rows.Sum(r => r.Races);
+            if (totalRaces <= 0)
+            {
+                return TracksTotals.Empty;
+            }
+
+            double Weighted(Func<TracksRow, double> selector) =>
+                rows.Sum(r => selector(r) * r.Races) / totalRaces;
+
+            return new TracksTotals(
+                totalRaces,
+                Weighted(r => r.AvgPlace),
+                Weighted(r => r.PctFirst),
+                Weighted(r => r.PctTop3),
+                Weighted(r => r.PctTop5),
+                Weighted(r => r.SpurtRate),
+                Weighted(r => r.Survival),
+                includeSkillPts ? Weighted(r => r.AvgSkillPointsPerRace) : 0);
+        }
+
+        private static void ApplyTracksFooterRowStyle(DataGridViewRow row)
+        {
+            var headerStyle = row.DataGridView?.ColumnHeadersDefaultCellStyle;
+            if (headerStyle == null)
             {
                 return;
             }
 
-            var defaultStyle = dataGridViewTracks.DefaultCellStyle;
-            e.CellStyle.BackColor = defaultStyle.BackColor;
-            e.CellStyle.ForeColor = defaultStyle.ForeColor;
-            e.CellStyle.SelectionBackColor = defaultStyle.SelectionBackColor;
-            e.CellStyle.SelectionForeColor = defaultStyle.SelectionForeColor;
+            foreach (DataGridViewCell cell in row.Cells)
+            {
+                cell.Style.BackColor = headerStyle.BackColor;
+                cell.Style.ForeColor = headerStyle.ForeColor;
+                cell.Style.Font = headerStyle.Font;
+                cell.Style.SelectionBackColor = ControlPaint.Dark(headerStyle.BackColor);
+                cell.Style.SelectionForeColor = headerStyle.ForeColor;
+            }
+        }
 
-            string? header = e.ColumnIndex >= 0 && e.ColumnIndex < dataGridViewTracks.Columns.Count
-                ? dataGridViewTracks.Columns[e.ColumnIndex].HeaderText
+        private static bool IsTracksFooterRow(DataGridView grid, int rowIndex) =>
+            rowIndex >= 0
+            && rowIndex < grid.Rows.Count
+            && ReferenceEquals(grid.Rows[rowIndex].Tag, TracksFooterRowTag);
+
+        private void DataGridViewTracks_SortCompare(object? sender, DataGridViewSortCompareEventArgs e)
+        {
+            bool aIsFooter = IsTracksFooterRow(dataGridViewTracks, e.RowIndex1);
+            bool bIsFooter = IsTracksFooterRow(dataGridViewTracks, e.RowIndex2);
+            if (!aIsFooter && !bIsFooter)
+            {
+                return;
+            }
+
+            if (aIsFooter && bIsFooter)
+            {
+                e.SortResult = 0;
+            }
+            else if (aIsFooter)
+            {
+                e.SortResult = 1;
+            }
+            else
+            {
+                e.SortResult = -1;
+            }
+
+            e.Handled = true;
+        }
+
+        private void DataGridViewTracks_Sorted(object? sender, EventArgs e)
+        {
+            EnsureTracksFooterAtBottom();
+        }
+
+        private void EnsureTracksFooterAtBottom()
+        {
+            int footerIdx = -1;
+            for (int i = 0; i < dataGridViewTracks.Rows.Count; i++)
+            {
+                if (IsTracksFooterRow(dataGridViewTracks, i))
+                {
+                    footerIdx = i;
+                    break;
+                }
+            }
+
+            if (footerIdx < 0 || footerIdx == dataGridViewTracks.Rows.Count - 1)
+            {
+                return;
+            }
+
+            var footer = dataGridViewTracks.Rows[footerIdx];
+            var values = new object[dataGridViewTracks.Columns.Count];
+            for (int c = 0; c < values.Length; c++)
+            {
+                values[c] = footer.Cells[c].Value ?? DBNull.Value;
+            }
+
+            dataGridViewTracks.Rows.RemoveAt(footerIdx);
+            int newIdx = dataGridViewTracks.Rows.Add(values);
+            var movedFooter = dataGridViewTracks.Rows[newIdx];
+            movedFooter.Tag = TracksFooterRowTag;
+            ApplyTracksFooterRowStyle(movedFooter);
+        }
+
+        private void DataGridViewTracks_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.CellStyle == null)
+            {
+                return;
+            }
+
+            bool isFooter = IsTracksFooterRow(dataGridViewTracks, e.RowIndex);
+            if (!isFooter && dataGridViewTracks.Rows[e.RowIndex].Tag is not TracksRow)
+            {
+                return;
+            }
+
+            if (!isFooter)
+            {
+                var defaultStyle = dataGridViewTracks.DefaultCellStyle;
+                e.CellStyle.BackColor = defaultStyle.BackColor;
+                e.CellStyle.ForeColor = defaultStyle.ForeColor;
+                e.CellStyle.SelectionBackColor = defaultStyle.SelectionBackColor;
+                e.CellStyle.SelectionForeColor = defaultStyle.SelectionForeColor;
+            }
+
+            string? columnId = e.ColumnIndex >= 0 && e.ColumnIndex < dataGridViewTracks.Columns.Count
+                ? dataGridViewTracks.Columns[e.ColumnIndex].Name
                 : null;
 
-            if ((header == "% 1st" || header == "% Top 3" || header == "% Top 5") && e.Value is double pct)
+            if (columnId == GridColumnIds.Tracks.Distance && isFooter)
+            {
+                e.Value = string.Empty;
+                e.FormattingApplied = true;
+                return;
+            }
+
+            if ((columnId == GridColumnIds.Tracks.PctFirst
+                || columnId == GridColumnIds.Tracks.PctTop3
+                || columnId == GridColumnIds.Tracks.PctTop5) && e.Value is double pct)
             {
                 e.Value = pct.ToString("0.#") + "%";
                 e.FormattingApplied = true;
             }
-            else if (header == "Avg Place" && e.Value is double ap)
+            else if (columnId == GridColumnIds.Tracks.AvgPlace && e.Value is double ap)
             {
                 e.Value = ap.ToString("0.00");
                 e.FormattingApplied = true;
             }
-            else if (header == "Spurt Rate" && e.Value is double rate)
+            else if (columnId == GridColumnIds.Tracks.SpurtRate && e.Value is double rate)
             {
                 e.Value = rate.ToString("0.#") + "%";
                 e.FormattingApplied = true;
+
+                if (isFooter)
+                {
+                    return;
+                }
 
                 if (rate < 95)
                 {
@@ -248,10 +352,15 @@ namespace UmaParser
                     e.CellStyle.SelectionForeColor = fore;
                 }
             }
-            else if (header == "Survival" && e.Value is double surv)
+            else if (columnId == GridColumnIds.Tracks.Survival && e.Value is double surv)
             {
                 e.Value = surv.ToString("0.#") + "%";
                 e.FormattingApplied = true;
+
+                if (isFooter)
+                {
+                    return;
+                }
 
                 if (surv < 95)
                 {
@@ -272,7 +381,7 @@ namespace UmaParser
                     e.CellStyle.SelectionForeColor = fore;
                 }
             }
-            else if (header == "Avg Skill Pts/Race" && e.Value is double sp)
+            else if (columnId == GridColumnIds.Tracks.AvgSkillPts && e.Value is double sp)
             {
                 e.Value = sp.ToString("0");
                 e.FormattingApplied = true;
@@ -288,6 +397,40 @@ namespace UmaParser
             }
 
             ClearGridSelection(dataGridViewTracks);
+        }
+
+        private readonly struct TracksTotals
+        {
+            public static TracksTotals Empty => new(0, 0, 0, 0, 0, 0, 0, 0);
+
+            public TracksTotals(
+                int races,
+                double avgPlace,
+                double pctFirst,
+                double pctTop3,
+                double pctTop5,
+                double spurtRate,
+                double survival,
+                double avgSkillPointsPerRace)
+            {
+                Races = races;
+                AvgPlace = avgPlace;
+                PctFirst = pctFirst;
+                PctTop3 = pctTop3;
+                PctTop5 = pctTop5;
+                SpurtRate = spurtRate;
+                Survival = survival;
+                AvgSkillPointsPerRace = avgSkillPointsPerRace;
+            }
+
+            public int Races { get; }
+            public double AvgPlace { get; }
+            public double PctFirst { get; }
+            public double PctTop3 { get; }
+            public double PctTop5 { get; }
+            public double SpurtRate { get; }
+            public double Survival { get; }
+            public double AvgSkillPointsPerRace { get; }
         }
     }
 }

@@ -99,4 +99,22 @@ internal static class AppColors
 
     public static Color SkillUniqueBack => IsDark ? Color.FromArgb(138, 128, 175) : Color.FromArgb(176, 166, 210);
     public static Color SkillUniqueFore => IsDark ? Color.White : Color.Black;
+
+    // ===== Results grid heatmap anchors (red = worst, neutral mid, green = best) =====
+    private static readonly Color LightHeatmapBad = Color.FromArgb(248, 105, 107);   // #F8696B
+    private static readonly Color LightHeatmapNeutral = Color.White;
+    private static readonly Color LightHeatmapGood = Color.FromArgb(99, 190, 123);   // #63BE7B
+
+    // Hand-tuned for dark grids: saturated enough to read against #202020, still dark enough for white text.
+    private static readonly Color DarkHeatmapBad = Color.FromArgb(145, 58, 62);        // #913A3E
+    private static readonly Color DarkHeatmapGood = Color.FromArgb(50, 128, 72);       // #328048
+
+    public static Color HeatmapBadBack => IsDark ? DarkHeatmapBad : LightHeatmapBad;
+
+    public static Color HeatmapNeutralBack =>
+        IsDark ? DarkGridBack : LightHeatmapNeutral;
+
+    public static Color HeatmapGoodBack => IsDark ? DarkHeatmapGood : LightHeatmapGood;
+
+    private static readonly Color DarkGridBack = Color.FromArgb(32, 32, 32);
 }

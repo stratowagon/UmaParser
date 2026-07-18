@@ -28,6 +28,12 @@ namespace UmaParser.Analysis
         public required string Role { get; init; }
         public int TrialCount { get; init; }
         public double Average { get; init; }
+        public double SkillPointsAverage { get; init; }
+        public double SkillPointsCoefficientOfVariation { get; init; }
+        public double OtherPointsAverage { get; init; }
+        public double OtherPointsCoefficientOfVariation { get; init; }
+        /// <summary>Mean finish position across all races (matches Tracks tab total row).</summary>
+        public double AveragePlace { get; init; }
         public double TrimmedAverage { get; init; }
         public double CoefficientOfVariation { get; init; }
         public double AdjustedCoefficientOfVariation { get; init; }
@@ -89,6 +95,7 @@ namespace UmaParser.Analysis
     public static class UmaAnalysisEngine
     {
         public const double OutlierTeamFraction = 0.8;
+        public const int MinTrialsForTrim = 5;
         public const double PerformanceWeight = 0.85;
         public const double ConsistencyWeight = 0.15;
         public const double CriticalThreshold = 8.0;
@@ -101,7 +108,11 @@ namespace UmaParser.Analysis
         public static UmaAnalysisReport Analyze(
             IReadOnlyList<string> rosterNames,
             IReadOnlyList<IReadOnlyList<double>> scoreMatrix,
-            TeamTrialResult? rosterLayoutSource = null)
+            TeamTrialResult? rosterLayoutSource = null,
+            IReadOnlyList<IReadOnlyList<double>>? skillScoreMatrix = null,
+            IReadOnlyList<IReadOnlyList<double>>? otherScoreMatrix = null,
+            IReadOnlyList<int>? rosterTrainedCharaIds = null,
+            IEnumerable<TeamTrialResult>? trials = null)
         {
             if (rosterNames.Count == 0 || scoreMatrix.Count != rosterNames.Count)
             {
@@ -114,13 +125,31 @@ namespace UmaParser.Analysis
                 return EmptyReport();
             }
 
+            if (skillScoreMatrix != null &&
+                (skillScoreMatrix.Count != rosterNames.Count ||
+                 skillScoreMatrix.Any(row => row.Count != trialCount)))
+            {
+                return EmptyReport();
+            }
+
+            if (otherScoreMatrix != null &&
+                (otherScoreMatrix.Count != rosterNames.Count ||
+                 otherScoreMatrix.Any(row => row.Count != trialCount)))
+            {
+                return EmptyReport();
+            }
+
             var rawStats = new List<RawUmaStats>(rosterNames.Count);
             for (int i = 0; i < rosterNames.Count; i++)
             {
                 var layout = GetRosterLayout(rosterLayoutSource, i);
+                double[]? skillScores = skillScoreMatrix?[i].ToArray();
+                double[]? otherScores = otherScoreMatrix?[i].ToArray();
                 rawStats.Add(new RawUmaStats(
                     rosterNames[i],
                     scoreMatrix[i].ToArray(),
+                    skillScores,
+                    otherScores,
                     layout.Distance,
                     layout.Role,
                     layout.RunningStyleLabel,
@@ -150,9 +179,24 @@ namespace UmaParser.Analysis
                 maxAdjustedCv = 1;
             }
 
-            var rows = new List<UmaAnalysisRow>(rawStats.Count);
-            foreach (var stat in rawStats)
+            double[]? avgPlaces = null;
+            if (rosterTrainedCharaIds != null
+                && rosterTrainedCharaIds.Count == rosterNames.Count
+                && trials != null)
             {
+                avgPlaces = new double[rosterNames.Count];
+                for (int i = 0; i < rosterNames.Count; i++)
+                {
+                    avgPlaces[i] = TracksAnalyzer.ComputeOverallAveragePlace(
+                        trials,
+                        rosterTrainedCharaIds[i]);
+                }
+            }
+
+            var rows = new List<UmaAnalysisRow>(rawStats.Count);
+            for (int i = 0; i < rawStats.Count; i++)
+            {
+                var stat = rawStats[i];
                 double gap = maxTrimmed - stat.TrimmedAverage;
                 double retrainScore = ((gap / maxGap * PerformanceWeight)
                     + (stat.AdjustedCoefficientOfVariation / maxAdjustedCv * ConsistencyWeight)) * 10;
@@ -166,6 +210,11 @@ namespace UmaParser.Analysis
                     Role = stat.Role,
                     TrialCount = trialCount,
                     Average = Round(stat.Average),
+                    SkillPointsAverage = Round(stat.SkillPointsAverage),
+                    SkillPointsCoefficientOfVariation = stat.SkillPointsCoefficientOfVariation,
+                    OtherPointsAverage = Round(stat.OtherPointsAverage),
+                    OtherPointsCoefficientOfVariation = stat.OtherPointsCoefficientOfVariation,
+                    AveragePlace = avgPlaces?[i] ?? 0,
                     TrimmedAverage = Round(stat.TrimmedAverage),
                     CoefficientOfVariation = stat.CoefficientOfVariation,
                     AdjustedCoefficientOfVariation = stat.AdjustedCoefficientOfVariation,
@@ -491,6 +540,8 @@ namespace UmaParser.Analysis
             public RawUmaStats(
                 string name,
                 double[] scores,
+                double[]? skillScores,
+                double[]? otherScores,
                 string distance,
                 string role,
                 string runningStyleLabel,
@@ -500,6 +551,8 @@ namespace UmaParser.Analysis
             {
                 Name = name;
                 Scores = scores;
+                SkillScores = skillScores ?? Array.Empty<double>();
+                OtherScores = otherScores ?? Array.Empty<double>();
                 Distance = distance;
                 Role = role;
                 RunningStyleLabel = runningStyleLabel;
@@ -507,10 +560,16 @@ namespace UmaParser.Analysis
                 TeamIndex = teamIndex;
                 RosterIndex = rosterIndex;
                 Average = scores.Length > 0 ? scores.Average() : 0;
+                SkillPointsAverage = SkillScores.Length > 0 ? SkillScores.Average() : 0;
+                OtherPointsAverage = OtherScores.Length > 0 ? OtherScores.Average() : 0;
             }
 
             public string Name { get; }
             public double[] Scores { get; }
+            public double[] SkillScores { get; }
+            public double[] OtherScores { get; }
+            public double SkillPointsAverage { get; }
+            public double OtherPointsAverage { get; }
             public string Distance { get; }
             public string Role { get; }
             public string RunningStyleLabel { get; }
@@ -519,6 +578,8 @@ namespace UmaParser.Analysis
             public int RosterIndex { get; }
             public double Average { get; }
             public double TrimmedAverage { get; private set; }
+            public double SkillPointsCoefficientOfVariation { get; private set; }
+            public double OtherPointsCoefficientOfVariation { get; private set; }
             public double CoefficientOfVariation { get; private set; }
             public double AdjustedCoefficientOfVariation { get; private set; }
             public double Ceiling { get; private set; }
@@ -527,6 +588,12 @@ namespace UmaParser.Analysis
             public void ComputeDerived(double teamBenchmark)
             {
                 TrimmedAverage = ComputeTrimmedAverage(Scores, teamBenchmark);
+                SkillPointsCoefficientOfVariation = ComputeCoefficientOfVariation(
+                    SkillScores,
+                    SkillPointsAverage);
+                OtherPointsCoefficientOfVariation = ComputeCoefficientOfVariation(
+                    OtherScores,
+                    OtherPointsAverage);
                 CoefficientOfVariation = ComputeCoefficientOfVariation(Scores, Average);
                 AdjustedCoefficientOfVariation = ComputeAdjustedCoefficientOfVariation(
                     Scores,
@@ -545,7 +612,7 @@ namespace UmaParser.Analysis
 
                 double min = scores.Min();
                 double avg = scores.Average();
-                if (min < teamBenchmark * OutlierTeamFraction && scores.Length > 1)
+                if (min < teamBenchmark * OutlierTeamFraction && scores.Length >= MinTrialsForTrim)
                 {
                     return (scores.Sum() - min) / (scores.Length - 1);
                 }
@@ -574,7 +641,7 @@ namespace UmaParser.Analysis
                 }
 
                 double min = scores.Min();
-                if (min < teamBenchmark * OutlierTeamFraction && scores.Length > 1)
+                if (min < teamBenchmark * OutlierTeamFraction && scores.Length >= MinTrialsForTrim)
                 {
                     var filtered = scores.Where(s => s > min).ToArray();
                     double trimmedMean = filtered.Average();
@@ -626,6 +693,46 @@ namespace UmaParser.Analysis
     /// </summary>
     public static class TracksAnalyzer
     {
+        /// <summary>
+        /// Mean finish position across every race appearance for this uma.
+        /// Matches the Tracks tab total-row Avg Place for the same trials and uma.
+        /// </summary>
+        public static double ComputeOverallAveragePlace(
+            IEnumerable<TeamTrialResult> trials,
+            int trainedCharaId)
+        {
+            var placements = new List<int>();
+            foreach (var trial in trials)
+            {
+                foreach (var appearance in trial.GetAppearances(trainedCharaId))
+                {
+                    int? finishOrder = TryGetTeamTrialFinishOrder(trial, appearance, trainedCharaId);
+                    if (finishOrder.HasValue)
+                    {
+                        placements.Add(finishOrder.Value);
+                    }
+                }
+            }
+
+            return placements.Count > 0 ? Math.Round(placements.Average(), 2) : 0;
+        }
+
+        private static int? TryGetTeamTrialFinishOrder(
+            TeamTrialResult trial,
+            RaceAppearance appearance,
+            int trainedCharaId)
+        {
+            var raceResult = trial.FindRaceResultByUma(appearance.Horse);
+            if (raceResult == null)
+            {
+                return null;
+            }
+
+            var charaRes = raceResult.CharaResultArray
+                .FirstOrDefault(c => c.TrainedCharaId == trainedCharaId);
+            return charaRes?.FinishOrder;
+        }
+
         public static TracksReport Analyze(
             IEnumerable<TeamTrialResult> trials,
             int trainedCharaId,
@@ -728,16 +835,7 @@ namespace UmaParser.Analysis
                         }
                     }
 
-                    // Placement
-                    int? finishOrder = null;
-                    var raceResult = trial.FindRaceResultByUma(appearance.Horse);
-                    if (raceResult != null)
-                    {
-                        var charaRes = raceResult.CharaResultArray
-                            .FirstOrDefault(c => c.TrainedCharaId == trainedCharaId);
-                        finishOrder = charaRes?.FinishOrder;
-                    }
-
+                    int? finishOrder = TryGetTeamTrialFinishOrder(trial, appearance, trainedCharaId);
                     if (finishOrder.HasValue)
                     {
                         stats.Placements.Add(finishOrder.Value);

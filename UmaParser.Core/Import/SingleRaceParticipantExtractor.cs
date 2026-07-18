@@ -9,9 +9,15 @@ namespace UmaParser.Import;
 /// <summary>
 /// Helpers to pull participant / ownership information out of the normalized JSON
 /// from Champions Meeting, Room Match, and Practice Room captures.
-/// 
+///
 /// These dumps are much richer than TT responses and contain explicit signals
 /// (PlayerTeamMemberArray + npc_type + _isPlayer) for which horses belong to the local player.
+///
+/// Property names vary by HorseACT version:
+/// - Older dumps: compiler backing fields (<c>&lt;PlayerTeamMemberArray&gt;k__BackingField</c>),
+///   cleaned to PascalCase by <see cref="CaptureDecoder.NormalizeBackingFieldJson"/>.
+/// - HorseACT ~1.1.3+: clean camelCase (<c>playerTeamMemberArray</c>, <c>responseHorseData</c>).
+/// Structural lookups are therefore case-insensitive.
 /// </summary>
 public static class SingleRaceParticipantExtractor
 {
@@ -35,10 +41,10 @@ public static class SingleRaceParticipantExtractor
             var root = doc.RootElement;
 
             // Extract course/track info while the document is alive (for Tracks tab)
-            if (root.TryGetProperty("RaceCourseSet", out var rcs) && rcs.ValueKind == JsonValueKind.Object)
+            if (TryGetPropertyCI(root, "RaceCourseSet", out var rcs) && rcs.ValueKind == JsonValueKind.Object)
             {
-                result.Distance = GetInt(rcs, "Distance");
-                int trackId = GetInt(rcs, "RaceTrackId");
+                result.Distance = GetIntCI(rcs, "Distance");
+                int trackId = GetIntCI(rcs, "RaceTrackId");
 
                 var catalog = GameMasterService.Current.Catalog;
                 string trackName = $"Track {trackId}";
@@ -49,7 +55,7 @@ public static class SingleRaceParticipantExtractor
                 }
                 result.TrackName = trackName;
             }
-            else if (root.TryGetProperty("Distance", out var dEl) && dEl.TryGetInt32(out int d))
+            else if (TryGetPropertyCI(root, "Distance", out var dEl) && dEl.TryGetInt32(out int d))
             {
                 result.Distance = d;
             }
@@ -65,15 +71,15 @@ public static class SingleRaceParticipantExtractor
             // may only list the "main" / team-1 equivalents).
             var localOwnerNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            if (root.TryGetProperty("PlayerTeamMemberArray", out var pta) && pta.ValueKind == JsonValueKind.Array)
+            if (TryGetPropertyCI(root, "PlayerTeamMemberArray", out var pta) && pta.ValueKind == JsonValueKind.Array)
             {
                 foreach (var entry in pta.EnumerateArray())
                 {
-                    // The actual horse data is usually under "_responseHorseData"
+                    // The actual horse data is usually under "_responseHorseData" / "responseHorseData"
                     JsonElement horse = entry;
-                    if (entry.TryGetProperty("_responseHorseData", out var resp) && resp.ValueKind == JsonValueKind.Object)
+                    if (TryGetPropertyCI(entry, "responseHorseData", out var resp) && resp.ValueKind == JsonValueKind.Object)
                         horse = resp;
-                    else if (entry.TryGetProperty("responseHorseData", out var resp2) && resp2.ValueKind == JsonValueKind.Object)
+                    else if (TryGetPropertyCI(entry, "_responseHorseData", out var resp2) && resp2.ValueKind == JsonValueKind.Object)
                         horse = resp2;
 
                     // Verify it looks like a current race horse
@@ -130,24 +136,59 @@ public static class SingleRaceParticipantExtractor
             }
 
             // Final fallback: if we still have nothing (e.g. very old capture format
-            // with no usable PlayerTeamMemberArray), fall back to strong signals
-            // npc_type == 11 or _isPlayer on current-race horses.
+            // with no usable PlayerTeamMemberArray), fall back to explicit _isPlayer
+            // markers. Do NOT treat npc_type == 11 alone as local — in CM/Room Match
+            // every real trainer horse uses npc_type 11, so that would pull in opponents
+            // and explode the Skills/Tracks dropdowns.
             if (result.LocalPlayerHorses.Count == 0)
             {
                 var horseElements = FindCurrentRaceHorseObjects(root);
+                var markedPlayer = new List<JsonElement>();
+                var npcType11 = new List<JsonElement>();
+
                 foreach (var horse in horseElements)
                 {
-                    int npcType = horse.TryGetProperty("npc_type", out var nt) && nt.TryGetInt32(out int n) ? n : 0;
-                    bool isMarkedPlayer = horse.TryGetProperty("_isPlayer", out var ip) && ip.ValueKind == JsonValueKind.True;
+                    bool isMarkedPlayer =
+                        (TryGetPropertyCI(horse, "_isPlayer", out var ip) && ip.ValueKind == JsonValueKind.True) ||
+                        (TryGetPropertyCI(horse, "isPlayer", out var ip2) && ip2.ValueKind == JsonValueKind.True);
 
-                    if (npcType == 11 || isMarkedPlayer)
+                    if (isMarkedPlayer)
                     {
-                        var identity = BuildIdentityFromHorse(horse);
-                        if (identity != null)
-                        {
-                            var mappedHorse = MapCaptureHorseToRaceHorseData(horse);
-                            result.LocalPlayerHorses.Add((identity with { IsLocalPlayer = true }, mappedHorse));
-                        }
+                        markedPlayer.Add(horse);
+                        continue;
+                    }
+
+                    int npcType = horse.TryGetProperty("npc_type", out var nt) && nt.TryGetInt32(out int n) ? n : 0;
+                    if (npcType == 11)
+                        npcType11.Add(horse);
+                }
+
+                // Prefer explicit player markers. Only use npc_type==11 when it does not look like
+                // a full multi-trainer lobby (all opponents also have 11).
+                IEnumerable<JsonElement> fallbackHorses = markedPlayer;
+                if (markedPlayer.Count == 0 && npcType11.Count > 0)
+                {
+                    var trainers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var h in npcType11)
+                    {
+                        string t = h.TryGetProperty("trainer_name", out var tn) ? (tn.GetString() ?? "") : "";
+                        if (!string.IsNullOrWhiteSpace(t))
+                            trainers.Add(t);
+                    }
+
+                    // Single trainer (or no names) → safe to treat as local. Multiple trainers means
+                    // CM/Room opponents and must be skipped rather than polluting the dropdown.
+                    if (trainers.Count <= 1)
+                        fallbackHorses = npcType11;
+                }
+
+                foreach (var horse in fallbackHorses)
+                {
+                    var identity = BuildIdentityFromHorse(horse);
+                    if (identity != null)
+                    {
+                        var mappedHorse = MapCaptureHorseToRaceHorseData(horse);
+                        result.LocalPlayerHorses.Add((identity with { IsLocalPlayer = true }, mappedHorse));
                     }
                 }
             }
@@ -238,15 +279,16 @@ public static class SingleRaceParticipantExtractor
         int rs;
 
         // Direct on this element
-        if (TryGetInt(el, "rankScore", out rs)) return rs;
-        if (TryGetInt(el, "_rankScore", out rs)) return rs;
-        if (TryGetInt(el, "rank_score", out rs)) return rs;
+        if (TryGetIntCI(el, "rankScore", out rs)) return rs;
+        if (TryGetIntCI(el, "_rankScore", out rs)) return rs;
+        if (TryGetIntCI(el, "rank_score", out rs)) return rs;
 
-        // Inside TrainedCharaData (common nesting)
-        if (el.TryGetProperty("TrainedCharaData", out var tcd) || el.TryGetProperty("_TrainedCharaData", out tcd))
+        // Inside TrainedCharaData (common nesting; camelCase in newer HorseACT dumps)
+        if (TryGetPropertyCI(el, "TrainedCharaData", out var tcd) ||
+            TryGetPropertyCI(el, "_TrainedCharaData", out tcd))
         {
-            if (TryGetInt(tcd, "rankScore", out rs)) return rs;
-            if (TryGetInt(tcd, "_rankScore", out rs)) return rs;
+            if (TryGetIntCI(tcd, "rankScore", out rs)) return rs;
+            if (TryGetIntCI(tcd, "_rankScore", out rs)) return rs;
         }
 
         // One level deeper search (for cases where the TrainedCharaData is a sibling on the PlayerTeamMemberArray entry)
@@ -255,14 +297,15 @@ public static class SingleRaceParticipantExtractor
             var child = prop.Value;
             if (child.ValueKind == JsonValueKind.Object)
             {
-                if (TryGetInt(child, "_rankScore", out rs) || TryGetInt(child, "rankScore", out rs))
+                if (TryGetIntCI(child, "_rankScore", out rs) || TryGetIntCI(child, "rankScore", out rs))
                     return rs;
 
                 // Also check inside TrainedCharaData at this level
-                if (child.TryGetProperty("TrainedCharaData", out var nestedTcd) || child.TryGetProperty("_TrainedCharaData", out nestedTcd))
+                if (TryGetPropertyCI(child, "TrainedCharaData", out var nestedTcd) ||
+                    TryGetPropertyCI(child, "_TrainedCharaData", out nestedTcd))
                 {
-                    if (TryGetInt(nestedTcd, "rankScore", out rs)) return rs;
-                    if (TryGetInt(nestedTcd, "_rankScore", out rs)) return rs;
+                    if (TryGetIntCI(nestedTcd, "rankScore", out rs)) return rs;
+                    if (TryGetIntCI(nestedTcd, "_rankScore", out rs)) return rs;
                 }
             }
         }
@@ -270,9 +313,38 @@ public static class SingleRaceParticipantExtractor
         return null;
     }
 
-    private static bool TryGetInt(JsonElement el, string name, out int value)
+    /// <summary>
+    /// Case-insensitive property lookup. Needed because older HorseACT dumps use PascalCase
+    /// (after backing-field cleanup) while newer ones serialize camelCase.
+    /// Prefer exact match first for speed on the common path.
+    /// </summary>
+    private static bool TryGetPropertyCI(JsonElement el, string name, out JsonElement value)
     {
-        if (el.TryGetProperty(name, out var p) && p.TryGetInt32(out int v))
+        if (el.ValueKind != JsonValueKind.Object)
+        {
+            value = default;
+            return false;
+        }
+
+        if (el.TryGetProperty(name, out value))
+            return true;
+
+        foreach (var prop in el.EnumerateObject())
+        {
+            if (string.Equals(prop.Name, name, StringComparison.OrdinalIgnoreCase))
+            {
+                value = prop.Value;
+                return true;
+            }
+        }
+
+        value = default;
+        return false;
+    }
+
+    private static bool TryGetIntCI(JsonElement el, string name, out int value)
+    {
+        if (TryGetPropertyCI(el, name, out var p) && p.TryGetInt32(out int v))
         {
             value = v;
             return true;
@@ -280,6 +352,9 @@ public static class SingleRaceParticipantExtractor
         value = 0;
         return false;
     }
+
+    private static int GetIntCI(JsonElement el, string name)
+        => TryGetIntCI(el, name, out int v) ? v : 0;
 
     /// <summary>
     /// Maps a horse object from a single-race capture (normalized) to the common RaceHorseData model

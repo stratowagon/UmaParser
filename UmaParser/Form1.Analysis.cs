@@ -7,35 +7,26 @@ namespace UmaParser
 {
     public partial class Form1
     {
-        private static readonly Dictionary<string, string> AnalysisColumnTooltips = new(StringComparer.Ordinal)
-        {
-            ["Uma"] = "Uma name in roster order: five teams (Sprint → Dirt), ace first in each trio (shown bold).",
-            ["Style"] = "Running style used in that team's race. Amber = two share a style; red = all three share a style.",
-            ["Avg"] = "Mean base score per trial (all score bonuses removed).",
-            ["Trimmed"] = "Average after dropping one outlier trial if the lowest score is below 80% of the team mean.",
-            ["CV"] = "Coefficient of variation (stdev ÷ mean), shown as percent. Lower is more consistent.",
-            ["Adj CV"] = "CV after removing one outlier low trial when the trim rule applies, shown as percent.",
-            ["Gap"] = "Points below the best trimmed base score on the roster.",
-            ["Ceiling"] = "90th percentile base score across trials.",
-            ["Floor"] = "10th percentile base score across trials.",
-            ["Spread"] = "Ceiling minus floor — scoring range across trials.",
-            ["Retrain"] = "Combined weakness score (85% gap, 15% adjusted CV). Higher = stronger rebuild candidate.",
-            ["Ace delta"] = "Trimmed base score difference vs this team's current ace (+ = better than ace). Colored when positive and large enough to suggest a swap (strong = red, weak hint = amber).",
-        };
-
         private UmaAnalysisReport? _lastAnalysisReport;
-        private int _analysisRetrainColumnIndex = -1;
-        private int _analysisStyleColumnIndex = -1;
-        private int _analysisAceDeltaColumnIndex = -1;
 
         private void PopulateAnalysis(Dictionary<string, TeamTrialResult> trialResults)
         {
-            var first = trialResults.First().Value;
-            var canonicalIds = first.RosterTrainedCharaIds;
-            var rosterNames = first.RosterNames;
-            var scoreMatrix = BuildBaseScoreMatrix(trialResults.Values, canonicalIds);
+            var layoutTrial = trialResults.Last().Value;
+            var canonicalIds = layoutTrial.RosterTrainedCharaIds;
+            var rosterNames = layoutTrial.RosterNames;
+            var trialValues = trialResults.Values;
+            var scoreMatrix = BuildCategoryScoreMatrix(trialValues, canonicalIds, (t, id) => t.UmaBaseScore(id));
+            var skillMatrix = BuildCategoryScoreMatrix(trialValues, canonicalIds, (t, id) => t.UmaSkillBaseScore(id));
+            var otherMatrix = BuildCategoryScoreMatrix(trialValues, canonicalIds, (t, id) => t.UmaOtherBaseScore(id));
 
-            _lastAnalysisReport = UmaAnalysisEngine.Analyze(rosterNames, scoreMatrix, first);
+            _lastAnalysisReport = UmaAnalysisEngine.Analyze(
+                rosterNames,
+                scoreMatrix,
+                layoutTrial,
+                skillMatrix,
+                otherMatrix,
+                canonicalIds,
+                trialValues);
             BindAnalysisGrid(_lastAnalysisReport);
             SetStatus(FormatAnalysisSummary(_lastAnalysisReport));
             mainTabControl.SelectedTab = tabPageAnalysis;
@@ -44,9 +35,6 @@ namespace UmaParser
         private void ClearAnalysis(string? message = null)
         {
             _lastAnalysisReport = null;
-            _analysisRetrainColumnIndex = -1;
-            _analysisStyleColumnIndex = -1;
-            _analysisAceDeltaColumnIndex = -1;
 
             if (message != null && panelAnalysisEmpty != null && labelAnalysisMessage != null)
             {
@@ -63,29 +51,23 @@ namespace UmaParser
             }
         }
 
-        private static List<IReadOnlyList<double>> BuildBaseScoreMatrix(
+        private static List<IReadOnlyList<double>> BuildCategoryScoreMatrix(
             IEnumerable<TeamTrialResult> trials,
-            IReadOnlyList<int> canonicalIds)
+            IReadOnlyList<int> canonicalIds,
+            Func<TeamTrialResult, int, int> getScore)
         {
             var matrix = new List<IReadOnlyList<double>>(canonicalIds.Count);
             var trialList = trials.ToList();
 
-            // Build id -> baseScore map per trial so we align by trainedCharaId (UmaIdentity)
-            // rather than by roster list position. This is required for cases where two umas
-            // on the same distance team swapped positions (incl. ace) between trials; their
-            // TeamMemberId changes, which permutes the order of RaceRoster / RosterBaseScores
-            // (sorted by DistanceType then TeamMemberId) while the set of (id, dist, style) is stable.
-            var trialBaseMaps = new List<Dictionary<int, int>>(trialList.Count);
+            var trialScoreMaps = new List<Dictionary<int, int>>(trialList.Count);
             foreach (var t in trialList)
             {
-                var ids = t.RosterTrainedCharaIds;
-                var bases = t.RosterBaseScores;
-                var map = new Dictionary<int, int>(ids.Count);
-                for (int j = 0; j < ids.Count; j++)
+                var map = new Dictionary<int, int>();
+                foreach (var id in t.RosterTrainedCharaIds)
                 {
-                    map[ids[j]] = bases[j];
+                    map[id] = getScore(t, id);
                 }
-                trialBaseMaps.Add(map);
+                trialScoreMaps.Add(map);
             }
 
             for (int i = 0; i < canonicalIds.Count; i++)
@@ -94,7 +76,7 @@ namespace UmaParser
                 var scores = new double[trialList.Count];
                 for (int t = 0; t < trialList.Count; t++)
                 {
-                    scores[t] = trialBaseMaps[t].TryGetValue(id, out var b) ? b : 0;
+                    scores[t] = trialScoreMaps[t].TryGetValue(id, out var b) ? b : 0;
                 }
                 matrix.Add(scores);
             }
@@ -104,46 +86,15 @@ namespace UmaParser
 
         private void BindAnalysisGrid(UmaAnalysisReport report)
         {
-            dataGridViewAnalysis.Columns.Clear();
-            dataGridViewAnalysis.Rows.Clear();
+            var prefs = LoadGridColumnPreferences<UmaAnalysisRow>(GridKeys.Analysis);
+            GridColumnBinder.Bind(
+                dataGridViewAnalysis,
+                AnalysisColumnSet.All,
+                prefs,
+                BuildGridColumnContext(),
+                report.Rows,
+                DataGridViewColumnSortMode.NotSortable);
 
-            string[] headers =
-            [
-                "Uma", "Style", "Avg", "Trimmed", "CV", "Adj CV", "Gap", "Ceiling", "Floor",
-                "Spread", "Retrain", "Ace delta"
-            ];
-
-            foreach (var header in headers)
-            {
-                int col = dataGridViewAnalysis.Columns.Add(header, header);
-                var column = dataGridViewAnalysis.Columns[col];
-                column.SortMode = DataGridViewColumnSortMode.NotSortable;
-                if (AnalysisColumnTooltips.TryGetValue(header, out string? tip))
-                {
-                    column.ToolTipText = tip;
-                }
-            }
-
-            foreach (var row in report.Rows)
-            {
-                dataGridViewAnalysis.Rows.Add(
-                    row.Name,
-                    row.RunningStyleLabel,
-                    row.Average,
-                    row.TrimmedAverage,
-                    FormatCoefficientOfVariation(row.CoefficientOfVariation),
-                    FormatCoefficientOfVariation(row.AdjustedCoefficientOfVariation),
-                    row.GapToTop,
-                    row.Ceiling,
-                    row.Floor,
-                    row.CeilingFloorSpread,
-                    row.RetrainPriorityLabel,
-                    row.AceDeltaLabel);
-            }
-
-            _analysisRetrainColumnIndex = dataGridViewAnalysis.Columns["Retrain"]?.Index ?? -1;
-            _analysisStyleColumnIndex = dataGridViewAnalysis.Columns["Style"]?.Index ?? -1;
-            _analysisAceDeltaColumnIndex = dataGridViewAnalysis.Columns["Ace delta"]?.Index ?? -1;
             FinalizeAnalysisGrid();
         }
 
@@ -196,9 +147,6 @@ namespace UmaParser
             return string.Join(Environment.NewLine, lines);
         }
 
-        /// <summary>CV is stored as a ratio (0–1 for typical scores); display as percent.</summary>
-        private static string FormatCoefficientOfVariation(double ratio) => $"{ratio * 100:F2}%";
-
         private void DataGridViewAnalysis_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
         {
             if (_lastAnalysisReport == null || e.RowIndex < 0 || e.ColumnIndex < 0
@@ -209,8 +157,11 @@ namespace UmaParser
             }
 
             var analysisRow = _lastAnalysisReport.Rows[e.RowIndex];
+            string? columnId = e.ColumnIndex < dataGridViewAnalysis.Columns.Count
+                ? dataGridViewAnalysis.Columns[e.ColumnIndex].Name
+                : null;
 
-            if (e.ColumnIndex == _analysisRetrainColumnIndex)
+            if (columnId == GridColumnIds.Analysis.Retrain)
             {
                 Color backColor = analysisRow.PriorityLevel switch
                 {
@@ -227,7 +178,7 @@ namespace UmaParser
                 return;
             }
 
-            if (e.ColumnIndex == _analysisStyleColumnIndex)
+            if (columnId == GridColumnIds.Analysis.Style)
             {
                 Color? overlapColor = analysisRow.StyleOverlap switch
                 {
@@ -247,12 +198,16 @@ namespace UmaParser
                 }
             }
 
-            if (e.ColumnIndex == _analysisAceDeltaColumnIndex)
+            if (columnId == GridColumnIds.Analysis.AvgPlace && e.Value is double avgPlace)
             {
-                // Only color when this support beats the ace (positive delta) and it qualifies as a hint/suggestion.
+                e.Value = avgPlace.ToString("0.00");
+                e.FormattingApplied = true;
+            }
+
+            if (columnId == GridColumnIds.Analysis.AceDelta)
+            {
                 if (analysisRow.AceDelta > 0 && analysisRow.IsSuggestedAce)
                 {
-                    // Look up the recommendation to know if it was a strong or weak hint.
                     var rec = _lastAnalysisReport.AceRecommendations
                         .FirstOrDefault(r => r.Distance == analysisRow.Distance && r.BestSupport == analysisRow.Name);
 
@@ -266,7 +221,6 @@ namespace UmaParser
                     e.CellStyle.SelectionBackColor = ControlPaint.Light(backColor, 0.28f);
                     e.CellStyle.SelectionForeColor = fore;
                 }
-                // Aces show "+0 (+0%)" with no special color. Negative deltas (worse than ace) also get no color.
                 return;
             }
 

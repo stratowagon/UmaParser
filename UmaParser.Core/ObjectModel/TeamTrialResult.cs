@@ -300,6 +300,22 @@ namespace UmaParser.ObjectModel
             return Results[trainedCharaId].ScoreArray.Sum(score => score.BaseScore);
         }
 
+        public int UmaSkillBaseScore(int trainedCharaId)
+        {
+            if (Data == null) return 0;
+            return Results[trainedCharaId].ScoreArray
+                .Where(score => TeamTrialsScoreCategories.IsSkillActivation(score.RawScoreId))
+                .Sum(score => score.BaseScore);
+        }
+
+        /// <summary>
+        /// All non-skill base score buckets (positioning, placement, target time, strong start, etc.).
+        /// </summary>
+        public int UmaOtherBaseScore(int trainedCharaId)
+        {
+            return UmaBaseScore(trainedCharaId) - UmaSkillBaseScore(trainedCharaId);
+        }
+
         public List<int> RosterBaseScores
         {
             get

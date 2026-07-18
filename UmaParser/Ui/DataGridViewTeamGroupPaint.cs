@@ -44,4 +44,37 @@ internal static class DataGridViewTeamGroupPaint
     {
         PaintTopBorder(grid, e, borderWidth, DefaultTeamBoundaryRows);
     }
+
+    /// <summary>
+    /// Paints team-group top borders once per row instead of once per cell (much faster when scrolling wide grids).
+    /// </summary>
+    public static void PaintRowTopBorders(
+        DataGridView grid,
+        DataGridViewRowPostPaintEventArgs e,
+        float borderWidth,
+        IReadOnlyList<int> boundaryRows)
+    {
+        if (e.RowIndex < 0 || e.Graphics == null || !boundaryRows.Contains(e.RowIndex))
+        {
+            return;
+        }
+
+        Color borderColor = grid.GridColor;
+        if (grid.ColumnHeadersDefaultCellStyle.BackColor != Color.Empty)
+        {
+            borderColor = ControlPaint.Dark(grid.ColumnHeadersDefaultCellStyle.BackColor);
+        }
+
+        using var pen = new Pen(borderColor, borderWidth);
+        int y = e.RowBounds.Top + (int)(borderWidth / 2f);
+        e.Graphics.DrawLine(pen, e.RowBounds.Left, y, e.RowBounds.Right - 1, y);
+    }
+
+    public static void PaintDefaultRowTopBorders(
+        DataGridView grid,
+        DataGridViewRowPostPaintEventArgs e,
+        float borderWidth)
+    {
+        PaintRowTopBorders(grid, e, borderWidth, DefaultTeamBoundaryRows);
+    }
 }

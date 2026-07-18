@@ -33,6 +33,7 @@ namespace UmaParser
             }
 
             FinalizeGridDisplay();
+            _openOptionsDialog?.RefreshAvailability();
         }
 
         // Non-TT (single race) data for the current load
@@ -193,8 +194,7 @@ namespace UmaParser
             // 1. Change in running style for this veteran
             // 2. A different veteran of the same base character (different trained_chara_id, same chara_id)
             // 3. A different variant of the character (different card_id, still different trained_chara_id)
-            _mismatchOutliers = new bool[n, 15];
-            _mismatchFileCount = n;
+            var mismatchOutliers = new bool[n, 15];
 
             for (int fi = 0; fi < n; fi++)
             {
@@ -211,7 +211,7 @@ namespace UmaParser
                 {
                     bool idDiff = fIds[p] != majIds[p];
                     bool styleDiff = fStyles[p] != refStyles[p];
-                    _mismatchOutliers[fi, p] = idDiff || styleDiff;
+                    mismatchOutliers[fi, p] = idDiff || styleDiff;
                 }
             }
 
@@ -281,7 +281,6 @@ namespace UmaParser
                 labelTracksSummary.Text = "No consistent umas for Tracks.";
             }
 
-            // Populate the grid (names only; highlighting applied in CellFormatting)
             for (int c = 0; c < n; c++)
             {
                 var (fileName, trial) = fileEntries[c];
@@ -292,6 +291,8 @@ namespace UmaParser
                     SetCellValue(c, row, trial.RosterNames[row]);
                 }
             }
+
+            ResultsGridStyler.ApplyRosterMismatch(dataGridView1, mismatchOutliers, n, _aceNameFontCache);
 
             // Explicit non-grid message on the Team Analysis tab (like Results empty state)
             ClearAnalysis("Team Analysis is only active for Team Trials files that all have the exact same roster of 15 umas.");
@@ -341,8 +342,6 @@ namespace UmaParser
             var trials = batch.Trials;
             var fileEntries = trials.ToList();
             _gridDisplayMode = GridDisplayMode.RosterStats;
-            _mismatchOutliers = null;
-            _mismatchFileCount = 0;
             SetStatus(BuildImportStatusMessage(
                 $"{trials.Count} team trial file(s) loaded.",
                 batch.SkippedFileCount));
@@ -360,9 +359,9 @@ namespace UmaParser
                 dataGridView1.Columns[i + 1].ToolTipText = fileEntries[i].Key;
             }
 
-            var first = fileEntries[0].Value;
-            var canonicalIds = first.RosterTrainedCharaIds;
-            var canonicalNames = first.RosterNames;
+            var layoutTrial = fileEntries[^1].Value;
+            var canonicalIds = layoutTrial.RosterTrainedCharaIds;
+            var canonicalNames = layoutTrial.RosterNames;
 
             for (int i = 0; i < canonicalNames.Count; i++)
             {
@@ -392,6 +391,8 @@ namespace UmaParser
                 SetCellValue(scoreColumn, 15, trial.TotalScore);
                 scoreColumn++;
             }
+
+            ResultsGridStyler.ApplyRosterStats(dataGridView1, StatsTotalRowIndex, _aceNameFontCache);
 
             PopulateAnalysis(trials.ToDictionary(kv => kv.Key, kv => kv.Value));
             PopulateSkills(trials.ToDictionary(kv => kv.Key, kv => kv.Value));

@@ -17,6 +17,12 @@ public sealed class TeamTrialBatch
         = new Dictionary<string, TeamTrialResult>();
 
     /// <summary>
+    /// Trials dictionary is built in chronological order (oldest first); returns the newest trial.
+    /// </summary>
+    public TeamTrialResult? MostRecentTrial =>
+        Trials.Count > 0 ? Trials.Last().Value : null;
+
+    /// <summary>
     /// Successfully imported single-race captures. These carry the normalized JSON + the extracted
     /// SimDataBase64 (the race scenario blob) so Skills and Tracks can work with them.
     /// </summary>

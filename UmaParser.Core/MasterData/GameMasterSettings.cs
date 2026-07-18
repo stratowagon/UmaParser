@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using UmaParser.Settings;
 
 namespace UmaParser.MasterData;
 
@@ -17,6 +18,24 @@ internal sealed class GameMasterSettings
 
     /// <summary>Appearance: Light or Dark. Null/empty/System = Light.</summary>
     public string? ColorMode { get; set; }
+
+    public GridColumnPreferencesStore? GridColumns { get; set; }
+
+    public GridColumnGridPreferences GetGridColumnPreferences(string gridKey)
+    {
+        if (GridColumns == null)
+        {
+            return new GridColumnGridPreferences();
+        }
+
+        return GridColumns.GetOrCreate(gridKey);
+    }
+
+    public void SetGridColumnPreferences(string gridKey, GridColumnGridPreferences prefs)
+    {
+        GridColumns ??= new GridColumnPreferencesStore();
+        GridColumns.Grids[gridKey] = prefs;
+    }
 
     public static GameMasterSettings Load()
     {

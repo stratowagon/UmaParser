@@ -30,6 +30,8 @@
         {
             backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             menuStrip1 = new MenuStrip();
+            optionsToolStripMenuItem = new ToolStripMenuItem();
+            optionsPreferencesMenuItem = new ToolStripMenuItem();
             viewToolStripMenuItem = new ToolStripMenuItem();
             viewLightMenuItem = new ToolStripMenuItem();
             viewDarkMenuItem = new ToolStripMenuItem();
@@ -82,12 +84,25 @@
             // 
             // menuStrip1
             // 
-            menuStrip1.Items.AddRange(new ToolStripItem[] { viewToolStripMenuItem, masterDataToolStripMenuItem });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { optionsToolStripMenuItem, viewToolStripMenuItem, masterDataToolStripMenuItem });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Size = new Size(812, 24);
             menuStrip1.TabIndex = 0;
             menuStrip1.Text = "menuStrip1";
+            // 
+            // optionsToolStripMenuItem
+            // 
+            optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { optionsPreferencesMenuItem });
+            optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+            optionsToolStripMenuItem.Size = new Size(62, 20);
+            optionsToolStripMenuItem.Text = "Options";
+            // 
+            // optionsPreferencesMenuItem
+            // 
+            optionsPreferencesMenuItem.Name = "optionsPreferencesMenuItem";
+            optionsPreferencesMenuItem.Size = new Size(180, 22);
+            optionsPreferencesMenuItem.Text = "Preferences...";
             // 
             // viewToolStripMenuItem
             // 
@@ -453,6 +468,8 @@
         #endregion
 
         private MenuStrip menuStrip1;
+        private ToolStripMenuItem optionsToolStripMenuItem;
+        private ToolStripMenuItem optionsPreferencesMenuItem;
         private ToolStripMenuItem viewToolStripMenuItem;
         private ToolStripMenuItem viewLightMenuItem;
         private ToolStripMenuItem viewDarkMenuItem;
