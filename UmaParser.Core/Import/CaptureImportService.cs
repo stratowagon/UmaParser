@@ -17,7 +17,6 @@ public static class CaptureImportService
             CaptureImportResult result = extension.ToLowerInvariant() switch
             {
                 ".json" => TryImport(fileName, jsonText: File.ReadAllText(filePath)),
-                ".bin" => TryImport(fileName, binData: File.ReadAllBytes(filePath)),
                 _ => UnsupportedExtension(fileName, extension),
             };
 
@@ -31,23 +30,14 @@ public static class CaptureImportService
 
     public static CaptureImportResult TryImport(
         string fileName,
-        string? jsonText = null,
-        byte[]? binData = null)
+        string? jsonText = null)
     {
-        if (string.IsNullOrWhiteSpace(jsonText) && (binData == null || binData.Length == 0))
+        if (string.IsNullOrWhiteSpace(jsonText))
         {
-            return Failed(fileName, ImportStatus.EmptyContent, "No JSON or binary content provided.");
+            return Failed(fileName, ImportStatus.EmptyContent, "No JSON content provided.");
         }
 
-        if (!CaptureDecoder.TryDecodeToJson(fileName, jsonText, binData, out string json, out string? decodeError))
-        {
-            return Failed(fileName, ImportStatus.InvalidFormat, decodeError);
-        }
-
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            return Failed(fileName, ImportStatus.EmptyContent, "Decoded JSON was empty.");
-        }
+        string json = jsonText;
 
         // First, try the normal Uma API response path (covers Team Trials and headered captures).
         UmaApiResponse? response;

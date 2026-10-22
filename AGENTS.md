@@ -97,7 +97,7 @@ Both projects use **`UmaParser`** as the root namespace (e.g. `UmaParser.Analysi
 
 ### Capture types
 
-Imports come from tools like [HorseACT](https://github.com/ayaliz/horseACT) as `.json` files. Team Trials captures are the primary use case; other race modes are supported but must not be mixed with TT in one drop.
+Imports come from tools like [HorseACT](https://github.com/ayaliz/horseACT) as `.json` files. Team Trials captures are the primary use case; other race modes are supported but must not be mixed with TT in one drop. Only `.json` files are imported. Any other extension is skipped as an unsupported file.
 
 ### Roster consistency (Team Trials)
 
