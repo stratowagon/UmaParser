@@ -1,0 +1,170 @@
+{
+  "FileName": "Legend-Special Week-121.8110s-20261021.json",
+  "RaceType": "Legend",
+  "Horses": 16,
+  "LocalHorses": 1,
+  "Distance": 2500,
+  "Track": "Nakayama",
+  "Umas": [
+    {
+      "Name": "Special Week (var 03)",
+      "TrainedCharaId": 3063,
+      "CharaId": 1001,
+      "RankScore": 0,
+      "Skills": {
+        "UmaName": "Special Week (var 03)",
+        "TrainedCharaId": 0,
+        "TrialCount": 1,
+        "RaceCount": 1,
+        "AverageWit": 1228,
+        "Rows": [
+          {
+            "SkillId": 200222,
+            "SkillName": "Cloudy Days ○",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 900591,
+            "SkillName": "Moving Past, and Beyond",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.67101
+          },
+          {
+            "SkillId": 200492,
+            "SkillName": "Nimble Navigator",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.67101
+          },
+          {
+            "SkillId": 201211,
+            "SkillName": "Overwhelming Pressure",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.67101
+          },
+          {
+            "SkillId": 201662,
+            "SkillName": "See Ya Later!",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.67101
+          },
+          {
+            "SkillId": 202061,
+            "SkillName": "Best in Japan",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 202021,
+            "SkillName": "Daring Strike",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 120011,
+            "SkillName": "Dreams Donned with Pride!",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201462,
+            "SkillName": "End Closer Corners ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 201452,
+            "SkillName": "End Closer Straightaways ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 201182,
+            "SkillName": "Long Corners ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 201172,
+            "SkillName": "Long Straightaways ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 200331,
+            "SkillName": "Professor of Curvature",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 200462,
+            "SkillName": "Ramp Up",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 200012,
+            "SkillName": "Right-Handed ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200362,
+            "SkillName": "Straightaway Adept",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 201611,
+            "SkillName": "Tail Held High",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 200202,
+            "SkillName": "Winter Runner ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          }
+        ]
+      },
+      "Tracks": {
+        "UmaName": "Special Week (var 03)",
+        "TotalRaces": 1,
+        "TeamType": "Non-TT (CM/Room/Practice)",
+        "Rows": [
+          {
+            "Track": "Nakayama",
+            "Distance": 2500,
+            "Races": 1,
+            "AvgPlace": 1,
+            "PctFirst": 100,
+            "PctTop3": 100,
+            "PctTop5": 100,
+            "AvgSkillPointsPerRace": 0,
+            "SpurtRate": 100,
+            "Survival": 100
+          }
+        ]
+      }
+    }
+  ]
+}

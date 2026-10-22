@@ -374,5 +374,8 @@ terminals/
 # Per-user app cache if created beside the repo during development
 master-cache.json
 settings.json
+
+# Golden-master mismatches written by tests/UmaParser.Core.Tests (Snapshot.Match)
+*.received.*
 /_publish-fd
 /_publish-sc

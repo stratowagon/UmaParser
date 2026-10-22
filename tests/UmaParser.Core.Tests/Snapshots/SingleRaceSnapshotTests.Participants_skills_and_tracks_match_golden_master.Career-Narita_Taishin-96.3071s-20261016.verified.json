@@ -1,0 +1,86 @@
+{
+  "FileName": "Career-Narita Taishin-96.3071s-20261016.json",
+  "RaceType": "Single",
+  "Horses": 18,
+  "LocalHorses": 1,
+  "Distance": 2000,
+  "Track": "Tokyo",
+  "Umas": [
+    {
+      "Name": "Narita Taishin (var 01)",
+      "TrainedCharaId": 0,
+      "CharaId": 1050,
+      "RankScore": 0,
+      "Skills": {
+        "UmaName": "Narita Taishin (var 01)",
+        "TrainedCharaId": 0,
+        "TrialCount": 1,
+        "RaceCount": 1,
+        "AverageWit": 287,
+        "Rows": [
+          {
+            "SkillId": 200641,
+            "SkillName": "Encroaching Shadow",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 31.358885
+          },
+          {
+            "SkillId": 201452,
+            "SkillName": "End Closer Straightaways ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 31.358885
+          },
+          {
+            "SkillId": 200152,
+            "SkillName": "Firm Conditions ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201641,
+            "SkillName": "Lone Wolf",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 100501,
+            "SkillName": "Nemesis",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200362,
+            "SkillName": "Straightaway Adept",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 31.358885
+          }
+        ]
+      },
+      "Tracks": {
+        "UmaName": "Narita Taishin (var 01)",
+        "TotalRaces": 1,
+        "TeamType": "Non-TT (CM/Room/Practice)",
+        "Rows": [
+          {
+            "Track": "Tokyo",
+            "Distance": 2000,
+            "Races": 1,
+            "AvgPlace": 1,
+            "PctFirst": 100,
+            "PctTop3": 100,
+            "PctTop5": 100,
+            "AvgSkillPointsPerRace": 0,
+            "SpurtRate": 100,
+            "Survival": 100
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,1534 @@
+{
+  "FileName": "Practice-Special Week-105.3822s-20260908.json",
+  "RaceType": "Practice",
+  "Horses": 9,
+  "LocalHorses": 9,
+  "Distance": 2200,
+  "Track": "Kyoto",
+  "Umas": [
+    {
+      "Name": "Oguri Cap (22814)",
+      "TrainedCharaId": 2275,
+      "CharaId": 1006,
+      "RankScore": 22814,
+      "Skills": {
+        "UmaName": "Oguri Cap (22814)",
+        "TrainedCharaId": 0,
+        "TrialCount": 1,
+        "RaceCount": 1,
+        "AverageWit": 1077,
+        "Rows": [
+          {
+            "SkillId": 900321,
+            "SkillName": "U=ma2",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -91.643454
+          },
+          {
+            "SkillId": 900201,
+            "SkillName": "Angling and Scheming",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.356546
+          },
+          {
+            "SkillId": 201701,
+            "SkillName": "Come What May",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.356546
+          },
+          {
+            "SkillId": 110061,
+            "SkillName": "Festive Miracle",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201352,
+            "SkillName": "Hydrate",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.356546
+          },
+          {
+            "SkillId": 201112,
+            "SkillName": "Medium Corners ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.356546
+          },
+          {
+            "SkillId": 201532,
+            "SkillName": "Pace Chaser Savvy ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201312,
+            "SkillName": "Pace Chaser Straightaways ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.356546
+          },
+          {
+            "SkillId": 200331,
+            "SkillName": "Professor of Curvature",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.356546
+          },
+          {
+            "SkillId": 200012,
+            "SkillName": "Right-Handed ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201662,
+            "SkillName": "See Ya Later!",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.356546
+          },
+          {
+            "SkillId": 200581,
+            "SkillName": "Speed Star",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.356546
+          },
+          {
+            "SkillId": 200362,
+            "SkillName": "Straightaway Adept",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.356546
+          },
+          {
+            "SkillId": 200351,
+            "SkillName": "Swinging Maestro",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.356546
+          },
+          {
+            "SkillId": 201571,
+            "SkillName": "Triple 7s",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.356546
+          },
+          {
+            "SkillId": 201591,
+            "SkillName": "Uma Stan",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.356546
+          },
+          {
+            "SkillId": 202371,
+            "SkillName": "Unstoppable",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.356546
+          }
+        ]
+      },
+      "Tracks": {
+        "UmaName": "Oguri Cap (22814)",
+        "TotalRaces": 1,
+        "TeamType": "Non-TT (CM/Room/Practice)",
+        "Rows": [
+          {
+            "Track": "Kyoto",
+            "Distance": 2200,
+            "Races": 1,
+            "AvgPlace": 2,
+            "PctFirst": 0,
+            "PctTop3": 100,
+            "PctTop5": 100,
+            "AvgSkillPointsPerRace": 0,
+            "SpurtRate": 100,
+            "Survival": 100
+          }
+        ]
+      }
+    },
+    {
+      "Name": "Agnes Digital (22011)",
+      "TrainedCharaId": 2575,
+      "CharaId": 1019,
+      "RankScore": 22011,
+      "Skills": {
+        "UmaName": "Agnes Digital (22011)",
+        "TrainedCharaId": 0,
+        "TrialCount": 1,
+        "RaceCount": 1,
+        "AverageWit": 1166,
+        "Rows": [
+          {
+            "SkillId": 201032,
+            "SkillName": "Mile Straightaways ○",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.281304
+          },
+          {
+            "SkillId": 100191,
+            "SkillName": "OMG! (ﾟ∀ﾟ)  The Final Sprint! ☆",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201092,
+            "SkillName": "Opening Gambit",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.281304
+          },
+          {
+            "SkillId": 210131,
+            "SkillName": "Racing Spirit: Wit",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.281304
+          },
+          {
+            "SkillId": 201072,
+            "SkillName": "Unyielding Spirit",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.281304
+          },
+          {
+            "SkillId": 910071,
+            "SkillName": "564 Escapades",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.718696
+          },
+          {
+            "SkillId": 200451,
+            "SkillName": "Center Stage",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.718696
+          },
+          {
+            "SkillId": 201402,
+            "SkillName": "Fighter",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.718696
+          },
+          {
+            "SkillId": 210012,
+            "SkillName": "Ignited Spirit SPD",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.718696
+          },
+          {
+            "SkillId": 200501,
+            "SkillName": "Lane Legerdemain",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.718696
+          },
+          {
+            "SkillId": 201542,
+            "SkillName": "Late Surger Savvy ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201382,
+            "SkillName": "Late Surger Straightaways ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.718696
+          },
+          {
+            "SkillId": 201681,
+            "SkillName": "Lead the Charge!",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.718696
+          },
+          {
+            "SkillId": 200592,
+            "SkillName": "Position Pilfer",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.718696
+          },
+          {
+            "SkillId": 210111,
+            "SkillName": "Racing Spirit: Power",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.718696
+          },
+          {
+            "SkillId": 210091,
+            "SkillName": "Racing Spirit: Speed",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.718696
+          },
+          {
+            "SkillId": 200462,
+            "SkillName": "Ramp Up",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.718696
+          },
+          {
+            "SkillId": 201662,
+            "SkillName": "See Ya Later!",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.718696
+          },
+          {
+            "SkillId": 200362,
+            "SkillName": "Straightaway Adept",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.718696
+          },
+          {
+            "SkillId": 201432,
+            "SkillName": "Studious",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.718696
+          },
+          {
+            "SkillId": 201592,
+            "SkillName": "Superstan",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.718696
+          }
+        ]
+      },
+      "Tracks": {
+        "UmaName": "Agnes Digital (22011)",
+        "TotalRaces": 1,
+        "TeamType": "Non-TT (CM/Room/Practice)",
+        "Rows": [
+          {
+            "Track": "Kyoto",
+            "Distance": 2200,
+            "Races": 1,
+            "AvgPlace": 9,
+            "PctFirst": 0,
+            "PctTop3": 0,
+            "PctTop5": 0,
+            "AvgSkillPointsPerRace": 0,
+            "SpurtRate": 0,
+            "Survival": 0
+          }
+        ]
+      }
+    },
+    {
+      "Name": "Silence Suzuka (20889)",
+      "TrainedCharaId": 2291,
+      "CharaId": 1002,
+      "RankScore": 20889,
+      "Skills": {
+        "UmaName": "Silence Suzuka (20889)",
+        "TrainedCharaId": 0,
+        "TrialCount": 1,
+        "RaceCount": 1,
+        "AverageWit": 799,
+        "Rows": [
+          {
+            "SkillId": 200682,
+            "SkillName": "Productive Plan",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -88.73592
+          },
+          {
+            "SkillId": 200331,
+            "SkillName": "Professor of Curvature",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -88.73592
+          },
+          {
+            "SkillId": 201662,
+            "SkillName": "See Ya Later!",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -88.73592
+          },
+          {
+            "SkillId": 200531,
+            "SkillName": "Taking the Lead",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -88.73592
+          },
+          {
+            "SkillId": 200551,
+            "SkillName": "Unrestrained",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -88.73592
+          },
+          {
+            "SkillId": 900201,
+            "SkillName": "Angling and Scheming",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 11.26408
+          },
+          {
+            "SkillId": 200431,
+            "SkillName": "Concentration",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 11.26408
+          },
+          {
+            "SkillId": 200352,
+            "SkillName": "Corner Recovery ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 11.26408
+          },
+          {
+            "SkillId": 201262,
+            "SkillName": "Dodging Danger",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 11.26408
+          },
+          {
+            "SkillId": 200542,
+            "SkillName": "Fast-Paced",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 11.26408
+          },
+          {
+            "SkillId": 201522,
+            "SkillName": "Front Runner Savvy ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201601,
+            "SkillName": "Groundwork",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 11.26408
+          },
+          {
+            "SkillId": 200501,
+            "SkillName": "Lane Legerdemain",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 11.26408
+          },
+          {
+            "SkillId": 202051,
+            "SkillName": "Runaway",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200362,
+            "SkillName": "Straightaway Adept",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 11.26408
+          },
+          {
+            "SkillId": 100021,
+            "SkillName": "The View from the Lead Is Mine!",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          }
+        ]
+      },
+      "Tracks": {
+        "UmaName": "Silence Suzuka (20889)",
+        "TotalRaces": 1,
+        "TeamType": "Non-TT (CM/Room/Practice)",
+        "Rows": [
+          {
+            "Track": "Kyoto",
+            "Distance": 2200,
+            "Races": 1,
+            "AvgPlace": 7,
+            "PctFirst": 0,
+            "PctTop3": 0,
+            "PctTop5": 0,
+            "AvgSkillPointsPerRace": 0,
+            "SpurtRate": 0,
+            "Survival": 0
+          }
+        ]
+      }
+    },
+    {
+      "Name": "Manhattan Cafe (var 01)",
+      "TrainedCharaId": 2194,
+      "CharaId": 1025,
+      "RankScore": 0,
+      "Skills": {
+        "UmaName": "Manhattan Cafe (var 01)",
+        "TrainedCharaId": 0,
+        "TrialCount": 1,
+        "RaceCount": 1,
+        "AverageWit": 623,
+        "Rows": [
+          {
+            "SkillId": 200591,
+            "SkillName": "Fast & Furious",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -85.553772
+          },
+          {
+            "SkillId": 200881,
+            "SkillName": "Hesitant Pace Chasers",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -85.553772
+          },
+          {
+            "SkillId": 201181,
+            "SkillName": "Long Corners ◎",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -85.553772
+          },
+          {
+            "SkillId": 201172,
+            "SkillName": "Long Straightaways ○",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -85.553772
+          },
+          {
+            "SkillId": 201221,
+            "SkillName": "Stamina Siphon",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -85.553772
+          },
+          {
+            "SkillId": 200831,
+            "SkillName": "Subdued Front Runners",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -85.553772
+          },
+          {
+            "SkillId": 201631,
+            "SkillName": "Sympathy",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 910071,
+            "SkillName": "564 Escapades",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 14.446228
+          },
+          {
+            "SkillId": 210011,
+            "SkillName": "Burning Spirit SPD",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 14.446228
+          },
+          {
+            "SkillId": 100251,
+            "SkillName": "Chasing After You",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 210022,
+            "SkillName": "Ignited Spirit STA",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 14.446228
+          },
+          {
+            "SkillId": 200491,
+            "SkillName": "No Stopping Me!",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 14.446228
+          },
+          {
+            "SkillId": 200452,
+            "SkillName": "Prudent Positioning",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 14.446228
+          },
+          {
+            "SkillId": 201421,
+            "SkillName": "Relax",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 14.446228
+          },
+          {
+            "SkillId": 201571,
+            "SkillName": "Triple 7s",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 14.446228
+          }
+        ]
+      },
+      "Tracks": {
+        "UmaName": "Manhattan Cafe (var 01)",
+        "TotalRaces": 1,
+        "TeamType": "Non-TT (CM/Room/Practice)",
+        "Rows": [
+          {
+            "Track": "Kyoto",
+            "Distance": 2200,
+            "Races": 1,
+            "AvgPlace": 4,
+            "PctFirst": 0,
+            "PctTop3": 0,
+            "PctTop5": 100,
+            "AvgSkillPointsPerRace": 0,
+            "SpurtRate": 100,
+            "Survival": 100
+          }
+        ]
+      }
+    },
+    {
+      "Name": "T.M. Opera O (var 02)",
+      "TrainedCharaId": 2403,
+      "CharaId": 1015,
+      "RankScore": 0,
+      "Skills": {
+        "UmaName": "T.M. Opera O (var 02)",
+        "TrainedCharaId": 0,
+        "TrialCount": 1,
+        "RaceCount": 1,
+        "AverageWit": 758,
+        "Rows": [
+          {
+            "SkillId": 201412,
+            "SkillName": "1,500,000 CC",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -88.126649
+          },
+          {
+            "SkillId": 202102,
+            "SkillName": "Eager",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -88.126649
+          },
+          {
+            "SkillId": 200552,
+            "SkillName": "Final Push",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -88.126649
+          },
+          {
+            "SkillId": 201251,
+            "SkillName": "Front Runner Corners ◎",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -88.126649
+          },
+          {
+            "SkillId": 202011,
+            "SkillName": "Headliner",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -88.126649
+          },
+          {
+            "SkillId": 200492,
+            "SkillName": "Nimble Navigator",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -88.126649
+          },
+          {
+            "SkillId": 200462,
+            "SkillName": "Ramp Up",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -88.126649
+          },
+          {
+            "SkillId": 201052,
+            "SkillName": "Shifting Gears",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -88.126649
+          },
+          {
+            "SkillId": 201152,
+            "SkillName": "Tether",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -88.126649
+          },
+          {
+            "SkillId": 201591,
+            "SkillName": "Uma Stan",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -88.126649
+          },
+          {
+            "SkillId": 110151,
+            "SkillName": "Barcarole of Blessings",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201701,
+            "SkillName": "Come What May",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 11.873351
+          },
+          {
+            "SkillId": 200332,
+            "SkillName": "Corner Adept ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 11.873351
+          },
+          {
+            "SkillId": 200191,
+            "SkillName": "Fall Runner ◎",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200432,
+            "SkillName": "Focus",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 11.873351
+          },
+          {
+            "SkillId": 201902,
+            "SkillName": "Head-On",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 11.873351
+          },
+          {
+            "SkillId": 201352,
+            "SkillName": "Hydrate",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 11.873351
+          },
+          {
+            "SkillId": 201111,
+            "SkillName": "Medium Corners ◎",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 11.873351
+          },
+          {
+            "SkillId": 201311,
+            "SkillName": "Pace Chaser Straightaways ◎",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 11.873351
+          },
+          {
+            "SkillId": 201662,
+            "SkillName": "See Ya Later!",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 11.873351
+          },
+          {
+            "SkillId": 200351,
+            "SkillName": "Swinging Maestro",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 11.873351
+          },
+          {
+            "SkillId": 201611,
+            "SkillName": "Tail Held High",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 11.873351
+          },
+          {
+            "SkillId": 200722,
+            "SkillName": "Up-Tempo",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 11.873351
+          }
+        ]
+      },
+      "Tracks": {
+        "UmaName": "T.M. Opera O (var 02)",
+        "TotalRaces": 1,
+        "TeamType": "Non-TT (CM/Room/Practice)",
+        "Rows": [
+          {
+            "Track": "Kyoto",
+            "Distance": 2200,
+            "Races": 1,
+            "AvgPlace": 3,
+            "PctFirst": 0,
+            "PctTop3": 100,
+            "PctTop5": 100,
+            "AvgSkillPointsPerRace": 0,
+            "SpurtRate": 100,
+            "Survival": 100
+          }
+        ]
+      }
+    },
+    {
+      "Name": "El Condor Pasa (var 01)",
+      "TrainedCharaId": 2555,
+      "CharaId": 1014,
+      "RankScore": 0,
+      "Skills": {
+        "UmaName": "El Condor Pasa (var 01)",
+        "TrainedCharaId": 0,
+        "TrialCount": 1,
+        "RaceCount": 1,
+        "AverageWit": 1300,
+        "Rows": [
+          {
+            "SkillId": 202412,
+            "SkillName": "Aspire",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -93.076923
+          },
+          {
+            "SkillId": 910151,
+            "SkillName": "Barcarole of Blessings",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -93.076923
+          },
+          {
+            "SkillId": 200282,
+            "SkillName": "Competitive Spirit ○",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 202312,
+            "SkillName": "Got the Spirit!",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -93.076923
+          },
+          {
+            "SkillId": 201042,
+            "SkillName": "Mile Corners ○",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -93.076923
+          },
+          {
+            "SkillId": 200492,
+            "SkillName": "Nimble Navigator",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -93.076923
+          },
+          {
+            "SkillId": 200462,
+            "SkillName": "Ramp Up",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -93.076923
+          },
+          {
+            "SkillId": 201662,
+            "SkillName": "See Ya Later!",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -93.076923
+          },
+          {
+            "SkillId": 201672,
+            "SkillName": "Top Pick",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -93.076923
+          },
+          {
+            "SkillId": 100141,
+            "SkillName": "Victoria por plancha ☆",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201121,
+            "SkillName": "Clairvoyance",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 6.923077
+          },
+          {
+            "SkillId": 201601,
+            "SkillName": "Groundwork",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 6.923077
+          },
+          {
+            "SkillId": 201902,
+            "SkillName": "Head-On",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 6.923077
+          },
+          {
+            "SkillId": 200501,
+            "SkillName": "Lane Legerdemain",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 6.923077
+          },
+          {
+            "SkillId": 202372,
+            "SkillName": "On the Attack",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 6.923077
+          },
+          {
+            "SkillId": 201532,
+            "SkillName": "Pace Chaser Savvy ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201312,
+            "SkillName": "Pace Chaser Straightaways ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 6.923077
+          },
+          {
+            "SkillId": 200582,
+            "SkillName": "Prepared to Pass",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 6.923077
+          },
+          {
+            "SkillId": 202032,
+            "SkillName": "Risky Business",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 6.923077
+          },
+          {
+            "SkillId": 200362,
+            "SkillName": "Straightaway Adept",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 6.923077
+          },
+          {
+            "SkillId": 200382,
+            "SkillName": "Straightaway Recovery",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 6.923077
+          },
+          {
+            "SkillId": 201591,
+            "SkillName": "Uma Stan",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 6.923077
+          }
+        ]
+      },
+      "Tracks": {
+        "UmaName": "El Condor Pasa (var 01)",
+        "TotalRaces": 1,
+        "TeamType": "Non-TT (CM/Room/Practice)",
+        "Rows": [
+          {
+            "Track": "Kyoto",
+            "Distance": 2200,
+            "Races": 1,
+            "AvgPlace": 8,
+            "PctFirst": 0,
+            "PctTop3": 0,
+            "PctTop5": 0,
+            "AvgSkillPointsPerRace": 0,
+            "SpurtRate": 100,
+            "Survival": 0
+          }
+        ]
+      }
+    },
+    {
+      "Name": "Gold Ship (var 02)",
+      "TrainedCharaId": 2323,
+      "CharaId": 1007,
+      "RankScore": 0,
+      "Skills": {
+        "UmaName": "Gold Ship (var 02)",
+        "TrainedCharaId": 0,
+        "TrialCount": 1,
+        "RaceCount": 1,
+        "AverageWit": 950,
+        "Rows": [
+          {
+            "SkillId": 200281,
+            "SkillName": "Competitive Spirit ◎",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 202012,
+            "SkillName": "Feature Act",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -90.526316
+          },
+          {
+            "SkillId": 201902,
+            "SkillName": "Head-On",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -90.526316
+          },
+          {
+            "SkillId": 210071,
+            "SkillName": "I Wanna Win with You",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -90.526316
+          },
+          {
+            "SkillId": 201111,
+            "SkillName": "Medium Corners ◎",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -90.526316
+          },
+          {
+            "SkillId": 200261,
+            "SkillName": "Outer Post Proficiency ◎",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200582,
+            "SkillName": "Prepared to Pass",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -90.526316
+          },
+          {
+            "SkillId": 201212,
+            "SkillName": "Pressure",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -90.526316
+          },
+          {
+            "SkillId": 200462,
+            "SkillName": "Ramp Up",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -90.526316
+          },
+          {
+            "SkillId": 200182,
+            "SkillName": "Summer Runner ○",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200722,
+            "SkillName": "Up-Tempo",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -90.526316
+          },
+          {
+            "SkillId": 110071,
+            "SkillName": "564 Escapades",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201482,
+            "SkillName": "After-School Stroll",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.473684
+          },
+          {
+            "SkillId": 201701,
+            "SkillName": "Come What May",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.473684
+          },
+          {
+            "SkillId": 202102,
+            "SkillName": "Eager",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.473684
+          },
+          {
+            "SkillId": 200151,
+            "SkillName": "Firm Conditions ◎",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200751,
+            "SkillName": "Innate Experience",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.473684
+          },
+          {
+            "SkillId": 200492,
+            "SkillName": "Nimble Navigator",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.473684
+          },
+          {
+            "SkillId": 201662,
+            "SkillName": "See Ya Later!",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.473684
+          },
+          {
+            "SkillId": 200362,
+            "SkillName": "Straightaway Adept",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.473684
+          },
+          {
+            "SkillId": 200382,
+            "SkillName": "Straightaway Recovery",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.473684
+          },
+          {
+            "SkillId": 200642,
+            "SkillName": "Straightaway Spurt",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.473684
+          },
+          {
+            "SkillId": 201611,
+            "SkillName": "Tail Held High",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.473684
+          },
+          {
+            "SkillId": 201591,
+            "SkillName": "Uma Stan",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.473684
+          }
+        ]
+      },
+      "Tracks": {
+        "UmaName": "Gold Ship (var 02)",
+        "TotalRaces": 1,
+        "TeamType": "Non-TT (CM/Room/Practice)",
+        "Rows": [
+          {
+            "Track": "Kyoto",
+            "Distance": 2200,
+            "Races": 1,
+            "AvgPlace": 5,
+            "PctFirst": 0,
+            "PctTop3": 0,
+            "PctTop5": 100,
+            "AvgSkillPointsPerRace": 0,
+            "SpurtRate": 100,
+            "Survival": 0
+          }
+        ]
+      }
+    },
+    {
+      "Name": "Special Week (var 02)",
+      "TrainedCharaId": 2156,
+      "CharaId": 1001,
+      "RankScore": 0,
+      "Skills": {
+        "UmaName": "Special Week (var 02)",
+        "TrainedCharaId": 0,
+        "TrialCount": 1,
+        "RaceCount": 1,
+        "AverageWit": 1102,
+        "Rows": [
+          {
+            "SkillId": 200461,
+            "SkillName": "It's On!",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -91.833031
+          },
+          {
+            "SkillId": 201113,
+            "SkillName": "Refraction Arc",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -91.833031
+          },
+          {
+            "SkillId": 210011,
+            "SkillName": "Burning Spirit SPD",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.166969
+          },
+          {
+            "SkillId": 200352,
+            "SkillName": "Corner Recovery ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.166969
+          },
+          {
+            "SkillId": 110011,
+            "SkillName": "Dazzl'n ♪ Diver",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 910061,
+            "SkillName": "Festive Miracle",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.166969
+          },
+          {
+            "SkillId": 201402,
+            "SkillName": "Fighter",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.166969
+          },
+          {
+            "SkillId": 200871,
+            "SkillName": "Flustered Pace Chasers",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.166969
+          },
+          {
+            "SkillId": 200851,
+            "SkillName": "Hesitant Front Runners",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.166969
+          },
+          {
+            "SkillId": 200881,
+            "SkillName": "Hesitant Pace Chasers",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.166969
+          },
+          {
+            "SkillId": 201392,
+            "SkillName": "Late Surger Corners ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.166969
+          },
+          {
+            "SkillId": 201382,
+            "SkillName": "Late Surger Straightaways ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.166969
+          },
+          {
+            "SkillId": 200491,
+            "SkillName": "No Stopping Me!",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.166969
+          },
+          {
+            "SkillId": 200331,
+            "SkillName": "Professor of Curvature",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.166969
+          },
+          {
+            "SkillId": 200362,
+            "SkillName": "Straightaway Adept",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.166969
+          },
+          {
+            "SkillId": 201611,
+            "SkillName": "Tail Held High",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.166969
+          },
+          {
+            "SkillId": 201571,
+            "SkillName": "Triple 7s",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.166969
+          },
+          {
+            "SkillId": 201591,
+            "SkillName": "Uma Stan",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.166969
+          }
+        ]
+      },
+      "Tracks": {
+        "UmaName": "Special Week (var 02)",
+        "TotalRaces": 1,
+        "TeamType": "Non-TT (CM/Room/Practice)",
+        "Rows": [
+          {
+            "Track": "Kyoto",
+            "Distance": 2200,
+            "Races": 1,
+            "AvgPlace": 1,
+            "PctFirst": 100,
+            "PctTop3": 100,
+            "PctTop5": 100,
+            "AvgSkillPointsPerRace": 0,
+            "SpurtRate": 100,
+            "Survival": 100
+          }
+        ]
+      }
+    },
+    {
+      "Name": "Symboli Rudolf (var 01)",
+      "TrainedCharaId": 2699,
+      "CharaId": 1017,
+      "RankScore": 0,
+      "Skills": {
+        "UmaName": "Symboli Rudolf (var 01)",
+        "TrainedCharaId": 0,
+        "TrialCount": 1,
+        "RaceCount": 1,
+        "AverageWit": 1140,
+        "Rows": [
+          {
+            "SkillId": 910071,
+            "SkillName": "564 Escapades",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.105263
+          },
+          {
+            "SkillId": 200502,
+            "SkillName": "Go with the Flow",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.105263
+          },
+          {
+            "SkillId": 210052,
+            "SkillName": "Ignited Spirit WIT",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.105263
+          },
+          {
+            "SkillId": 200691,
+            "SkillName": "Keen Eye",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.105263
+          },
+          {
+            "SkillId": 201041,
+            "SkillName": "Mile Corners ◎",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.105263
+          },
+          {
+            "SkillId": 200492,
+            "SkillName": "Nimble Navigator",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.105263
+          },
+          {
+            "SkillId": 201092,
+            "SkillName": "Opening Gambit",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.105263
+          },
+          {
+            "SkillId": 201651,
+            "SkillName": "Slipstream",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.105263
+          },
+          {
+            "SkillId": 200131,
+            "SkillName": "Standard Distance ◎",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200891,
+            "SkillName": "Subdued Late Surgers",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.105263
+          },
+          {
+            "SkillId": 200291,
+            "SkillName": "Target in Sight ◎",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 100171,
+            "SkillName": "Behold Thine Emperor's Divine Might",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200332,
+            "SkillName": "Corner Adept ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.894737
+          },
+          {
+            "SkillId": 201151,
+            "SkillName": "Dominator",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.894737
+          },
+          {
+            "SkillId": 200191,
+            "SkillName": "Fall Runner ◎",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201661,
+            "SkillName": "Playtime's Over!",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.894737
+          },
+          {
+            "SkillId": 210141,
+            "SkillName": "Racing Spirit: Mood",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.894737
+          },
+          {
+            "SkillId": 201591,
+            "SkillName": "Uma Stan",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.894737
+          }
+        ]
+      },
+      "Tracks": {
+        "UmaName": "Symboli Rudolf (var 01)",
+        "TotalRaces": 1,
+        "TeamType": "Non-TT (CM/Room/Practice)",
+        "Rows": [
+          {
+            "Track": "Kyoto",
+            "Distance": 2200,
+            "Races": 1,
+            "AvgPlace": 6,
+            "PctFirst": 0,
+            "PctTop3": 0,
+            "PctTop5": 0,
+            "AvgSkillPointsPerRace": 0,
+            "SpurtRate": 100,
+            "Survival": 0
+          }
+        ]
+      }
+    }
+  ]
+}

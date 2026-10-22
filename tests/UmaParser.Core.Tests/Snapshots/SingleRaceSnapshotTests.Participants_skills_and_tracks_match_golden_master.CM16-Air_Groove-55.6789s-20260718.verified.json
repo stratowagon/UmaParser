@@ -1,0 +1,462 @@
+{
+  "FileName": "CM16-Air Groove-55.6789s-20260718.json",
+  "RaceType": "Champions",
+  "Horses": 9,
+  "LocalHorses": 3,
+  "Distance": 1200,
+  "Track": "Nakayama",
+  "Umas": [
+    {
+      "Name": "Oguri Cap (18333)",
+      "TrainedCharaId": 2219,
+      "CharaId": 1006,
+      "RankScore": 18333,
+      "Skills": {
+        "UmaName": "Oguri Cap (18333)",
+        "TrainedCharaId": 0,
+        "TrialCount": 1,
+        "RaceCount": 1,
+        "AverageWit": 989,
+        "Rows": [
+          {
+            "SkillId": 210052,
+            "SkillName": "Ignited Spirit WIT",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -90.899899
+          },
+          {
+            "SkillId": 200491,
+            "SkillName": "No Stopping Me!",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -90.899899
+          },
+          {
+            "SkillId": 100061,
+            "SkillName": "Triumphant Pulse",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 900511,
+            "SkillName": "Budding Blossom",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.100101
+          },
+          {
+            "SkillId": 210011,
+            "SkillName": "Burning Spirit SPD",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.100101
+          },
+          {
+            "SkillId": 200151,
+            "SkillName": "Firm Conditions ◎",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200461,
+            "SkillName": "It's On!",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.100101
+          },
+          {
+            "SkillId": 200042,
+            "SkillName": "Nakayama Racecourse ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200331,
+            "SkillName": "Professor of Curvature",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.100101
+          },
+          {
+            "SkillId": 200452,
+            "SkillName": "Prudent Positioning",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.100101
+          },
+          {
+            "SkillId": 200011,
+            "SkillName": "Right-Handed ◎",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 900101,
+            "SkillName": "Shooting for Victory!",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.100101
+          },
+          {
+            "SkillId": 200581,
+            "SkillName": "Speed Star",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.100101
+          },
+          {
+            "SkillId": 200652,
+            "SkillName": "Sprinting Gear",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.100101
+          },
+          {
+            "SkillId": 200181,
+            "SkillName": "Summer Runner ◎",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201611,
+            "SkillName": "Tail Held High",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.100101
+          }
+        ]
+      },
+      "Tracks": {
+        "UmaName": "Oguri Cap (18333)",
+        "TotalRaces": 1,
+        "TeamType": "Non-TT (CM/Room/Practice)",
+        "Rows": [
+          {
+            "Track": "Nakayama",
+            "Distance": 1200,
+            "Races": 1,
+            "AvgPlace": 6,
+            "PctFirst": 0,
+            "PctTop3": 0,
+            "PctTop5": 0,
+            "AvgSkillPointsPerRace": 0,
+            "SpurtRate": 100,
+            "Survival": 100
+          }
+        ]
+      }
+    },
+    {
+      "Name": "Taiki Shuttle (18439)",
+      "TrainedCharaId": 2182,
+      "CharaId": 1010,
+      "RankScore": 18439,
+      "Skills": {
+        "UmaName": "Taiki Shuttle (18439)",
+        "TrainedCharaId": 0,
+        "TrialCount": 1,
+        "RaceCount": 1,
+        "AverageWit": 890,
+        "Rows": [
+          {
+            "SkillId": 900511,
+            "SkillName": "Budding Blossom",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -89.88764
+          },
+          {
+            "SkillId": 201902,
+            "SkillName": "Head-On",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -89.88764
+          },
+          {
+            "SkillId": 200491,
+            "SkillName": "No Stopping Me!",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -89.88764
+          },
+          {
+            "SkillId": 100101,
+            "SkillName": "Shooting for Victory!",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200581,
+            "SkillName": "Speed Star",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -89.88764
+          },
+          {
+            "SkillId": 201611,
+            "SkillName": "Tail Held High",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -89.88764
+          },
+          {
+            "SkillId": 210011,
+            "SkillName": "Burning Spirit SPD",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 10.11236
+          },
+          {
+            "SkillId": 200152,
+            "SkillName": "Firm Conditions ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201601,
+            "SkillName": "Groundwork",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 10.11236
+          },
+          {
+            "SkillId": 201581,
+            "SkillName": "Highlander",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 10.11236
+          },
+          {
+            "SkillId": 210032,
+            "SkillName": "Ignited Spirit PWR",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 10.11236
+          },
+          {
+            "SkillId": 200461,
+            "SkillName": "It's On!",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 10.11236
+          },
+          {
+            "SkillId": 201532,
+            "SkillName": "Pace Chaser Savvy ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200012,
+            "SkillName": "Right-Handed ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200652,
+            "SkillName": "Sprinting Gear",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 10.11236
+          },
+          {
+            "SkillId": 200132,
+            "SkillName": "Standard Distance ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201342,
+            "SkillName": "Straight Descent",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 10.11236
+          },
+          {
+            "SkillId": 200362,
+            "SkillName": "Straightaway Adept",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 10.11236
+          },
+          {
+            "SkillId": 200182,
+            "SkillName": "Summer Runner ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          }
+        ]
+      },
+      "Tracks": {
+        "UmaName": "Taiki Shuttle (18439)",
+        "TotalRaces": 1,
+        "TeamType": "Non-TT (CM/Room/Practice)",
+        "Rows": [
+          {
+            "Track": "Nakayama",
+            "Distance": 1200,
+            "Races": 1,
+            "AvgPlace": 9,
+            "PctFirst": 0,
+            "PctTop3": 0,
+            "PctTop5": 0,
+            "AvgSkillPointsPerRace": 0,
+            "SpurtRate": 100,
+            "Survival": 100
+          }
+        ]
+      }
+    },
+    {
+      "Name": "Sakura Bakushin O (19065)",
+      "TrainedCharaId": 2227,
+      "CharaId": 1041,
+      "RankScore": 19065,
+      "Skills": {
+        "UmaName": "Sakura Bakushin O (19065)",
+        "TrainedCharaId": 0,
+        "TrialCount": 1,
+        "RaceCount": 1,
+        "AverageWit": 1046,
+        "Rows": [
+          {
+            "SkillId": 100411,
+            "SkillName": "Genius x Bakushin = Victory",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 900101,
+            "SkillName": "Shooting for Victory!",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -91.395793
+          },
+          {
+            "SkillId": 210011,
+            "SkillName": "Burning Spirit SPD",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.604207
+          },
+          {
+            "SkillId": 201601,
+            "SkillName": "Groundwork",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.604207
+          },
+          {
+            "SkillId": 200881,
+            "SkillName": "Hesitant Pace Chasers",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.604207
+          },
+          {
+            "SkillId": 200461,
+            "SkillName": "It's On!",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.604207
+          },
+          {
+            "SkillId": 200042,
+            "SkillName": "Nakayama Racecourse ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200491,
+            "SkillName": "No Stopping Me!",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.604207
+          },
+          {
+            "SkillId": 201312,
+            "SkillName": "Pace Chaser Straightaways ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.604207
+          },
+          {
+            "SkillId": 200331,
+            "SkillName": "Professor of Curvature",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.604207
+          },
+          {
+            "SkillId": 200012,
+            "SkillName": "Right-Handed ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200132,
+            "SkillName": "Standard Distance ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200362,
+            "SkillName": "Straightaway Adept",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.604207
+          },
+          {
+            "SkillId": 201611,
+            "SkillName": "Tail Held High",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.604207
+          },
+          {
+            "SkillId": 200651,
+            "SkillName": "Turbo Sprint",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 8.604207
+          }
+        ]
+      },
+      "Tracks": {
+        "UmaName": "Sakura Bakushin O (19065)",
+        "TotalRaces": 1,
+        "TeamType": "Non-TT (CM/Room/Practice)",
+        "Rows": [
+          {
+            "Track": "Nakayama",
+            "Distance": 1200,
+            "Races": 1,
+            "AvgPlace": 8,
+            "PctFirst": 0,
+            "PctTop3": 0,
+            "PctTop5": 0,
+            "AvgSkillPointsPerRace": 0,
+            "SpurtRate": 100,
+            "Survival": 100
+          }
+        ]
+      }
+    }
+  ]
+}

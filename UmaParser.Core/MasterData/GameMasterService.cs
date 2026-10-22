@@ -36,6 +36,22 @@ internal sealed class GameMasterService
         Refresh();
     }
 
+    /// <summary>
+    /// Points <see cref="Current"/> at <see cref="EmbeddedMasterFallback"/> only.
+    /// Does not read AppData, a live <c>master.mdb</c>, or the master cache.
+    /// Tests call this so character, skill, and track names do not depend on the machine.
+    /// </summary>
+    internal void InitializeEmbeddedOnly()
+    {
+        _settings = new GameMasterSettings();
+        _resolvedDbPath = null;
+        _lastError = null;
+        var catalog = new GameMasterCatalog();
+        EmbeddedMasterFallback.Apply(catalog);
+        _catalog = catalog;
+        _primarySource = MasterDataSourceKind.Embedded;
+    }
+
     public void Refresh()
     {
         _lastError = null;
