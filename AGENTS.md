@@ -129,3 +129,13 @@ This overwrites `UmaParser.Core/MasterData/EmbeddedMasterFallback.cs`. Commit th
 - One logical change per commit when possible.
 - If you regenerate `EmbeddedMasterFallback.cs`, mention the game/master version in the commit message.
 - Tag releases follow existing pattern (`V1.0`, `V1.1`, `V1.1.1`, etc.).
+
+## Cursor Cloud specific instructions
+
+Cloud agents run on Linux. The WinForms project targets `net8.0-windows` and does not launch here. Compile it with:
+
+```bash
+dotnet build UmaParser.sln -c Release -p:EnableWindowsTargeting=true
+```
+
+`UmaParser.Core` and the console projects under `Tools/` are `net8.0` and run on Linux. There is no test project and no sample capture JSON in the repo. Without a local `master.mdb`, name lookups use `EmbeddedMasterFallback.cs`.
