@@ -1,0 +1,1946 @@
+{
+  "Group": "SwapTest",
+  "Umas": [
+    {
+      "UmaName": "Oguri Cap",
+      "TrainedCharaId": 1788,
+      "TrialCount": 11,
+      "RaceCount": 11,
+      "AverageWit": 980,
+      "Rows": [
+        {
+          "SkillId": 100061,
+          "SkillName": "Triumphant Pulse",
+          "Activations": 8,
+          "AvgPoints": 1818.181818,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 201351,
+          "SkillName": "Gourmand",
+          "Activations": 11,
+          "AvgPoints": 1200,
+          "WitDelta": 9.183673
+        },
+        {
+          "SkillId": 200331,
+          "SkillName": "Professor of Curvature",
+          "Activations": 11,
+          "AvgPoints": 1200,
+          "WitDelta": 9.183673
+        },
+        {
+          "SkillId": 200371,
+          "SkillName": "Rushing Gale!",
+          "Activations": 11,
+          "AvgPoints": 1200,
+          "WitDelta": 9.183673
+        },
+        {
+          "SkillId": 210061,
+          "SkillName": "Radiant Star",
+          "Activations": 10,
+          "AvgPoints": 1090.909091,
+          "WitDelta": 0.092764
+        },
+        {
+          "SkillId": 201002,
+          "SkillName": "Meticulous Measures",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 0.092764
+        },
+        {
+          "SkillId": 201321,
+          "SkillName": "Pace Chaser Corners ◎",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 0.092764
+        },
+        {
+          "SkillId": 201312,
+          "SkillName": "Pace Chaser Straightaways ○",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 0.092764
+        },
+        {
+          "SkillId": 200962,
+          "SkillName": "Sprint Straightaways ○",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 0.092764
+        },
+        {
+          "SkillId": 200342,
+          "SkillName": "Corner Acceleration ○",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -8.998145
+        },
+        {
+          "SkillId": 200582,
+          "SkillName": "Prepared to Pass",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -8.998145
+        },
+        {
+          "SkillId": 200972,
+          "SkillName": "Sprint Corners ○",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -8.998145
+        },
+        {
+          "SkillId": 201591,
+          "SkillName": "Uma Stan",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -8.998145
+        },
+        {
+          "SkillId": 201631,
+          "SkillName": "Sympathy",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 900101,
+          "SkillName": "Shooting for Victory!",
+          "Activations": 6,
+          "AvgPoints": 272.727273,
+          "WitDelta": -36.270872
+        }
+      ]
+    },
+    {
+      "UmaName": "Silence Suzuka",
+      "TrainedCharaId": 1992,
+      "TrialCount": 11,
+      "RaceCount": 11,
+      "AverageWit": 803,
+      "Rows": [
+        {
+          "SkillId": 100021,
+          "SkillName": "The View from the Lead Is Mine!",
+          "Activations": 8,
+          "AvgPoints": 1745.454545,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 200431,
+          "SkillName": "Concentration",
+          "Activations": 11,
+          "AvgPoints": 1200,
+          "WitDelta": 11.20797
+        },
+        {
+          "SkillId": 200331,
+          "SkillName": "Professor of Curvature",
+          "Activations": 10,
+          "AvgPoints": 1090.909091,
+          "WitDelta": 2.117061
+        },
+        {
+          "SkillId": 200531,
+          "SkillName": "Taking the Lead",
+          "Activations": 9,
+          "AvgPoints": 981.818182,
+          "WitDelta": -6.973848
+        },
+        {
+          "SkillId": 200371,
+          "SkillName": "Rushing Gale!",
+          "Activations": 8,
+          "AvgPoints": 872.727273,
+          "WitDelta": -16.064757
+        },
+        {
+          "SkillId": 200551,
+          "SkillName": "Unrestrained",
+          "Activations": 7,
+          "AvgPoints": 763.636364,
+          "WitDelta": -25.155666
+        },
+        {
+          "SkillId": 200542,
+          "SkillName": "Fast-Paced",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 11.20797
+        },
+        {
+          "SkillId": 200362,
+          "SkillName": "Straightaway Adept",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 11.20797
+        },
+        {
+          "SkillId": 201002,
+          "SkillName": "Meticulous Measures",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 2.117061
+        },
+        {
+          "SkillId": 200452,
+          "SkillName": "Prudent Positioning",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 2.117061
+        },
+        {
+          "SkillId": 200881,
+          "SkillName": "Hesitant Pace Chasers",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -6.973848
+        },
+        {
+          "SkillId": 201611,
+          "SkillName": "Tail Held High",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -6.973848
+        },
+        {
+          "SkillId": 201631,
+          "SkillName": "Sympathy",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 201272,
+          "SkillName": "Leader's Pride",
+          "Activations": 6,
+          "AvgPoints": 272.727273,
+          "WitDelta": -34.246575
+        },
+        {
+          "SkillId": 200142,
+          "SkillName": "Non-Standard Distance ○",
+          "Activations": 6,
+          "AvgPoints": 272.727273,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 900061,
+          "SkillName": "Triumphant Pulse",
+          "Activations": 4,
+          "AvgPoints": 181.818182,
+          "WitDelta": -52.428394
+        },
+        {
+          "SkillId": 200462,
+          "SkillName": "Ramp Up",
+          "Activations": 3,
+          "AvgPoints": 136.363636,
+          "WitDelta": -61.519303
+        }
+      ]
+    },
+    {
+      "UmaName": "Air Groove",
+      "TrainedCharaId": 1792,
+      "TrialCount": 11,
+      "RaceCount": 11,
+      "AverageWit": 691,
+      "Rows": [
+        {
+          "SkillId": 100181,
+          "SkillName": "Blazing Pride",
+          "Activations": 11,
+          "AvgPoints": 2500,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 210061,
+          "SkillName": "Radiant Star",
+          "Activations": 10,
+          "AvgPoints": 1090.909091,
+          "WitDelta": 3.933693
+        },
+        {
+          "SkillId": 200371,
+          "SkillName": "Rushing Gale!",
+          "Activations": 10,
+          "AvgPoints": 1090.909091,
+          "WitDelta": 3.933693
+        },
+        {
+          "SkillId": 200591,
+          "SkillName": "Fast & Furious",
+          "Activations": 9,
+          "AvgPoints": 981.818182,
+          "WitDelta": -5.157216
+        },
+        {
+          "SkillId": 201431,
+          "SkillName": "The Bigger Picture",
+          "Activations": 9,
+          "AvgPoints": 981.818182,
+          "WitDelta": -5.157216
+        },
+        {
+          "SkillId": 200331,
+          "SkillName": "Professor of Curvature",
+          "Activations": 8,
+          "AvgPoints": 872.727273,
+          "WitDelta": -14.248125
+        },
+        {
+          "SkillId": 200881,
+          "SkillName": "Hesitant Pace Chasers",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 13.024602
+        },
+        {
+          "SkillId": 200152,
+          "SkillName": "Firm Conditions ○",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 200502,
+          "SkillName": "Go with the Flow",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 3.933693
+        },
+        {
+          "SkillId": 200962,
+          "SkillName": "Sprint Straightaways ○",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 3.933693
+        },
+        {
+          "SkillId": 200911,
+          "SkillName": "Hesitant Late Surgers",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -5.157216
+        },
+        {
+          "SkillId": 200362,
+          "SkillName": "Straightaway Adept",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -5.157216
+        },
+        {
+          "SkillId": 201631,
+          "SkillName": "Sympathy",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 200891,
+          "SkillName": "Subdued Late Surgers",
+          "Activations": 7,
+          "AvgPoints": 318.181818,
+          "WitDelta": -23.339034
+        },
+        {
+          "SkillId": 900051,
+          "SkillName": "Lights of Vaudeville",
+          "Activations": 4,
+          "AvgPoints": 181.818182,
+          "WitDelta": -50.611762
+        },
+        {
+          "SkillId": 900321,
+          "SkillName": "U=ma2",
+          "Activations": 4,
+          "AvgPoints": 181.818182,
+          "WitDelta": -50.611762
+        }
+      ]
+    },
+    {
+      "UmaName": "Grass Wonder",
+      "TrainedCharaId": 1753,
+      "TrialCount": 11,
+      "RaceCount": 11,
+      "AverageWit": 1003,
+      "Rows": [
+        {
+          "SkillId": 100111,
+          "SkillName": "Where There's a Will, There's a Way",
+          "Activations": 9,
+          "AvgPoints": 2045.454545,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 200451,
+          "SkillName": "Center Stage",
+          "Activations": 10,
+          "AvgPoints": 1090.909091,
+          "WitDelta": -0.117828
+        },
+        {
+          "SkillId": 200331,
+          "SkillName": "Professor of Curvature",
+          "Activations": 10,
+          "AvgPoints": 1090.909091,
+          "WitDelta": -0.117828
+        },
+        {
+          "SkillId": 210061,
+          "SkillName": "Radiant Star",
+          "Activations": 10,
+          "AvgPoints": 1090.909091,
+          "WitDelta": -0.117828
+        },
+        {
+          "SkillId": 200371,
+          "SkillName": "Rushing Gale!",
+          "Activations": 10,
+          "AvgPoints": 1090.909091,
+          "WitDelta": -0.117828
+        },
+        {
+          "SkillId": 201542,
+          "SkillName": "Late Surger Savvy ○",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 201042,
+          "SkillName": "Mile Corners ○",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 8.973081
+        },
+        {
+          "SkillId": 200362,
+          "SkillName": "Straightaway Adept",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 8.973081
+        },
+        {
+          "SkillId": 200871,
+          "SkillName": "Flustered Pace Chasers",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": -0.117828
+        },
+        {
+          "SkillId": 200881,
+          "SkillName": "Hesitant Pace Chasers",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": -0.117828
+        },
+        {
+          "SkillId": 200512,
+          "SkillName": "Homestretch Haste",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": -0.117828
+        },
+        {
+          "SkillId": 201382,
+          "SkillName": "Late Surger Straightaways ○",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": -0.117828
+        },
+        {
+          "SkillId": 201032,
+          "SkillName": "Mile Straightaways ○",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -9.208737
+        },
+        {
+          "SkillId": 201432,
+          "SkillName": "Studious",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -9.208737
+        },
+        {
+          "SkillId": 201571,
+          "SkillName": "Triple 7s",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -9.208737
+        },
+        {
+          "SkillId": 201591,
+          "SkillName": "Uma Stan",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -9.208737
+        },
+        {
+          "SkillId": 201631,
+          "SkillName": "Sympathy",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 200601,
+          "SkillName": "On Your Left!",
+          "Activations": 3,
+          "AvgPoints": 327.272727,
+          "WitDelta": -63.754192
+        },
+        {
+          "SkillId": 200612,
+          "SkillName": "Outer Swell",
+          "Activations": 7,
+          "AvgPoints": 318.181818,
+          "WitDelta": -27.390556
+        },
+        {
+          "SkillId": 201112,
+          "SkillName": "Medium Corners ○",
+          "Activations": 0,
+          "AvgPoints": 0,
+          "WitDelta": -91.026919
+        }
+      ]
+    },
+    {
+      "UmaName": "Taiki Shuttle",
+      "TrainedCharaId": 1780,
+      "TrialCount": 11,
+      "RaceCount": 11,
+      "AverageWit": 1073,
+      "Rows": [
+        {
+          "SkillId": 100101,
+          "SkillName": "Shooting for Victory!",
+          "Activations": 7,
+          "AvgPoints": 1590.909091,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 200331,
+          "SkillName": "Professor of Curvature",
+          "Activations": 11,
+          "AvgPoints": 1200,
+          "WitDelta": 8.387698
+        },
+        {
+          "SkillId": 210061,
+          "SkillName": "Radiant Star",
+          "Activations": 11,
+          "AvgPoints": 1200,
+          "WitDelta": 8.387698
+        },
+        {
+          "SkillId": 200371,
+          "SkillName": "Rushing Gale!",
+          "Activations": 11,
+          "AvgPoints": 1200,
+          "WitDelta": 8.387698
+        },
+        {
+          "SkillId": 201601,
+          "SkillName": "Groundwork",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 8.387698
+        },
+        {
+          "SkillId": 201042,
+          "SkillName": "Mile Corners ○",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 8.387698
+        },
+        {
+          "SkillId": 201032,
+          "SkillName": "Mile Straightaways ○",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 8.387698
+        },
+        {
+          "SkillId": 201532,
+          "SkillName": "Pace Chaser Savvy ○",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 201332,
+          "SkillName": "Shrewd Step",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 8.387698
+        },
+        {
+          "SkillId": 910151,
+          "SkillName": "Barcarole of Blessings",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": -0.703211
+        },
+        {
+          "SkillId": 200881,
+          "SkillName": "Hesitant Pace Chasers",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": -0.703211
+        },
+        {
+          "SkillId": 201322,
+          "SkillName": "Pace Chaser Corners ○",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": -0.703211
+        },
+        {
+          "SkillId": 201611,
+          "SkillName": "Tail Held High",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": -0.703211
+        },
+        {
+          "SkillId": 201902,
+          "SkillName": "Head-On",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -9.79412
+        },
+        {
+          "SkillId": 900321,
+          "SkillName": "U=ma2",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -9.79412
+        },
+        {
+          "SkillId": 201631,
+          "SkillName": "Sympathy",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 201342,
+          "SkillName": "Straight Descent",
+          "Activations": 7,
+          "AvgPoints": 318.181818,
+          "WitDelta": -27.975938
+        },
+        {
+          "SkillId": 200831,
+          "SkillName": "Subdued Front Runners",
+          "Activations": 6,
+          "AvgPoints": 272.727273,
+          "WitDelta": -37.066847
+        },
+        {
+          "SkillId": 900181,
+          "SkillName": "Blazing Pride",
+          "Activations": 5,
+          "AvgPoints": 227.272727,
+          "WitDelta": -46.157757
+        },
+        {
+          "SkillId": 201362,
+          "SkillName": "Tactical Tweak",
+          "Activations": 5,
+          "AvgPoints": 227.272727,
+          "WitDelta": -46.157757
+        }
+      ]
+    },
+    {
+      "UmaName": "Maruzensky",
+      "TrainedCharaId": 1113,
+      "TrialCount": 11,
+      "RaceCount": 11,
+      "AverageWit": 725,
+      "Rows": [
+        {
+          "SkillId": 110041,
+          "SkillName": "A Kiss for Courage",
+          "Activations": 9,
+          "AvgPoints": 2045.454545,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 200451,
+          "SkillName": "Center Stage",
+          "Activations": 11,
+          "AvgPoints": 1200,
+          "WitDelta": 12.413793
+        },
+        {
+          "SkillId": 200331,
+          "SkillName": "Professor of Curvature",
+          "Activations": 10,
+          "AvgPoints": 1090.909091,
+          "WitDelta": 3.322884
+        },
+        {
+          "SkillId": 200531,
+          "SkillName": "Taking the Lead",
+          "Activations": 10,
+          "AvgPoints": 1090.909091,
+          "WitDelta": 3.322884
+        },
+        {
+          "SkillId": 200431,
+          "SkillName": "Concentration",
+          "Activations": 9,
+          "AvgPoints": 981.818182,
+          "WitDelta": -5.768025
+        },
+        {
+          "SkillId": 200681,
+          "SkillName": "Mile Maven",
+          "Activations": 9,
+          "AvgPoints": 981.818182,
+          "WitDelta": -5.768025
+        },
+        {
+          "SkillId": 201242,
+          "SkillName": "Front Runner Straightaways ○",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 3.322884
+        },
+        {
+          "SkillId": 201571,
+          "SkillName": "Triple 7s",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 3.322884
+        },
+        {
+          "SkillId": 201601,
+          "SkillName": "Groundwork",
+          "Activations": 7,
+          "AvgPoints": 409.090909,
+          "WitDelta": -23.949843
+        },
+        {
+          "SkillId": 201252,
+          "SkillName": "Front Runner Corners ○",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -5.768025
+        },
+        {
+          "SkillId": 201032,
+          "SkillName": "Mile Straightaways ○",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": -14.858934
+        },
+        {
+          "SkillId": 201631,
+          "SkillName": "Sympathy",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 201611,
+          "SkillName": "Tail Held High",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": -14.858934
+        },
+        {
+          "SkillId": 900201,
+          "SkillName": "Angling and Scheming",
+          "Activations": 3,
+          "AvgPoints": 136.363636,
+          "WitDelta": -60.31348
+        }
+      ]
+    },
+    {
+      "UmaName": "Mihono Bourbon",
+      "TrainedCharaId": 1757,
+      "TrialCount": 11,
+      "RaceCount": 11,
+      "AverageWit": 959,
+      "Rows": [
+        {
+          "SkillId": 110261,
+          "SkillName": "Operation Cacao",
+          "Activations": 11,
+          "AvgPoints": 2500,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 210061,
+          "SkillName": "Radiant Star",
+          "Activations": 11,
+          "AvgPoints": 1200,
+          "WitDelta": 9.384776
+        },
+        {
+          "SkillId": 200431,
+          "SkillName": "Concentration",
+          "Activations": 9,
+          "AvgPoints": 981.818182,
+          "WitDelta": -8.797042
+        },
+        {
+          "SkillId": 201262,
+          "SkillName": "Dodging Danger",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 9.384776
+        },
+        {
+          "SkillId": 201522,
+          "SkillName": "Front Runner Savvy ○",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 201601,
+          "SkillName": "Groundwork",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 9.384776
+        },
+        {
+          "SkillId": 201122,
+          "SkillName": "Hawkeye",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 9.384776
+        },
+        {
+          "SkillId": 200512,
+          "SkillName": "Homestretch Haste",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 9.384776
+        },
+        {
+          "SkillId": 200362,
+          "SkillName": "Straightaway Adept",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 9.384776
+        },
+        {
+          "SkillId": 200532,
+          "SkillName": "Early Lead",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 0.293867
+        },
+        {
+          "SkillId": 200931,
+          "SkillName": "Flustered End Closers",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 0.293867
+        },
+        {
+          "SkillId": 201242,
+          "SkillName": "Front Runner Straightaways ○",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -8.797042
+        },
+        {
+          "SkillId": 201142,
+          "SkillName": "Soft Step",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -8.797042
+        },
+        {
+          "SkillId": 200851,
+          "SkillName": "Hesitant Front Runners",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": -17.887951
+        },
+        {
+          "SkillId": 201112,
+          "SkillName": "Medium Corners ○",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": -17.887951
+        },
+        {
+          "SkillId": 200292,
+          "SkillName": "Target in Sight ○",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 200132,
+          "SkillName": "Standard Distance ○",
+          "Activations": 7,
+          "AvgPoints": 318.181818,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 900201,
+          "SkillName": "Angling and Scheming",
+          "Activations": 5,
+          "AvgPoints": 227.272727,
+          "WitDelta": -45.160679
+        },
+        {
+          "SkillId": 200462,
+          "SkillName": "Ramp Up",
+          "Activations": 5,
+          "AvgPoints": 227.272727,
+          "WitDelta": -45.160679
+        },
+        {
+          "SkillId": 201591,
+          "SkillName": "Uma Stan",
+          "Activations": 3,
+          "AvgPoints": 136.363636,
+          "WitDelta": -63.342497
+        },
+        {
+          "SkillId": 201162,
+          "SkillName": "Murmur",
+          "Activations": 1,
+          "AvgPoints": 45.454545,
+          "WitDelta": -81.524315
+        }
+      ]
+    },
+    {
+      "UmaName": "Agnes Tachyon",
+      "TrainedCharaId": 1749,
+      "TrialCount": 11,
+      "RaceCount": 11,
+      "AverageWit": 826,
+      "Rows": [
+        {
+          "SkillId": 100321,
+          "SkillName": "U=ma2",
+          "Activations": 8,
+          "AvgPoints": 1890.909091,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 200331,
+          "SkillName": "Professor of Curvature",
+          "Activations": 9,
+          "AvgPoints": 981.818182,
+          "WitDelta": -7.285934
+        },
+        {
+          "SkillId": 200371,
+          "SkillName": "Rushing Gale!",
+          "Activations": 8,
+          "AvgPoints": 872.727273,
+          "WitDelta": -16.376843
+        },
+        {
+          "SkillId": 200721,
+          "SkillName": "Killer Tunes",
+          "Activations": 7,
+          "AvgPoints": 763.636364,
+          "WitDelta": -25.467753
+        },
+        {
+          "SkillId": 200851,
+          "SkillName": "Hesitant Front Runners",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 10.895884
+        },
+        {
+          "SkillId": 200881,
+          "SkillName": "Hesitant Pace Chasers",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 10.895884
+        },
+        {
+          "SkillId": 201112,
+          "SkillName": "Medium Corners ○",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 10.895884
+        },
+        {
+          "SkillId": 201322,
+          "SkillName": "Pace Chaser Corners ○",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 10.895884
+        },
+        {
+          "SkillId": 201532,
+          "SkillName": "Pace Chaser Savvy ○",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 201312,
+          "SkillName": "Pace Chaser Straightaways ○",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 1.804975
+        },
+        {
+          "SkillId": 200582,
+          "SkillName": "Prepared to Pass",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 1.804975
+        },
+        {
+          "SkillId": 201702,
+          "SkillName": "All I've Got",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -7.285934
+        },
+        {
+          "SkillId": 910151,
+          "SkillName": "Barcarole of Blessings",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": -16.376843
+        },
+        {
+          "SkillId": 201102,
+          "SkillName": "Medium Straightaways ○",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": -16.376843
+        },
+        {
+          "SkillId": 201611,
+          "SkillName": "Tail Held High",
+          "Activations": 6,
+          "AvgPoints": 272.727273,
+          "WitDelta": -34.558662
+        },
+        {
+          "SkillId": 201631,
+          "SkillName": "Sympathy",
+          "Activations": 4,
+          "AvgPoints": 181.818182,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 201151,
+          "SkillName": "Dominator",
+          "Activations": 1,
+          "AvgPoints": 109.090909,
+          "WitDelta": -80.013207
+        }
+      ]
+    },
+    {
+      "UmaName": "Special Week",
+      "TrainedCharaId": 1765,
+      "TrialCount": 11,
+      "RaceCount": 11,
+      "AverageWit": 733,
+      "Rows": [
+        {
+          "SkillId": 110011,
+          "SkillName": "Dazzl'n ♪ Diver",
+          "Activations": 7,
+          "AvgPoints": 1527.272727,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 200591,
+          "SkillName": "Fast & Furious",
+          "Activations": 11,
+          "AvgPoints": 1200,
+          "WitDelta": 12.278308
+        },
+        {
+          "SkillId": 200331,
+          "SkillName": "Professor of Curvature",
+          "Activations": 11,
+          "AvgPoints": 1200,
+          "WitDelta": 12.278308
+        },
+        {
+          "SkillId": 200371,
+          "SkillName": "Rushing Gale!",
+          "Activations": 10,
+          "AvgPoints": 1090.909091,
+          "WitDelta": 3.187399
+        },
+        {
+          "SkillId": 200451,
+          "SkillName": "Center Stage",
+          "Activations": 9,
+          "AvgPoints": 981.818182,
+          "WitDelta": -5.90351
+        },
+        {
+          "SkillId": 210061,
+          "SkillName": "Radiant Star",
+          "Activations": 9,
+          "AvgPoints": 981.818182,
+          "WitDelta": -5.90351
+        },
+        {
+          "SkillId": 200512,
+          "SkillName": "Homestretch Haste",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 12.278308
+        },
+        {
+          "SkillId": 200432,
+          "SkillName": "Focus",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 3.187399
+        },
+        {
+          "SkillId": 201392,
+          "SkillName": "Late Surger Corners ○",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 3.187399
+        },
+        {
+          "SkillId": 201571,
+          "SkillName": "Triple 7s",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 3.187399
+        },
+        {
+          "SkillId": 201382,
+          "SkillName": "Late Surger Straightaways ○",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": -14.994419
+        },
+        {
+          "SkillId": 201611,
+          "SkillName": "Tail Held High",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": -14.994419
+        },
+        {
+          "SkillId": 201412,
+          "SkillName": "1,500,000 CC",
+          "Activations": 6,
+          "AvgPoints": 272.727273,
+          "WitDelta": -33.176237
+        },
+        {
+          "SkillId": 900271,
+          "SkillName": "Let's Pump Some Iron!",
+          "Activations": 6,
+          "AvgPoints": 272.727273,
+          "WitDelta": -33.176237
+        },
+        {
+          "SkillId": 201631,
+          "SkillName": "Sympathy",
+          "Activations": 4,
+          "AvgPoints": 181.818182,
+          "WitDelta": null
+        }
+      ]
+    },
+    {
+      "UmaName": "Gold Ship",
+      "TrainedCharaId": 1713,
+      "TrialCount": 11,
+      "RaceCount": 11,
+      "AverageWit": 769,
+      "Rows": [
+        {
+          "SkillId": 100071,
+          "SkillName": "Anchors Aweigh!",
+          "Activations": 10,
+          "AvgPoints": 2272.727273,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 200331,
+          "SkillName": "Professor of Curvature",
+          "Activations": 13,
+          "AvgPoints": 1418.181818,
+          "WitDelta": 11.703511
+        },
+        {
+          "SkillId": 200351,
+          "SkillName": "Swinging Maestro",
+          "Activations": 11,
+          "AvgPoints": 1200,
+          "WitDelta": 11.703511
+        },
+        {
+          "SkillId": 202021,
+          "SkillName": "Daring Strike",
+          "Activations": 9,
+          "AvgPoints": 981.818182,
+          "WitDelta": -6.478307
+        },
+        {
+          "SkillId": 201481,
+          "SkillName": "Go-Home Specialist",
+          "Activations": 8,
+          "AvgPoints": 872.727273,
+          "WitDelta": -15.569216
+        },
+        {
+          "SkillId": 201462,
+          "SkillName": "End Closer Corners ○",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 11.703511
+        },
+        {
+          "SkillId": 201552,
+          "SkillName": "End Closer Savvy ○",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 910151,
+          "SkillName": "Barcarole of Blessings",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 2.612602
+        },
+        {
+          "SkillId": 201452,
+          "SkillName": "End Closer Straightaways ○",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 2.612602
+        },
+        {
+          "SkillId": 200462,
+          "SkillName": "Ramp Up",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 2.612602
+        },
+        {
+          "SkillId": 200362,
+          "SkillName": "Straightaway Adept",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 2.612602
+        },
+        {
+          "SkillId": 201611,
+          "SkillName": "Tail Held High",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 2.612602
+        },
+        {
+          "SkillId": 201591,
+          "SkillName": "Uma Stan",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 2.612602
+        },
+        {
+          "SkillId": 900501,
+          "SkillName": "Nemesis",
+          "Activations": 3,
+          "AvgPoints": 136.363636,
+          "WitDelta": -61.023762
+        },
+        {
+          "SkillId": 200632,
+          "SkillName": "Masterful Gambit",
+          "Activations": 2,
+          "AvgPoints": 90.909091,
+          "WitDelta": -70.114671
+        }
+      ]
+    },
+    {
+      "UmaName": "T.M. Opera O",
+      "TrainedCharaId": 1697,
+      "TrialCount": 11,
+      "RaceCount": 11,
+      "AverageWit": 846,
+      "Rows": [
+        {
+          "SkillId": 110151,
+          "SkillName": "Barcarole of Blessings",
+          "Activations": 9,
+          "AvgPoints": 2045.454545,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 200331,
+          "SkillName": "Professor of Curvature",
+          "Activations": 11,
+          "AvgPoints": 1200,
+          "WitDelta": 10.638298
+        },
+        {
+          "SkillId": 200351,
+          "SkillName": "Swinging Maestro",
+          "Activations": 10,
+          "AvgPoints": 1090.909091,
+          "WitDelta": 1.547389
+        },
+        {
+          "SkillId": 201902,
+          "SkillName": "Head-On",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 10.638298
+        },
+        {
+          "SkillId": 201182,
+          "SkillName": "Long Corners ○",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 1.547389
+        },
+        {
+          "SkillId": 201322,
+          "SkillName": "Pace Chaser Corners ○",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 1.547389
+        },
+        {
+          "SkillId": 201312,
+          "SkillName": "Pace Chaser Straightaways ○",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 1.547389
+        },
+        {
+          "SkillId": 200582,
+          "SkillName": "Prepared to Pass",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 1.547389
+        },
+        {
+          "SkillId": 200362,
+          "SkillName": "Straightaway Adept",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 1.547389
+        },
+        {
+          "SkillId": 200881,
+          "SkillName": "Hesitant Pace Chasers",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -7.54352
+        },
+        {
+          "SkillId": 201352,
+          "SkillName": "Hydrate",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -7.54352
+        },
+        {
+          "SkillId": 200572,
+          "SkillName": "Preferred Position",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -7.54352
+        },
+        {
+          "SkillId": 900061,
+          "SkillName": "Triumphant Pulse",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -7.54352
+        },
+        {
+          "SkillId": 200562,
+          "SkillName": "Stamina to Spare",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": -16.634429
+        },
+        {
+          "SkillId": 200831,
+          "SkillName": "Subdued Front Runners",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": -16.634429
+        },
+        {
+          "SkillId": 201591,
+          "SkillName": "Uma Stan",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": -16.634429
+        }
+      ]
+    },
+    {
+      "UmaName": "Kitasan Black",
+      "TrainedCharaId": 1721,
+      "TrialCount": 11,
+      "RaceCount": 11,
+      "AverageWit": 796,
+      "Rows": [
+        {
+          "SkillId": 100681,
+          "SkillName": "Victory Cheer!",
+          "Activations": 11,
+          "AvgPoints": 2500,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 200351,
+          "SkillName": "Swinging Maestro",
+          "Activations": 11,
+          "AvgPoints": 1200,
+          "WitDelta": 11.306533
+        },
+        {
+          "SkillId": 200531,
+          "SkillName": "Taking the Lead",
+          "Activations": 8,
+          "AvgPoints": 872.727273,
+          "WitDelta": -15.966195
+        },
+        {
+          "SkillId": 200332,
+          "SkillName": "Corner Adept ○",
+          "Activations": 12,
+          "AvgPoints": 545.454545,
+          "WitDelta": 2.215624
+        },
+        {
+          "SkillId": 200542,
+          "SkillName": "Fast-Paced",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 11.306533
+        },
+        {
+          "SkillId": 201252,
+          "SkillName": "Front Runner Corners ○",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 11.306533
+        },
+        {
+          "SkillId": 201172,
+          "SkillName": "Long Straightaways ○",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 11.306533
+        },
+        {
+          "SkillId": 201611,
+          "SkillName": "Tail Held High",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 11.306533
+        },
+        {
+          "SkillId": 200512,
+          "SkillName": "Homestretch Haste",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 2.215624
+        },
+        {
+          "SkillId": 200362,
+          "SkillName": "Straightaway Adept",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 2.215624
+        },
+        {
+          "SkillId": 910151,
+          "SkillName": "Barcarole of Blessings",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -6.875286
+        },
+        {
+          "SkillId": 200432,
+          "SkillName": "Focus",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -6.875286
+        },
+        {
+          "SkillId": 201242,
+          "SkillName": "Front Runner Straightaways ○",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -6.875286
+        },
+        {
+          "SkillId": 200382,
+          "SkillName": "Straightaway Recovery",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -6.875286
+        },
+        {
+          "SkillId": 900201,
+          "SkillName": "Angling and Scheming",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": -15.966195
+        },
+        {
+          "SkillId": 201272,
+          "SkillName": "Leader's Pride",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": -15.966195
+        },
+        {
+          "SkillId": 201601,
+          "SkillName": "Groundwork",
+          "Activations": 7,
+          "AvgPoints": 318.181818,
+          "WitDelta": -25.057104
+        },
+        {
+          "SkillId": 201202,
+          "SkillName": "Passing Pro",
+          "Activations": 7,
+          "AvgPoints": 318.181818,
+          "WitDelta": -25.057104
+        },
+        {
+          "SkillId": 200552,
+          "SkillName": "Final Push",
+          "Activations": 6,
+          "AvgPoints": 272.727273,
+          "WitDelta": -34.148013
+        },
+        {
+          "SkillId": 200282,
+          "SkillName": "Competitive Spirit ○",
+          "Activations": 0,
+          "AvgPoints": 0,
+          "WitDelta": null
+        }
+      ]
+    },
+    {
+      "UmaName": "El Condor Pasa",
+      "TrainedCharaId": 1745,
+      "TrialCount": 11,
+      "RaceCount": 11,
+      "AverageWit": 1025,
+      "Rows": [
+        {
+          "SkillId": 200451,
+          "SkillName": "Center Stage",
+          "Activations": 11,
+          "AvgPoints": 1200,
+          "WitDelta": 8.780488
+        },
+        {
+          "SkillId": 210061,
+          "SkillName": "Radiant Star",
+          "Activations": 11,
+          "AvgPoints": 1200,
+          "WitDelta": 8.780488
+        },
+        {
+          "SkillId": 200331,
+          "SkillName": "Professor of Curvature",
+          "Activations": 7,
+          "AvgPoints": 763.636364,
+          "WitDelta": -27.583149
+        },
+        {
+          "SkillId": 201372,
+          "SkillName": "Disorient",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 8.780488
+        },
+        {
+          "SkillId": 201042,
+          "SkillName": "Mile Corners ○",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 8.780488
+        },
+        {
+          "SkillId": 201532,
+          "SkillName": "Pace Chaser Savvy ○",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 100141,
+          "SkillName": "Victoria por plancha ☆",
+          "Activations": 2,
+          "AvgPoints": 454.545455,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 200432,
+          "SkillName": "Focus",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": -0.310421
+        },
+        {
+          "SkillId": 201032,
+          "SkillName": "Mile Straightaways ○",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": -0.310421
+        },
+        {
+          "SkillId": 200881,
+          "SkillName": "Hesitant Pace Chasers",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -9.40133
+        },
+        {
+          "SkillId": 201312,
+          "SkillName": "Pace Chaser Straightaways ○",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -9.40133
+        },
+        {
+          "SkillId": 200582,
+          "SkillName": "Prepared to Pass",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -9.40133
+        },
+        {
+          "SkillId": 200562,
+          "SkillName": "Stamina to Spare",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -9.40133
+        },
+        {
+          "SkillId": 900101,
+          "SkillName": "Shooting for Victory!",
+          "Activations": 7,
+          "AvgPoints": 318.181818,
+          "WitDelta": -27.583149
+        },
+        {
+          "SkillId": 201332,
+          "SkillName": "Shrewd Step",
+          "Activations": 7,
+          "AvgPoints": 318.181818,
+          "WitDelta": -27.583149
+        },
+        {
+          "SkillId": 201342,
+          "SkillName": "Straight Descent",
+          "Activations": 5,
+          "AvgPoints": 227.272727,
+          "WitDelta": -45.764967
+        },
+        {
+          "SkillId": 200292,
+          "SkillName": "Target in Sight ○",
+          "Activations": 4,
+          "AvgPoints": 181.818182,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 200282,
+          "SkillName": "Competitive Spirit ○",
+          "Activations": 3,
+          "AvgPoints": 136.363636,
+          "WitDelta": null
+        }
+      ]
+    },
+    {
+      "UmaName": "Agnes Digital",
+      "TrainedCharaId": 1741,
+      "TrialCount": 11,
+      "RaceCount": 11,
+      "AverageWit": 882,
+      "Rows": [
+        {
+          "SkillId": 100191,
+          "SkillName": "OMG! (ﾟ∀ﾟ)  The Final Sprint! ☆",
+          "Activations": 11,
+          "AvgPoints": 2500,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 200331,
+          "SkillName": "Professor of Curvature",
+          "Activations": 11,
+          "AvgPoints": 1200,
+          "WitDelta": 10.204082
+        },
+        {
+          "SkillId": 200451,
+          "SkillName": "Center Stage",
+          "Activations": 10,
+          "AvgPoints": 1090.909091,
+          "WitDelta": 1.113173
+        },
+        {
+          "SkillId": 201681,
+          "SkillName": "Lead the Charge!",
+          "Activations": 10,
+          "AvgPoints": 1090.909091,
+          "WitDelta": 1.113173
+        },
+        {
+          "SkillId": 201592,
+          "SkillName": "Superstan",
+          "Activations": 10,
+          "AvgPoints": 1090.909091,
+          "WitDelta": 1.113173
+        },
+        {
+          "SkillId": 201542,
+          "SkillName": "Late Surger Savvy ○",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 201382,
+          "SkillName": "Late Surger Straightaways ○",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 10.204082
+        },
+        {
+          "SkillId": 201032,
+          "SkillName": "Mile Straightaways ○",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 10.204082
+        },
+        {
+          "SkillId": 200462,
+          "SkillName": "Ramp Up",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 1.113173
+        },
+        {
+          "SkillId": 201611,
+          "SkillName": "Tail Held High",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 1.113173
+        },
+        {
+          "SkillId": 200851,
+          "SkillName": "Hesitant Front Runners",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -7.977737
+        },
+        {
+          "SkillId": 201392,
+          "SkillName": "Late Surger Corners ○",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -7.977737
+        },
+        {
+          "SkillId": 201672,
+          "SkillName": "Top Pick",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -7.977737
+        },
+        {
+          "SkillId": 201412,
+          "SkillName": "1,500,000 CC",
+          "Activations": 6,
+          "AvgPoints": 272.727273,
+          "WitDelta": -35.250464
+        },
+        {
+          "SkillId": 200492,
+          "SkillName": "Nimble Navigator",
+          "Activations": 5,
+          "AvgPoints": 227.272727,
+          "WitDelta": -44.341373
+        },
+        {
+          "SkillId": 202022,
+          "SkillName": "Early Start",
+          "Activations": 0,
+          "AvgPoints": 0,
+          "WitDelta": -89.795918
+        },
+        {
+          "SkillId": 201631,
+          "SkillName": "Sympathy",
+          "Activations": 0,
+          "AvgPoints": 0,
+          "WitDelta": null
+        }
+      ]
+    },
+    {
+      "UmaName": "Smart Falcon",
+      "TrainedCharaId": 1709,
+      "TrialCount": 11,
+      "RaceCount": 11,
+      "AverageWit": 984,
+      "Rows": [
+        {
+          "SkillId": 100461,
+          "SkillName": "SPARKLY☆STARDOM",
+          "Activations": 7,
+          "AvgPoints": 1590.909091,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 200331,
+          "SkillName": "Professor of Curvature",
+          "Activations": 11,
+          "AvgPoints": 1200,
+          "WitDelta": 9.146341
+        },
+        {
+          "SkillId": 200451,
+          "SkillName": "Center Stage",
+          "Activations": 9,
+          "AvgPoints": 981.818182,
+          "WitDelta": -9.035477
+        },
+        {
+          "SkillId": 200431,
+          "SkillName": "Concentration",
+          "Activations": 9,
+          "AvgPoints": 981.818182,
+          "WitDelta": -9.035477
+        },
+        {
+          "SkillId": 200531,
+          "SkillName": "Taking the Lead",
+          "Activations": 9,
+          "AvgPoints": 981.818182,
+          "WitDelta": -9.035477
+        },
+        {
+          "SkillId": 201521,
+          "SkillName": "Front Runner Savvy ◎",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": null
+        },
+        {
+          "SkillId": 201242,
+          "SkillName": "Front Runner Straightaways ○",
+          "Activations": 11,
+          "AvgPoints": 500,
+          "WitDelta": 9.146341
+        },
+        {
+          "SkillId": 200542,
+          "SkillName": "Fast-Paced",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 0.055432
+        },
+        {
+          "SkillId": 201032,
+          "SkillName": "Mile Straightaways ○",
+          "Activations": 10,
+          "AvgPoints": 454.545455,
+          "WitDelta": 0.055432
+        },
+        {
+          "SkillId": 900201,
+          "SkillName": "Angling and Scheming",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -9.035477
+        },
+        {
+          "SkillId": 201251,
+          "SkillName": "Front Runner Corners ◎",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -9.035477
+        },
+        {
+          "SkillId": 201052,
+          "SkillName": "Shifting Gears",
+          "Activations": 9,
+          "AvgPoints": 409.090909,
+          "WitDelta": -9.035477
+        },
+        {
+          "SkillId": 201262,
+          "SkillName": "Dodging Danger",
+          "Activations": 8,
+          "AvgPoints": 363.636364,
+          "WitDelta": -18.126386
+        },
+        {
+          "SkillId": 200552,
+          "SkillName": "Final Push",
+          "Activations": 7,
+          "AvgPoints": 318.181818,
+          "WitDelta": -27.217295
+        },
+        {
+          "SkillId": 201601,
+          "SkillName": "Groundwork",
+          "Activations": 7,
+          "AvgPoints": 318.181818,
+          "WitDelta": -27.217295
+        },
+        {
+          "SkillId": 201661,
+          "SkillName": "Playtime's Over!",
+          "Activations": 5,
+          "AvgPoints": 227.272727,
+          "WitDelta": -45.399113
+        },
+        {
+          "SkillId": 201272,
+          "SkillName": "Leader's Pride",
+          "Activations": 4,
+          "AvgPoints": 181.818182,
+          "WitDelta": -54.490022
+        }
+      ]
+    }
+  ]
+}

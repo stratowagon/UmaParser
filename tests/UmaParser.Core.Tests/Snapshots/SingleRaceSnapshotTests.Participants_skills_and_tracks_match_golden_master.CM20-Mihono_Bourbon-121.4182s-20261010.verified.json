@@ -1,0 +1,483 @@
+{
+  "FileName": "CM20-Mihono Bourbon-121.4182s-20261010.json",
+  "RaceType": "Champions",
+  "Horses": 9,
+  "LocalHorses": 3,
+  "Distance": 2500,
+  "Track": "Nakayama",
+  "Umas": [
+    {
+      "Name": "Narita Taishin (20157)",
+      "TrainedCharaId": 3083,
+      "CharaId": 1050,
+      "RankScore": 20157,
+      "Skills": {
+        "UmaName": "Narita Taishin (20157)",
+        "TrainedCharaId": 0,
+        "TrialCount": 1,
+        "RaceCount": 1,
+        "AverageWit": 918,
+        "Rows": [
+          {
+            "SkillId": 900591,
+            "SkillName": "Moving Past, and Beyond",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -90.196078
+          },
+          {
+            "SkillId": 200261,
+            "SkillName": "Outer Post Proficiency ◎",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200891,
+            "SkillName": "Subdued Late Surgers",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -90.196078
+          },
+          {
+            "SkillId": 201482,
+            "SkillName": "After-School Stroll",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.803922
+          },
+          {
+            "SkillId": 200352,
+            "SkillName": "Corner Recovery ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.803922
+          },
+          {
+            "SkillId": 920011,
+            "SkillName": "Dreams Donned with Pride!",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.803922
+          },
+          {
+            "SkillId": 200641,
+            "SkillName": "Encroaching Shadow",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.803922
+          },
+          {
+            "SkillId": 201551,
+            "SkillName": "End Closer Savvy ◎",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201451,
+            "SkillName": "End Closer Straightaways ◎",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.803922
+          },
+          {
+            "SkillId": 200762,
+            "SkillName": "Extra Tank",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.803922
+          },
+          {
+            "SkillId": 200911,
+            "SkillName": "Hesitant Late Surgers",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.803922
+          },
+          {
+            "SkillId": 201641,
+            "SkillName": "Lone Wolf",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 100501,
+            "SkillName": "Nemesis",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200011,
+            "SkillName": "Right-Handed ◎",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201662,
+            "SkillName": "See Ya Later!",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.803922
+          },
+          {
+            "SkillId": 200621,
+            "SkillName": "Sleeping Lion",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.803922
+          },
+          {
+            "SkillId": 200382,
+            "SkillName": "Straightaway Recovery",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.803922
+          },
+          {
+            "SkillId": 201591,
+            "SkillName": "Uma Stan",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.803922
+          }
+        ]
+      },
+      "Tracks": {
+        "UmaName": "Narita Taishin (20157)",
+        "TotalRaces": 1,
+        "TeamType": "Non-TT (CM/Room/Practice)",
+        "Rows": [
+          {
+            "Track": "Nakayama",
+            "Distance": 2500,
+            "Races": 1,
+            "AvgPlace": 5,
+            "PctFirst": 0,
+            "PctTop3": 0,
+            "PctTop5": 100,
+            "AvgSkillPointsPerRace": 0,
+            "SpurtRate": 100,
+            "Survival": 100
+          }
+        ]
+      }
+    },
+    {
+      "Name": "Special Week (22561)",
+      "TrainedCharaId": 3063,
+      "CharaId": 1001,
+      "RankScore": 22561,
+      "Skills": {
+        "UmaName": "Special Week (22561)",
+        "TrainedCharaId": 0,
+        "TrialCount": 1,
+        "RaceCount": 1,
+        "AverageWit": 1228,
+        "Rows": [
+          {
+            "SkillId": 202061,
+            "SkillName": "Best in Japan",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.67101
+          },
+          {
+            "SkillId": 200462,
+            "SkillName": "Ramp Up",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.67101
+          },
+          {
+            "SkillId": 201662,
+            "SkillName": "See Ya Later!",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -92.67101
+          },
+          {
+            "SkillId": 200222,
+            "SkillName": "Cloudy Days ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 202021,
+            "SkillName": "Daring Strike",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 120011,
+            "SkillName": "Dreams Donned with Pride!",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201462,
+            "SkillName": "End Closer Corners ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 201452,
+            "SkillName": "End Closer Straightaways ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 201182,
+            "SkillName": "Long Corners ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 201172,
+            "SkillName": "Long Straightaways ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 900591,
+            "SkillName": "Moving Past, and Beyond",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 200492,
+            "SkillName": "Nimble Navigator",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 201211,
+            "SkillName": "Overwhelming Pressure",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 200331,
+            "SkillName": "Professor of Curvature",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 200012,
+            "SkillName": "Right-Handed ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200362,
+            "SkillName": "Straightaway Adept",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 201611,
+            "SkillName": "Tail Held High",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 7.32899
+          },
+          {
+            "SkillId": 200202,
+            "SkillName": "Winter Runner ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          }
+        ]
+      },
+      "Tracks": {
+        "UmaName": "Special Week (22561)",
+        "TotalRaces": 1,
+        "TeamType": "Non-TT (CM/Room/Practice)",
+        "Rows": [
+          {
+            "Track": "Nakayama",
+            "Distance": 2500,
+            "Races": 1,
+            "AvgPlace": 2,
+            "PctFirst": 0,
+            "PctTop3": 100,
+            "PctTop5": 100,
+            "AvgSkillPointsPerRace": 0,
+            "SpurtRate": 100,
+            "Survival": 100
+          }
+        ]
+      }
+    },
+    {
+      "Name": "Mihono Bourbon (21016)",
+      "TrainedCharaId": 3071,
+      "CharaId": 1026,
+      "RankScore": 21016,
+      "Skills": {
+        "UmaName": "Mihono Bourbon (21016)",
+        "TrainedCharaId": 0,
+        "TrialCount": 1,
+        "RaceCount": 1,
+        "AverageWit": 914,
+        "Rows": [
+          {
+            "SkillId": 202021,
+            "SkillName": "Daring Strike",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -90.153173
+          },
+          {
+            "SkillId": 201662,
+            "SkillName": "See Ya Later!",
+            "Activations": 0,
+            "AvgPoints": 0,
+            "WitDelta": -90.153173
+          },
+          {
+            "SkillId": 900201,
+            "SkillName": "Angling and Scheming",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.846827
+          },
+          {
+            "SkillId": 200431,
+            "SkillName": "Concentration",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.846827
+          },
+          {
+            "SkillId": 200532,
+            "SkillName": "Early Lead",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.846827
+          },
+          {
+            "SkillId": 200541,
+            "SkillName": "Escape Artist",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.846827
+          },
+          {
+            "SkillId": 200552,
+            "SkillName": "Final Push",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.846827
+          },
+          {
+            "SkillId": 201522,
+            "SkillName": "Front Runner Savvy ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 201601,
+            "SkillName": "Groundwork",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.846827
+          },
+          {
+            "SkillId": 200512,
+            "SkillName": "Homestretch Haste",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.846827
+          },
+          {
+            "SkillId": 110261,
+            "SkillName": "Operation Cacao",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200331,
+            "SkillName": "Professor of Curvature",
+            "Activations": 2,
+            "AvgPoints": 0,
+            "WitDelta": 9.846827
+          },
+          {
+            "SkillId": 200362,
+            "SkillName": "Straightaway Adept",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.846827
+          },
+          {
+            "SkillId": 201611,
+            "SkillName": "Tail Held High",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.846827
+          },
+          {
+            "SkillId": 900681,
+            "SkillName": "Victory Cheer!",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": 9.846827
+          },
+          {
+            "SkillId": 200162,
+            "SkillName": "Wet Conditions ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          },
+          {
+            "SkillId": 200202,
+            "SkillName": "Winter Runner ○",
+            "Activations": 1,
+            "AvgPoints": 0,
+            "WitDelta": null
+          }
+        ]
+      },
+      "Tracks": {
+        "UmaName": "Mihono Bourbon (21016)",
+        "TotalRaces": 1,
+        "TeamType": "Non-TT (CM/Room/Practice)",
+        "Rows": [
+          {
+            "Track": "Nakayama",
+            "Distance": 2500,
+            "Races": 1,
+            "AvgPlace": 1,
+            "PctFirst": 100,
+            "PctTop3": 100,
+            "PctTop5": 100,
+            "AvgSkillPointsPerRace": 0,
+            "SpurtRate": 100,
+            "Survival": 100
+          }
+        ]
+      }
+    }
+  ]
+}

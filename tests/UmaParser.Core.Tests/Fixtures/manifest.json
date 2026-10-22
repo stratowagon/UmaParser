@@ -1,0 +1,510 @@
+{
+  "scrubVersion": 1,
+  "description": "Provenance for the scrubbed race fixtures used by UmaParser.Core.Tests. Trainer names are Player or TrainerNN. viewer_id and owner_viewer_id are 0. sid, user_name, and circle_name are empty. originalSizeKb and originalLastWritePacific come from the captures before scrubbing (Pacific time). Add new files with Tools/FixtureScrubber; do not commit unscrubbed JSON.",
+  "files": [
+    {
+      "path": "TT-K0/TT-20261019_094946_386.json",
+      "originalPath": "Team Trials/TT-20261019_094946_386.json",
+      "originalSizeKb": 375,
+      "originalLastWritePacific": "2026-10-19T09:49:00-07:00",
+      "group": "TT-K0",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 236207
+    },
+    {
+      "path": "TT-K0/TT-20261019_095013_168.json",
+      "originalPath": "Team Trials/TT-20261019_095013_168.json",
+      "originalSizeKb": 365,
+      "originalLastWritePacific": "2026-10-19T09:50:00-07:00",
+      "group": "TT-K0",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 236840
+    },
+    {
+      "path": "TT-K0/TT-20261019_095030_799.json",
+      "originalPath": "Team Trials/TT-20261019_095030_799.json",
+      "originalSizeKb": 371,
+      "originalLastWritePacific": "2026-10-19T09:50:00-07:00",
+      "group": "TT-K0",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 235917
+    },
+    {
+      "path": "TT-K0/TT-20261019_095119_733.json",
+      "originalPath": "Team Trials/TT-20261019_095119_733.json",
+      "originalSizeKb": 356,
+      "originalLastWritePacific": "2026-10-19T09:51:00-07:00",
+      "group": "TT-K0",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 227418
+    },
+    {
+      "path": "TT-K0/TT-20261019_095152_966.json",
+      "originalPath": "Team Trials/TT-20261019_095152_966.json",
+      "originalSizeKb": 353,
+      "originalLastWritePacific": "2026-10-19T09:51:00-07:00",
+      "group": "TT-K0",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 222319
+    },
+    {
+      "path": "TT-K0/TT-20261020_101527_268.json",
+      "originalPath": "Team Trials/TT-20261020_101527_268.json",
+      "originalSizeKb": 377,
+      "originalLastWritePacific": "2026-10-20T10:15:00-07:00",
+      "group": "TT-K0",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 237222
+    },
+    {
+      "path": "TT-K0/TT-20261020_101600_750.json",
+      "originalPath": "Team Trials/TT-20261020_101600_750.json",
+      "originalSizeKb": 358,
+      "originalLastWritePacific": "2026-10-20T10:16:00-07:00",
+      "group": "TT-K0",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 225629
+    },
+    {
+      "path": "TT-K0/TT-20261020_101624_803.json",
+      "originalPath": "Team Trials/TT-20261020_101624_803.json",
+      "originalSizeKb": 367,
+      "originalLastWritePacific": "2026-10-20T10:16:00-07:00",
+      "group": "TT-K0",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 230923
+    },
+    {
+      "path": "TT-K0/TT-20261020_101646_565.json",
+      "originalPath": "Team Trials/TT-20261020_101646_565.json",
+      "originalSizeKb": 374,
+      "originalLastWritePacific": "2026-10-20T10:16:00-07:00",
+      "group": "TT-K0",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 234068
+    },
+    {
+      "path": "TT-K0/TT-20261020_101703_538.json",
+      "originalPath": "Team Trials/TT-20261020_101703_538.json",
+      "originalSizeKb": 362,
+      "originalLastWritePacific": "2026-10-20T10:17:00-07:00",
+      "group": "TT-K0",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 229060
+    },
+    {
+      "path": "TT-K0/TT-20261021_151430_870.json",
+      "originalPath": "Team Trials/TT-20261021_151430_870.json",
+      "originalSizeKb": 386,
+      "originalLastWritePacific": "2026-10-21T15:14:00-07:00",
+      "group": "TT-K0",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 247279
+    },
+    {
+      "path": "TT-K0/TT-20261021_151458_349.json",
+      "originalPath": "Team Trials/TT-20261021_151458_349.json",
+      "originalSizeKb": 357,
+      "originalLastWritePacific": "2026-10-21T15:14:00-07:00",
+      "group": "TT-K0",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 226666
+    },
+    {
+      "path": "TT-K0/TT-20261021_151526_816.json",
+      "originalPath": "Team Trials/TT-20261021_151526_816.json",
+      "originalSizeKb": 371,
+      "originalLastWritePacific": "2026-10-21T15:15:00-07:00",
+      "group": "TT-K0",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 232544
+    },
+    {
+      "path": "TT-K0/TT-20261021_151554_213.json",
+      "originalPath": "Team Trials/TT-20261021_151554_213.json",
+      "originalSizeKb": 343,
+      "originalLastWritePacific": "2026-10-21T15:15:00-07:00",
+      "group": "TT-K0",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 218835
+    },
+    {
+      "path": "TT-K0/TT-20261021_151611_647.json",
+      "originalPath": "Team Trials/TT-20261021_151611_647.json",
+      "originalSizeKb": 359,
+      "originalLastWritePacific": "2026-10-21T15:16:00-07:00",
+      "group": "TT-K0",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 229208
+    },
+    {
+      "path": "TT-Mismatch/20260409_102840_534.json",
+      "originalPath": "Team Trials/tests/mismatch data/20260409_102840_534.json",
+      "originalSizeKb": 373,
+      "originalLastWritePacific": "2026-04-09T10:28:00-07:00",
+      "group": "TT-Mismatch",
+      "expectedBatchKind": "RosterMismatch",
+      "scrubbedSizeBytes": 239885
+    },
+    {
+      "path": "TT-Mismatch/capture_20260409_102842_0012.json",
+      "originalPath": "Team Trials/tests/mismatch data/capture_20260409_102842_0012.json",
+      "originalSizeKb": 411,
+      "originalLastWritePacific": "2026-04-09T10:29:00-07:00",
+      "group": "TT-Mismatch",
+      "expectedBatchKind": "RosterMismatch",
+      "scrubbedSizeBytes": 244358
+    },
+    {
+      "path": "TT-Mismatch/20260409_102840_534 - Copy.json",
+      "originalPath": "Team Trials/tests/mismatch data/20260409_102840_534 - Copy.json",
+      "originalSizeKb": 301,
+      "originalLastWritePacific": "2026-04-09T10:37:00-07:00",
+      "group": "TT-Mismatch",
+      "expectedBatchKind": "RosterMismatch",
+      "scrubbedSizeBytes": 240133
+    },
+    {
+      "path": "TT-Mismatch/different team.json",
+      "originalPath": "Team Trials/tests/mismatch data/different team.json",
+      "originalSizeKb": 358,
+      "originalLastWritePacific": "2026-06-03T10:47:00-07:00",
+      "group": "TT-Mismatch",
+      "expectedBatchKind": "RosterMismatch",
+      "scrubbedSizeBytes": 231956
+    },
+    {
+      "path": "TT-StyleChange/20260412_154143_173.json",
+      "originalPath": "Team Trials/tests/style change/20260412_154143_173.json",
+      "originalSizeKb": 337,
+      "originalLastWritePacific": "2026-04-12T15:41:00-07:00",
+      "group": "TT-StyleChange",
+      "expectedBatchKind": "RosterMismatch",
+      "scrubbedSizeBytes": 216132
+    },
+    {
+      "path": "TT-StyleChange/20260412_154207_104.json",
+      "originalPath": "Team Trials/tests/style change/20260412_154207_104.json",
+      "originalSizeKb": 345,
+      "originalLastWritePacific": "2026-04-12T15:42:00-07:00",
+      "group": "TT-StyleChange",
+      "expectedBatchKind": "RosterMismatch",
+      "scrubbedSizeBytes": 221021
+    },
+    {
+      "path": "TT-StyleChange/20260412_154246_386.json",
+      "originalPath": "Team Trials/tests/style change/20260412_154246_386.json",
+      "originalSizeKb": 346,
+      "originalLastWritePacific": "2026-04-12T15:42:00-07:00",
+      "group": "TT-StyleChange",
+      "expectedBatchKind": "RosterMismatch",
+      "scrubbedSizeBytes": 227548
+    },
+    {
+      "path": "TT-StyleChange/20260412_193752_899.json",
+      "originalPath": "Team Trials/tests/style change/20260412_193752_899.json",
+      "originalSizeKb": 342,
+      "originalLastWritePacific": "2026-04-12T19:37:00-07:00",
+      "group": "TT-StyleChange",
+      "expectedBatchKind": "RosterMismatch",
+      "scrubbedSizeBytes": 219124
+    },
+    {
+      "path": "TT-StyleChange/20260412_193815_164.json",
+      "originalPath": "Team Trials/tests/style change/20260412_193815_164.json",
+      "originalSizeKb": 367,
+      "originalLastWritePacific": "2026-04-12T19:38:00-07:00",
+      "group": "TT-StyleChange",
+      "expectedBatchKind": "RosterMismatch",
+      "scrubbedSizeBytes": 236614
+    },
+    {
+      "path": "TT-StyleChange/20260413_100238_976.json",
+      "originalPath": "Team Trials/tests/style change/20260413_100238_976.json",
+      "originalSizeKb": 342,
+      "originalLastWritePacific": "2026-04-13T10:02:00-07:00",
+      "group": "TT-StyleChange",
+      "expectedBatchKind": "RosterMismatch",
+      "scrubbedSizeBytes": 219830
+    },
+    {
+      "path": "TT-StyleChange/20260413_100312_945.json",
+      "originalPath": "Team Trials/tests/style change/20260413_100312_945.json",
+      "originalSizeKb": 371,
+      "originalLastWritePacific": "2026-04-13T10:03:00-07:00",
+      "group": "TT-StyleChange",
+      "expectedBatchKind": "RosterMismatch",
+      "scrubbedSizeBytes": 240700
+    },
+    {
+      "path": "TT-StyleChange/20260413_100340_674.json",
+      "originalPath": "Team Trials/tests/style change/20260413_100340_674.json",
+      "originalSizeKb": 339,
+      "originalLastWritePacific": "2026-04-13T10:03:00-07:00",
+      "group": "TT-StyleChange",
+      "expectedBatchKind": "RosterMismatch",
+      "scrubbedSizeBytes": 215556
+    },
+    {
+      "path": "TT-SwapTest/TT-20260609_162707_185.json",
+      "originalPath": "Team Trials/tests/team swap test/TT-20260609_162707_185.json",
+      "originalSizeKb": 342,
+      "originalLastWritePacific": "2026-06-09T16:27:00-07:00",
+      "group": "TT-SwapTest",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 217877
+    },
+    {
+      "path": "TT-SwapTest/TT-20260609_162740_799.json",
+      "originalPath": "Team Trials/tests/team swap test/TT-20260609_162740_799.json",
+      "originalSizeKb": 376,
+      "originalLastWritePacific": "2026-06-09T16:27:00-07:00",
+      "group": "TT-SwapTest",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 237673
+    },
+    {
+      "path": "TT-SwapTest/TT-20260609_162836_795.json",
+      "originalPath": "Team Trials/tests/team swap test/TT-20260609_162836_795.json",
+      "originalSizeKb": 350,
+      "originalLastWritePacific": "2026-06-09T16:28:00-07:00",
+      "group": "TT-SwapTest",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 225257
+    },
+    {
+      "path": "TT-SwapTest/TT-20260609_221401_525.json",
+      "originalPath": "Team Trials/tests/team swap test/TT-20260609_221401_525.json",
+      "originalSizeKb": 358,
+      "originalLastWritePacific": "2026-06-09T22:14:00-07:00",
+      "group": "TT-SwapTest",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 227212
+    },
+    {
+      "path": "TT-SwapTest/TT-20260609_221431_689.json",
+      "originalPath": "Team Trials/tests/team swap test/TT-20260609_221431_689.json",
+      "originalSizeKb": 342,
+      "originalLastWritePacific": "2026-06-09T22:14:00-07:00",
+      "group": "TT-SwapTest",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 216347
+    },
+    {
+      "path": "TT-SwapTest/TT-20260610_102406_196.json",
+      "originalPath": "Team Trials/tests/team swap test/TT-20260610_102406_196.json",
+      "originalSizeKb": 363,
+      "originalLastWritePacific": "2026-06-10T10:24:00-07:00",
+      "group": "TT-SwapTest",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 236578
+    },
+    {
+      "path": "TT-SwapTest/TT-20260610_102513_152.json",
+      "originalPath": "Team Trials/tests/team swap test/TT-20260610_102513_152.json",
+      "originalSizeKb": 340,
+      "originalLastWritePacific": "2026-06-10T10:25:00-07:00",
+      "group": "TT-SwapTest",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 223462
+    },
+    {
+      "path": "TT-SwapTest/TT-20260610_102541_936.json",
+      "originalPath": "Team Trials/tests/team swap test/TT-20260610_102541_936.json",
+      "originalSizeKb": 339,
+      "originalLastWritePacific": "2026-06-10T10:25:00-07:00",
+      "group": "TT-SwapTest",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 219454
+    },
+    {
+      "path": "TT-SwapTest/TT-20260610_102607_620.json",
+      "originalPath": "Team Trials/tests/team swap test/TT-20260610_102607_620.json",
+      "originalSizeKb": 341,
+      "originalLastWritePacific": "2026-06-10T10:26:00-07:00",
+      "group": "TT-SwapTest",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 220530
+    },
+    {
+      "path": "TT-SwapTest/TT-20260610_102634_837.json",
+      "originalPath": "Team Trials/tests/team swap test/TT-20260610_102634_837.json",
+      "originalSizeKb": 337,
+      "originalLastWritePacific": "2026-06-10T10:26:00-07:00",
+      "group": "TT-SwapTest",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 215441
+    },
+    {
+      "path": "TT-SwapTest/TT-20260610_135631_287.json",
+      "originalPath": "Team Trials/tests/team swap test/TT-20260610_135631_287.json",
+      "originalSizeKb": 351,
+      "originalLastWritePacific": "2026-06-10T13:56:00-07:00",
+      "group": "TT-SwapTest",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 223255
+    },
+    {
+      "path": "TT-Older/Pasa/TT-20260706_082127_178.json",
+      "originalPath": "Team Trials/older teams/07-04-26 Yet Another Pasa/TT-20260706_082127_178.json",
+      "originalSizeKb": 356,
+      "originalLastWritePacific": "2026-07-06T08:21:00-07:00",
+      "group": "TT-Older-Pasa",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 226496
+    },
+    {
+      "path": "TT-Older/Pasa/TT-20260706_082154_660.json",
+      "originalPath": "Team Trials/older teams/07-04-26 Yet Another Pasa/TT-20260706_082154_660.json",
+      "originalSizeKb": 339,
+      "originalLastWritePacific": "2026-07-06T08:21:00-07:00",
+      "group": "TT-Older-Pasa",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 216694
+    },
+    {
+      "path": "TT-Older/Pasa/TT-20260706_082221_548.json",
+      "originalPath": "Team Trials/older teams/07-04-26 Yet Another Pasa/TT-20260706_082221_548.json",
+      "originalSizeKb": 361,
+      "originalLastWritePacific": "2026-07-06T08:22:00-07:00",
+      "group": "TT-Older-Pasa",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 229925
+    },
+    {
+      "path": "TT-Older/Cafe1/TT-20260706_203330_870.json",
+      "originalPath": "Team Trials/older teams/07-06-26 Cafe 1/TT-20260706_203330_870.json",
+      "originalSizeKb": 343,
+      "originalLastWritePacific": "2026-07-06T20:33:00-07:00",
+      "group": "TT-Older-Cafe1",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 217922
+    },
+    {
+      "path": "TT-Older/Cafe1/TT-20260706_203434_876.json",
+      "originalPath": "Team Trials/older teams/07-06-26 Cafe 1/TT-20260706_203434_876.json",
+      "originalSizeKb": 351,
+      "originalLastWritePacific": "2026-07-06T20:34:00-07:00",
+      "group": "TT-Older-Cafe1",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 220729
+    },
+    {
+      "path": "TT-Older/Cafe1/TT-20260706_203503_846.json",
+      "originalPath": "Team Trials/older teams/07-06-26 Cafe 1/TT-20260706_203503_846.json",
+      "originalSizeKb": 347,
+      "originalLastWritePacific": "2026-07-06T20:35:00-07:00",
+      "group": "TT-Older-Cafe1",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 220042
+    },
+    {
+      "path": "TT-Older/SGolshi/TT-20260722_101400_639.json",
+      "originalPath": "Team Trials/older teams/07-08-26 SGolshi 1/TT-20260722_101400_639.json",
+      "originalSizeKb": 352,
+      "originalLastWritePacific": "2026-07-22T10:14:00-07:00",
+      "group": "TT-Older-SGolshi",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 223374
+    },
+    {
+      "path": "TT-Older/SGolshi/TT-20260722_101425_156.json",
+      "originalPath": "Team Trials/older teams/07-08-26 SGolshi 1/TT-20260722_101425_156.json",
+      "originalSizeKb": 341,
+      "originalLastWritePacific": "2026-07-22T10:14:00-07:00",
+      "group": "TT-Older-SGolshi",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 217279
+    },
+    {
+      "path": "TT-Older/Xoguri/TT-20260722_200955_725.json",
+      "originalPath": "Team Trials/older teams/07-22-26 GL Xoguri/TT-20260722_200955_725.json",
+      "originalSizeKb": 351,
+      "originalLastWritePacific": "2026-07-22T20:09:00-07:00",
+      "group": "TT-Older-Xoguri",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 224714
+    },
+    {
+      "path": "TT-Older/Xoguri/TT-20260722_201036_374.json",
+      "originalPath": "Team Trials/older teams/07-22-26 GL Xoguri/TT-20260722_201036_374.json",
+      "originalSizeKb": 337,
+      "originalLastWritePacific": "2026-07-22T20:10:00-07:00",
+      "group": "TT-Older-Xoguri",
+      "expectedBatchKind": "RosterStats",
+      "scrubbedSizeBytes": 217963
+    },
+    {
+      "path": "Single/CM12-Maruzensky-95.3945s-20260423.json",
+      "originalPath": "Champions meeting/CM12/Maruzensky-95.3945s-20260423.json",
+      "originalSizeKb": 497,
+      "originalLastWritePacific": "2026-04-23T16:01:00-07:00",
+      "group": "Single-CM12",
+      "expectedBatchKind": "MixedOrNonTT",
+      "scrubbedSizeBytes": 249250
+    },
+    {
+      "path": "Single/CM16-Air Groove-55.6789s-20260718.json",
+      "originalPath": "Champions meeting/CM16/Air Groove-55.6789s-20260718.json",
+      "originalSizeKb": 309,
+      "originalLastWritePacific": "2026-07-18T16:13:00-07:00",
+      "group": "Single-CM16",
+      "expectedBatchKind": "MixedOrNonTT",
+      "scrubbedSizeBytes": 143597
+    },
+    {
+      "path": "Single/CM20-Mihono Bourbon-121.4182s-20261010.json",
+      "originalPath": "Champions meeting/CM20/Mihono Bourbon-121.4182s-20261010.json",
+      "originalSizeKb": 318,
+      "originalLastWritePacific": "2026-10-10T15:06:00-07:00",
+      "group": "Single-CM20",
+      "expectedBatchKind": "MixedOrNonTT",
+      "scrubbedSizeBytes": 150700
+    },
+    {
+      "path": "Single/RoomMatch-Agnes Digital-95.1591s-20260805.json",
+      "originalPath": "Room match/Agnes Digital-95.1591s-20260805.json",
+      "originalSizeKb": 489,
+      "originalLastWritePacific": "2026-08-05T12:59:00-07:00",
+      "group": "Single-RoomMatch",
+      "expectedBatchKind": "MixedOrNonTT",
+      "scrubbedSizeBytes": 230146
+    },
+    {
+      "path": "Single/Practice-Special Week-105.3822s-20260908.json",
+      "originalPath": "Practice room/Special Week-105.3822s-20260908.json",
+      "originalSizeKb": 531,
+      "originalLastWritePacific": "2026-09-08T15:32:00-07:00",
+      "group": "Single-Practice",
+      "expectedBatchKind": "MixedOrNonTT",
+      "scrubbedSizeBytes": 247030
+    },
+    {
+      "path": "Single/Career-Narita Taishin-96.3071s-20261016.json",
+      "originalPath": "Career/Narita Taishin-96.3071s-20261016.json",
+      "originalSizeKb": 99,
+      "originalLastWritePacific": "2026-10-16T11:23:00-07:00",
+      "group": "Single-Career",
+      "expectedBatchKind": "MixedOrNonTT",
+      "scrubbedSizeBytes": 74688
+    },
+    {
+      "path": "Single/Legend-Special Week-121.8110s-20261021.json",
+      "originalPath": "Other/Special Week-121.8110s-20261021.json",
+      "originalSizeKb": 100,
+      "originalLastWritePacific": "2026-10-21T15:02:00-07:00",
+      "group": "Single-Legend",
+      "expectedBatchKind": "MixedOrNonTT",
+      "scrubbedSizeBytes": 74685
+    },
+    {
+      "path": "NonRace/supports.json",
+      "originalPath": "supports.json",
+      "originalSizeKb": 32,
+      "originalLastWritePacific": "2026-07-01T09:57:00-07:00",
+      "group": "NonRace",
+      "expectedBatchKind": "Empty",
+      "scrubbedSizeBytes": 21392
+    }
+  ]
+}

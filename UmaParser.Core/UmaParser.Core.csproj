@@ -16,6 +16,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="UmaParser" />
     <InternalsVisibleTo Include="SkillProbe" />
+    <InternalsVisibleTo Include="UmaParser.Core.Tests" />
   </ItemGroup>
 
 </Project>

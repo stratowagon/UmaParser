@@ -9,7 +9,7 @@ UmaParser is a Windows desktop app for analyzing **Uma Musume: Pretty Derby** ra
 - **README.md** — user-facing usage and feature descriptions.
 - **This file** — build steps, architecture, and conventions for agents.
 
-The solution is small: two main projects plus a few dev-only console tools under `Tools/`.
+The solution is three projects (WinForms UI, Core, and Core tests) plus a few dev-only console tools under `Tools/`.
 
 ## Repository layout
 
@@ -24,8 +24,11 @@ UmaParser.sln
 │   ├── MasterData/         Game master DB (master.mdb) + embedded fallback
 │   ├── DataModel/          Deserialized API/capture shapes
 │   └── ObjectModel/        App-level domain types (e.g. TeamTrialResult)
+├── tests/
+│   └── UmaParser.Core.Tests/  xUnit tests, scrubbed fixtures, and golden snapshots
 └── Tools/                  Dev utilities (not shipped with the app)
     ├── ExportFallback/     Regenerates EmbeddedMasterFallback.cs from master.mdb
+    ├── FixtureScrubber/    Copies race JSON to a new folder with trainer ids removed
     ├── SkillProbe/         Skill data inspection
     └── SympathyNpcScan/    One-off data scan
 ```
@@ -38,11 +41,24 @@ Requires **.NET 8 SDK** on Windows (WinForms target).
 # Build the solution
 dotnet build UmaParser.sln -c Release
 
+# Run the tests (after the build)
+dotnet test UmaParser.sln -c Release
+
 # Run the app (from repo root)
 dotnet run --project UmaParser/UmaParser.csproj -c Release
 ```
 
-There is **no automated test project** today. After changes, at minimum run `dotnet build` and confirm zero errors.
+`tests/UmaParser.Core.Tests` is an xUnit project. It runs from Visual Studio Test Explorer and from `dotnet test`. Tests call `GameMasterService.InitializeEmbeddedOnly()` and use **EmbeddedMasterFallback** only — they must not read AppData or a live `master.mdb`.
+
+Scrubbed fixtures live in `tests/UmaParser.Core.Tests/Fixtures/` (see `manifest.json` for provenance). To add more, scrub a **copy** first. The tool never modifies the folder you point it at, and it refuses to write into that same folder:
+
+```powershell
+dotnet run --project Tools/FixtureScrubber -- <source-folder> <dest-folder> --owner <YourTrainerName>
+```
+
+`--owner` is the in-game trainer name to replace with `Player`. Other trainer names in that file become `Trainer01`, `Trainer02`, and so on. Copy the scrubbed files into a fixtures group, update `Fixtures/manifest.json`, and re-run `dotnet test`. Golden snapshots are compared as JSON. To accept a new or changed snapshot, re-run with `UPDATE_SNAPSHOTS=1` and commit the `.verified.json` file (see the comment on `Snapshot.Match`). A corpus smoke test runs only when `UMAPARSER_CORPUS` points at a folder of captures; otherwise it is skipped.
+
+After changes, run `dotnet build` and `dotnet test` and confirm both succeed.
 
 Published executables land in `publish/`, `release/`, or `_publish-sc/` (all gitignored).
 
@@ -121,7 +137,7 @@ This overwrites `UmaParser.Core/MasterData/EmbeddedMasterFallback.cs`. Commit th
 - Do not add markdown docs unless explicitly asked (README and this file are enough).
 - Do not add NuGet packages without a clear need.
 - Do not move `Tools/` projects into the solution unless asked — they are run ad hoc.
-- Do not assume test fixtures exist; sample JSON captures are not in the repo.
+- Do not commit unscrubbed race captures. Fixtures under `tests/UmaParser.Core.Tests/Fixtures/` are already scrubbed; add new ones with `Tools/FixtureScrubber`.
 - Do not edit `Form1.Designer.cs` by hand except through the WinForms designer pattern already in use.
 
 ## Commit guidance
