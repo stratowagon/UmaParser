@@ -12,12 +12,6 @@ namespace UmaParser
         private const int StatsTotalRowIndex = RosterRowCount;
         private const float TeamGroupBorderWidth = 2f;
 
-        // Legacy aliases kept for minimal diff in other files. Prefer AppColors.Severity* going forward.
-        private static Color SeverityStable => AppColors.SeverityStableBack;
-        private static Color SeverityNeedsWork => AppColors.SeverityNeedsWorkBack;
-        private static Color SeverityCritical => AppColors.SeverityCriticalBack;
-        private static Color SeverityForeground => AppColors.SeverityStableFore; // white in both modes for these backs
-
         private enum GridDisplayMode
         {
             None,

@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using UmaParser.Analysis;
+﻿using UmaParser.Analysis;
 using UmaParser.ObjectModel;
 using UmaParser.Ui;
 
@@ -11,22 +10,7 @@ namespace UmaParser
 
         private void PopulateAnalysis(Dictionary<string, TeamTrialResult> trialResults)
         {
-            var layoutTrial = trialResults.Last().Value;
-            var canonicalIds = layoutTrial.RosterTrainedCharaIds;
-            var rosterNames = layoutTrial.RosterNames;
-            var trialValues = trialResults.Values;
-            var scoreMatrix = BuildCategoryScoreMatrix(trialValues, canonicalIds, (t, id) => t.UmaBaseScore(id));
-            var skillMatrix = BuildCategoryScoreMatrix(trialValues, canonicalIds, (t, id) => t.UmaSkillBaseScore(id));
-            var otherMatrix = BuildCategoryScoreMatrix(trialValues, canonicalIds, (t, id) => t.UmaOtherBaseScore(id));
-
-            _lastAnalysisReport = UmaAnalysisEngine.Analyze(
-                rosterNames,
-                scoreMatrix,
-                layoutTrial,
-                skillMatrix,
-                otherMatrix,
-                canonicalIds,
-                trialValues);
+            _lastAnalysisReport = UmaAnalysisEngine.Analyze(trialResults.Values.ToList());
             BindAnalysisGrid(_lastAnalysisReport);
             SetStatus(FormatAnalysisSummary(_lastAnalysisReport));
             mainTabControl.SelectedTab = tabPageAnalysis;
@@ -49,39 +33,6 @@ namespace UmaParser
                 dataGridViewAnalysis.Rows.Clear();
                 dataGridViewAnalysis.Columns.Clear();
             }
-        }
-
-        private static List<IReadOnlyList<double>> BuildCategoryScoreMatrix(
-            IEnumerable<TeamTrialResult> trials,
-            IReadOnlyList<int> canonicalIds,
-            Func<TeamTrialResult, int, int> getScore)
-        {
-            var matrix = new List<IReadOnlyList<double>>(canonicalIds.Count);
-            var trialList = trials.ToList();
-
-            var trialScoreMaps = new List<Dictionary<int, int>>(trialList.Count);
-            foreach (var t in trialList)
-            {
-                var map = new Dictionary<int, int>();
-                foreach (var id in t.RosterTrainedCharaIds)
-                {
-                    map[id] = getScore(t, id);
-                }
-                trialScoreMaps.Add(map);
-            }
-
-            for (int i = 0; i < canonicalIds.Count; i++)
-            {
-                int id = canonicalIds[i];
-                var scores = new double[trialList.Count];
-                for (int t = 0; t < trialList.Count; t++)
-                {
-                    scores[t] = trialScoreMaps[t].TryGetValue(id, out var b) ? b : 0;
-                }
-                matrix.Add(scores);
-            }
-
-            return matrix;
         }
 
         private void BindAnalysisGrid(UmaAnalysisReport report)
@@ -163,37 +114,16 @@ namespace UmaParser
 
             if (columnId == GridColumnIds.Analysis.Retrain)
             {
-                Color backColor = analysisRow.PriorityLevel switch
-                {
-                    RetrainPriorityLevel.Critical => SeverityCritical,
-                    RetrainPriorityLevel.NeedsWork => SeverityNeedsWork,
-                    _ => SeverityStable
-                };
-
-                e.CellStyle.BackColor = backColor;
-                var fore = AppColors.SeverityForeFor(backColor);
-                e.CellStyle.ForeColor = fore;
-                e.CellStyle.SelectionBackColor = ControlPaint.Light(backColor, 0.28f);
-                e.CellStyle.SelectionForeColor = fore;
+                CellBandStyling.Apply(e, CellBands.ForRetrain(analysisRow));
                 return;
             }
 
             if (columnId == GridColumnIds.Analysis.Style)
             {
-                Color? overlapColor = analysisRow.StyleOverlap switch
+                CellBand overlapBand = CellBands.ForStyleOverlap(analysisRow);
+                if (overlapBand != CellBand.None)
                 {
-                    TeamStyleOverlap.FullTeam => SeverityCritical,
-                    TeamStyleOverlap.Pair => SeverityNeedsWork,
-                    _ => null
-                };
-
-                if (overlapColor.HasValue)
-                {
-                    e.CellStyle.BackColor = overlapColor.Value;
-                    var fore = AppColors.SeverityForeFor(overlapColor.Value);
-                    e.CellStyle.ForeColor = fore;
-                    e.CellStyle.SelectionBackColor = ControlPaint.Light(overlapColor.Value, 0.28f);
-                    e.CellStyle.SelectionForeColor = fore;
+                    CellBandStyling.Apply(e, overlapBand);
                     return;
                 }
             }
@@ -206,21 +136,7 @@ namespace UmaParser
 
             if (columnId == GridColumnIds.Analysis.AceDelta)
             {
-                if (analysisRow.AceDelta > 0 && analysisRow.IsSuggestedAce)
-                {
-                    var rec = _lastAnalysisReport.AceRecommendations
-                        .FirstOrDefault(r => r.Distance == analysisRow.Distance && r.BestSupport == analysisRow.Name);
-
-                    Color backColor = (rec != null && !rec.IsWeakSuggestion)
-                        ? SeverityCritical
-                        : SeverityNeedsWork;
-
-                    e.CellStyle.BackColor = backColor;
-                    var fore = AppColors.SeverityForeFor(backColor);
-                    e.CellStyle.ForeColor = fore;
-                    e.CellStyle.SelectionBackColor = ControlPaint.Light(backColor, 0.28f);
-                    e.CellStyle.SelectionForeColor = fore;
-                }
+                CellBandStyling.Apply(e, CellBands.ForAceDelta(_lastAnalysisReport, analysisRow));
                 return;
             }
 

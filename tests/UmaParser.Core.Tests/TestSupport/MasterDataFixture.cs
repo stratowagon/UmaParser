@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using UmaParser.DataModel.ResponseData;
 using UmaParser.MasterData;
 
 namespace UmaParser.Core.Tests.TestSupport;
@@ -35,7 +34,6 @@ internal static class EmbeddedMaster
         CultureInfo.CurrentCulture = invariant;
         CultureInfo.CurrentUICulture = invariant;
 
-        UmaApiResponse.RegisterAllKnownTypes();
         GameMasterService.Current.InitializeEmbeddedOnly();
     }
 }

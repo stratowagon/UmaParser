@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using UmaParser.Analysis;
 
 namespace UmaParser.Ui;
 
@@ -57,6 +58,28 @@ internal static class AppColors
     public static Color SeverityStableFore => IsDark ? DarkStableFore : LightStableFore;
     public static Color SeverityNeedsWorkFore => IsDark ? DarkNeedsWorkFore : LightNeedsWorkFore;
     public static Color SeverityCriticalFore => IsDark ? DarkCriticalFore : LightCriticalFore;
+
+    /// <summary>Background for a <see cref="CellBand"/> from the analysis engines.</summary>
+    public static Color BackFor(CellBand band) => band switch
+    {
+        CellBand.Stable => SeverityStableBack,
+        CellBand.NeedsWork => SeverityNeedsWorkBack,
+        CellBand.Critical => SeverityCriticalBack,
+        CellBand.Gold => SkillGoldBack,
+        CellBand.Unique => SkillUniqueBack,
+        _ => Color.Empty,
+    };
+
+    /// <summary>Foreground that stays readable on <see cref="BackFor"/>.</summary>
+    public static Color ForeFor(CellBand band) => band switch
+    {
+        CellBand.Stable => SeverityStableFore,
+        CellBand.NeedsWork => SeverityNeedsWorkFore,
+        CellBand.Critical => SeverityCriticalFore,
+        CellBand.Gold => SkillGoldFore,
+        CellBand.Unique => SkillUniqueFore,
+        _ => Color.Empty,
+    };
 
     /// <summary>
     /// Foreground that works on the given severity background in the current theme.

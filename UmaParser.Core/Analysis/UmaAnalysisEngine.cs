@@ -103,7 +103,34 @@ namespace UmaParser.Analysis
         /// <summary>Percent lead required for a strong ace-swap suggestion (scales down with more trials).</summary>
         public const double AceSwapStrongPercentFloor = 1.5;
 
-        private static readonly string[] DistanceNames = ["Sprint", "Mile", "Medium", "Long", "Dirt"];
+        /// <summary>
+        /// Analyzes one consistent Team Trials roster. The last trial supplies names, distance,
+        /// and ace unless <paramref name="layout"/> is set. This is what the Team Analysis tab runs.
+        /// </summary>
+        public static UmaAnalysisReport Analyze(
+            IReadOnlyList<TeamTrialResult> trials,
+            TeamTrialResult? layout = null)
+        {
+            if (layout == null)
+            {
+                if (trials.Count == 0)
+                {
+                    throw new InvalidOperationException("No trials to analyze.");
+                }
+
+                layout = trials[^1];
+            }
+
+            IReadOnlyList<int> ids = layout.RosterTrainedCharaIds;
+            return Analyze(
+                layout.RosterNames,
+                CategoryScoreMatrix.Build(trials, ids, (trial, id) => trial.UmaBaseScore(id)),
+                layout,
+                CategoryScoreMatrix.Build(trials, ids, (trial, id) => trial.UmaSkillBaseScore(id)),
+                CategoryScoreMatrix.Build(trials, ids, (trial, id) => trial.UmaOtherBaseScore(id)),
+                ids,
+                trials);
+        }
 
         public static UmaAnalysisReport Analyze(
             IReadOnlyList<string> rosterNames,
@@ -462,31 +489,20 @@ namespace UmaParser.Analysis
             int rosterIndex)
         {
             int teamIndex = rosterIndex / 3;
-            string distance = teamIndex < DistanceNames.Length
-                ? DistanceNames[teamIndex]
-                : $"Team {teamIndex + 1}";
+            string distance = DistanceTypeNames.FormatTeamSlot(teamIndex);
 
             if (source?.RaceRoster.Count > rosterIndex)
             {
                 var uma = source.RaceRoster.ElementAt(rosterIndex).Value;
                 bool isAce = uma.TeamMemberId == 1;
                 int distanceType = source.FindRaceResultByUma(uma)?.DistanceType ?? (teamIndex + 1);
-                distance = FormatDistance(distanceType);
-                return (distance, isAce ? "Ace" : "Support", FormatRunningStyle(uma.RunningStyle), isAce, teamIndex);
+                distance = DistanceTypeNames.FormatAnalysis(distanceType);
+                return (distance, isAce ? "Ace" : "Support", RunningStyleNames.FormatAnalysis(uma.RunningStyle), isAce, teamIndex);
             }
 
             bool fallbackAce = rosterIndex % 3 == 0;
             return (distance, fallbackAce ? "Ace" : "Support", "—", fallbackAce, teamIndex);
         }
-
-        private static string FormatRunningStyle(int runningStyle) => runningStyle switch
-        {
-            1 => "Front",
-            2 => "Pace",
-            3 => "Late",
-            4 => "End",
-            _ => $"#{runningStyle}"
-        };
 
         private static UmaAnalysisReport EmptyReport() => new()
         {
@@ -522,16 +538,6 @@ namespace UmaParser.Analysis
             };
             return $"{tag} ({Math.Round(score, 1)}/10)";
         }
-
-        private static string FormatDistance(int distanceType) => distanceType switch
-        {
-            1 => "Sprint",
-            2 => "Mile",
-            3 => "Medium",
-            4 => "Long",
-            5 => "Dirt",
-            _ => $"Race {distanceType}"
-        };
 
         private static double Round(double value) => Math.Round(value, 0, MidpointRounding.AwayFromZero);
 
@@ -1076,15 +1082,7 @@ namespace UmaParser.Analysis
             if (max == 0) return "—";
 
             int best = Array.IndexOf(counts, max, 1);
-            return best switch
-            {
-                1 => "Sprint",
-                2 => "Mile",
-                3 => "Medium",
-                4 => "Long",
-                5 => "Dirt",
-                _ => "Mixed"
-            };
+            return best is >= 1 and <= 5 ? DistanceTypeNames.Format(best) : "Mixed";
         }
 
         private sealed class TrackStats

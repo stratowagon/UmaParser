@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+﻿using UmaParser.Analysis;
 using UmaParser.Import;
 using UmaParser.ObjectModel;
 using UmaParser.Ui;
@@ -51,47 +51,12 @@ namespace UmaParser
             if (singleCount > 0) msg += $" (incl. {singleCount} CM/Room/Practice)";
             if (batch.SkippedFileCount > 0) msg += $" ({batch.SkippedFileCount} other file(s) skipped)";
 
-            _currentSingleRaces.Clear();
-            _currentNonTtIdentities.Clear();
-
-            // Quick sanity + data collection
-            int totalHorsesAcrossRaces = 0;
-            int successfullyParsedSims = 0;
-
-            foreach (var sr in batch.SingleRaceImports)
-            {
-                if (!string.IsNullOrWhiteSpace(sr.SingleRaceSimDataBase64))
-                {
-                    try
-                    {
-                        var sim = UmaParser.DataModel.RaceScenario.RaceScenarioParser.Parse(sr.SingleRaceSimDataBase64);
-                        totalHorsesAcrossRaces += sim.HorseNum;
-                        successfullyParsedSims++;
-                    }
-                    catch { /* ignore bad blobs for status */ }
-                }
-
-                if (!string.IsNullOrWhiteSpace(sr.SingleRaceNormalizedJson))
-                {
-                    try
-                    {
-                        var parts = SingleRaceParticipantExtractor.ExtractLocalPlayerParticipants(
-                            sr.SingleRaceNormalizedJson, sr.SingleRaceSimDataBase64);
-
-                        _currentSingleRaces.Add(parts);
-
-                        foreach (var (id, _) in parts.LocalPlayerHorses)
-                        {
-                            if (!_currentNonTtIdentities.Any(existing => existing.IsSameUma(id)))
-                                _currentNonTtIdentities.Add(id);
-                        }
-                    }
-                    catch { /* best effort */ }
-                }
-            }
+            NonTeamTrialLoad load = NonTeamTrialLoad.Collect(batch.SingleRaceImports);
+            _currentSingleRaces = load.Races.ToList();
+            _currentNonTtIdentities = load.Identities.ToList();
 
             if (singleCount > 0)
-                msg += $". Parsed {successfullyParsedSims}/{singleCount} sim blobs ({totalHorsesAcrossRaces} total horse slots). Found {_currentNonTtIdentities.Count} unique local player uma(s).";
+                msg += $". Parsed {load.ParsedSimulationCount}/{singleCount} sim blobs ({load.TotalHorseSlots} total horse slots). Found {_currentNonTtIdentities.Count} unique local player uma(s).";
 
             if (ttCount > 0 && singleCount > 0)
             {
@@ -105,16 +70,9 @@ namespace UmaParser
             _skillsRosterEntries.Clear();
             comboBoxSkillsUma.Items.Clear();
 
-            var ordered = _currentNonTtIdentities
-                .OrderBy(i => i.ShortName)
-                .ThenByDescending(i => i.RankScore)
-                .ToList();
-
-            _currentNonTtIdentities = ordered;
-
             foreach (var id in _currentNonTtIdentities)
             {
-                _skillsRosterEntries.Add((id.TrainedCharaId, id.GetDisplayName()));
+                _skillsRosterEntries.Add(new NamedRosterUma(id.TrainedCharaId, id.GetDisplayName()));
                 comboBoxSkillsUma.Items.Add(id.GetDisplayName());
             }
 
@@ -125,7 +83,7 @@ namespace UmaParser
 
             foreach (var id in _currentNonTtIdentities)
             {
-                _tracksRosterEntries.Add((id.TrainedCharaId, id.GetDisplayName()));
+                _tracksRosterEntries.Add(new NamedRosterUma(id.TrainedCharaId, id.GetDisplayName()));
                 comboBoxTracksUma.Items.Add(id.GetDisplayName());
             }
 
@@ -161,119 +119,35 @@ namespace UmaParser
 
             var fileEntries = trials.ToList(); // ordered list for column indices
             int n = fileEntries.Count;
-            SetGridSize(n, 15);
+            SetGridSize(n, RosterConsistencyAnalyzer.SlotCount);
 
-            // Compute majority roster by trained_chara_id (more accurate than names for distinguishing veterans)
-            var rosterGroups = new Dictionary<string, List<int>>();
-            for (int i = 0; i < n; i++)
-            {
-                var ids = fileEntries[i].Value.RosterTrainedCharaIds;
-                string key = string.Join(",", ids);
-                if (!rosterGroups.TryGetValue(key, out var list))
-                {
-                    list = new List<int>();
-                    rosterGroups[key] = list;
-                }
-                list.Add(i);
-            }
+            // Same file order as the columns above. Outliers[file, slot] lines up with that.
+            RosterConsistencyReport consistency = RosterConsistencyAnalyzer.Analyze(
+                fileEntries.Select(entry => entry.Value).ToList());
 
-            // Largest group is the "majority" roster
-            var majorityEntry = rosterGroups.OrderByDescending(g => g.Value.Count).First();
-            var majFileIndices = majorityEntry.Value;
-
-            var majTrial = fileEntries[majFileIndices[0]].Value;
-            var majIds = majTrial.RosterTrainedCharaIds;
-            var refStyles = majTrial.RosterRunningStyles; // ints from capture
-
-            // Mark outlier cells ONLY in minority files (files whose id roster differs from majority)
-            // A cell is an outlier if:
-            // - different veteran (trained_chara_id differs), or
-            // - same veteran but different running style than the reference style from the majority group.
-            //
-            // Note: A highlighted cell may still display the same short name as the majority in these cases:
-            // 1. Change in running style for this veteran
-            // 2. A different veteran of the same base character (different trained_chara_id, same chara_id)
-            // 3. A different variant of the character (different card_id, still different trained_chara_id)
-            var mismatchOutliers = new bool[n, 15];
-
-            for (int fi = 0; fi < n; fi++)
-            {
-                var trial = fileEntries[fi].Value;
-                if (trial.RosterCompositionKey == majTrial.RosterCompositionKey)
-                {
-                    continue;
-                }
-
-                var fIds = trial.RosterTrainedCharaIds;
-                var fStyles = trial.RosterRunningStyles;
-
-                for (int p = 0; p < 15; p++)
-                {
-                    bool idDiff = fIds[p] != majIds[p];
-                    bool styleDiff = fStyles[p] != refStyles[p];
-                    mismatchOutliers[fi, p] = idDiff || styleDiff;
-                }
-            }
-
-            // Compute stable core for Skills/Tracks in this mismatch TT batch:
-            // only umas that are present in EVERY file, always on the same team (distance),
-            // with the same running style. Position within the team may vary.
-            // This allows useful analysis of long-term consistent umas without full roster uniformity.
-            // If one uma in a team changes, the other two can still be stable/pure.
-            var stableCore = new List<(int TrainedCharaId, string DisplayName)>();
-            if (n > 0)
-            {
-                var firstDetails = fileEntries[0].Value.RosterDetails;
-                var firstNames = fileEntries[0].Value.RosterNames;
-                var firstIds = fileEntries[0].Value.RosterTrainedCharaIds;
-                var nameById = new Dictionary<int, string>();
-                for (int i = 0; i < firstIds.Count; i++)
-                    nameById[firstIds[i]] = firstNames[i];
-
-                foreach (var (id, (dist, style)) in firstDetails)
-                {
-                    bool consistent = true;
-                    for (int fi = 1; fi < n && consistent; fi++)
-                    {
-                        var otherDetails = fileEntries[fi].Value.RosterDetails;
-                        if (!otherDetails.TryGetValue(id, out var other) ||
-                            other.DistanceType != dist ||
-                            other.RunningStyle != style)
-                        {
-                            consistent = false;
-                        }
-                    }
-                    if (consistent)
-                    {
-                        string team = GetTeamNameForPositionByDistance(dist);
-                        string styleStr = FormatRunningStyle(style);
-                        string display = $"{team}: {nameById[id]} ({styleStr})";
-                        stableCore.Add((id, display));
-                    }
-                }
-            }
-
-            if (stableCore.Count > 0)
+            if (consistency.StableCore.Count > 0)
             {
                 // Enable Skills/Tracks for the stable subset, using the full TT trials for the analyzers.
                 _skillsTrialResults = batch.Trials;
-                _skillsRosterEntries = new List<(int, string)>(stableCore);
+                _skillsRosterEntries = consistency.StableCore
+                    .Select(uma => new NamedRosterUma(uma.TrainedCharaId, uma.DisplayName))
+                    .ToList();
                 comboBoxSkillsUma.Items.Clear();
-                foreach (var (_, display) in stableCore)
-                    comboBoxSkillsUma.Items.Add(display);
+                foreach (NamedRosterUma entry in _skillsRosterEntries)
+                    comboBoxSkillsUma.Items.Add(entry.Name);
                 if (comboBoxSkillsUma.Items.Count > 0)
                     comboBoxSkillsUma.SelectedIndex = 0;
 
                 _tracksTrialResults = batch.Trials;
-                _tracksRosterEntries = new List<(int, string)>(stableCore);
+                _tracksRosterEntries = new List<NamedRosterUma>(_skillsRosterEntries);
                 comboBoxTracksUma.Items.Clear();
-                foreach (var (_, display) in stableCore)
-                    comboBoxTracksUma.Items.Add(display);
+                foreach (NamedRosterUma entry in _tracksRosterEntries)
+                    comboBoxTracksUma.Items.Add(entry.Name);
                 if (comboBoxTracksUma.Items.Count > 0)
                     comboBoxTracksUma.SelectedIndex = 0;
 
-                labelSkillsSummary.Text = $"{stableCore.Count} consistent uma(s) across all {n} files (same team + style; position within team may vary).";
-                labelTracksSummary.Text = $"{stableCore.Count} consistent uma(s) for track performance.";
+                labelSkillsSummary.Text = $"{consistency.StableCore.Count} consistent uma(s) across all {n} files (same team + style; position within team may vary).";
+                labelTracksSummary.Text = $"{consistency.StableCore.Count} consistent uma(s) for track performance.";
             }
             else
             {
@@ -292,49 +166,10 @@ namespace UmaParser
                 }
             }
 
-            ResultsGridStyler.ApplyRosterMismatch(dataGridView1, mismatchOutliers, n, _aceNameFontCache);
+            ResultsGridStyler.ApplyRosterMismatch(dataGridView1, consistency.Outliers, n, _aceNameFontCache);
 
             // Explicit non-grid message on the Team Analysis tab (like Results empty state)
             ClearAnalysis("Team Analysis is only active for Team Trials files that all have the exact same roster of 15 umas.");
-        }
-
-        private string GetTeamNameForPosition(int position)
-        {
-            // 0-2 Sprint, 3-5 Mile, 6-8 Medium, 9-11 Long, 12-14 Dirt
-            return (position / 3) switch
-            {
-                0 => "Sprint",
-                1 => "Mile",
-                2 => "Medium",
-                3 => "Long",
-                4 => "Dirt",
-                _ => "?"
-            };
-        }
-
-        private string GetTeamNameForPositionByDistance(int distanceType)
-        {
-            return distanceType switch
-            {
-                1 => "Sprint",
-                2 => "Mile",
-                3 => "Medium",
-                4 => "Long",
-                5 => "Dirt",
-                _ => "?"
-            };
-        }
-
-        private string FormatRunningStyle(int style)
-        {
-            return style switch
-            {
-                1 => "Front",
-                2 => "Pace",
-                3 => "Late",
-                4 => "End",
-                _ => style.ToString()
-            };
         }
 
         private void BindRosterStats(TeamTrialBatch batch)
@@ -349,47 +184,34 @@ namespace UmaParser
             ResultsGridHeaders.ApplyCompactHeaderLayout(dataGridView1);
             dataGridView1.ShowCellToolTips = true;
 
+            RosterStatsTable table = RosterStatsTableBuilder.Build(fileEntries);
+
             var columnNames = new List<string> { "Name" };
-            columnNames.AddRange(fileEntries.Select(entry => ResultsGridHeaders.FormatCompact(entry.Key)));
+            columnNames.AddRange(table.FileNames.Select(ResultsGridHeaders.FormatCompact));
 
-            SetGridSize(columnNames, 16);
+            SetGridSize(columnNames, StatsTotalRowIndex + 1);
 
-            for (int i = 0; i < fileEntries.Count; i++)
+            for (int i = 0; i < table.FileNames.Count; i++)
             {
-                dataGridView1.Columns[i + 1].ToolTipText = fileEntries[i].Key;
+                dataGridView1.Columns[i + 1].ToolTipText = table.FileNames[i];
             }
 
-            var layoutTrial = fileEntries[^1].Value;
-            var canonicalIds = layoutTrial.RosterTrainedCharaIds;
-            var canonicalNames = layoutTrial.RosterNames;
-
-            for (int i = 0; i < canonicalNames.Count; i++)
+            for (int i = 0; i < table.Names.Count; i++)
             {
-                SetCellValue(0, i, canonicalNames[i]);
+                SetCellValue(0, i, table.Names[i]);
             }
 
-            SetCellValue(0, 15, "Total");
+            SetCellValue(0, StatsTotalRowIndex, "Total");
 
-            int scoreColumn = 1;
-            foreach (var (_, trial) in fileEntries)
+            for (int fileIndex = 0; fileIndex < table.FileNames.Count; fileIndex++)
             {
-                var tIds = trial.RosterTrainedCharaIds;
-                var tScores = trial.RosterScores;
-                var scoreMap = new Dictionary<int, int>();
-                for (int j = 0; j < tIds.Count; j++)
+                int scoreColumn = fileIndex + 1;
+                for (int row = 0; row < table.TrainedCharaIds.Count; row++)
                 {
-                    scoreMap[tIds[j]] = tScores[j];
+                    SetCellValue(scoreColumn, row, table.Scores[row, fileIndex]);
                 }
 
-                for (int i = 0; i < canonicalIds.Count; i++)
-                {
-                    int id = canonicalIds[i];
-                    int sc = scoreMap.TryGetValue(id, out var s) ? s : 0;
-                    SetCellValue(scoreColumn, i, sc);
-                }
-
-                SetCellValue(scoreColumn, 15, trial.TotalScore);
-                scoreColumn++;
+                SetCellValue(scoreColumn, StatsTotalRowIndex, table.Totals[fileIndex]);
             }
 
             ResultsGridStyler.ApplyRosterStats(dataGridView1, StatsTotalRowIndex, _aceNameFontCache);
