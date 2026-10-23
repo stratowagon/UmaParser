@@ -59,7 +59,7 @@ public sealed class ResultsSheetTests
     }
 
     [Fact]
-    public void A_mismatch_keeps_roster_names_and_paints_outliers_black()
+    public void A_mismatch_keeps_roster_names_and_marks_outliers()
     {
         ResultsScreen screen = ResultsScreen.Load(TrialSets.Build("TT-Mismatch"));
         ResultsSheetModel sheet = ResultsSheetBuilder.Build(screen.Columns, screen.Rows);
@@ -80,7 +80,7 @@ public sealed class ResultsSheetTests
                 }
 
                 foundOutlier = true;
-                Assert.Equal(ResultsTextTone.Black, cell.Tone);
+                Assert.Equal(ResultsTextTone.Outlier, cell.Tone);
                 Assert.True(ResultsSheetBuilder.DrawsText(cell.Tone));
             }
         }

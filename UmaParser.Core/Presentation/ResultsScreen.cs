@@ -15,8 +15,8 @@ public enum ResultsGridKind
 
 /// <summary>
 /// The Results tab after a drop: file columns, roster rows, the total row, outlier marks,
-/// and the light-mode score colors. The WinForms form fills its grid from this and then
-/// applies its own theme-aware heat map. The WPF view paints <see cref="ResultsCell.Heat"/>.
+/// and the score colors for one <see cref="ColorTheme"/>. The WinForms form fills its grid from this
+/// and then applies its own theme-aware heat map. The WPF view paints <see cref="ResultsCell.Heat"/>.
 /// Columns are one per file, oldest first. They are not user-reorderable and not sortable.
 /// </summary>
 public sealed class ResultsScreen
@@ -66,12 +66,12 @@ public sealed class ResultsScreen
         outliers: null,
         stableCore: Array.Empty<StableRosterUma>());
 
-    public static ResultsScreen Load(TeamTrialBatch batch)
+    public static ResultsScreen Load(TeamTrialBatch batch, ColorTheme theme = ColorTheme.Light)
     {
         switch (batch.Kind)
         {
             case TeamTrialBatchKind.RosterStats:
-                return LoadRosterStats(batch.Trials.ToList());
+                return LoadRosterStats(batch.Trials.ToList(), theme);
             case TeamTrialBatchKind.RosterMismatch:
                 return LoadRosterMismatch(batch.Trials.ToList());
             default:
@@ -79,7 +79,54 @@ public sealed class ResultsScreen
         }
     }
 
-    private static ResultsScreen LoadRosterStats(IReadOnlyList<KeyValuePair<string, TeamTrialResult>> files)
+    /// <summary>
+    /// Rewrites score colors on an existing roster-stats grid. Cells without a heat color are left alone,
+    /// so a theme change does not rebuild columns or rows.
+    /// </summary>
+    public static void ApplyHeatTheme(IReadOnlyList<ResultsGridRow> rows, ColorTheme theme)
+    {
+        var scores = new List<int>();
+        foreach (ResultsGridRow row in rows)
+        {
+            if (row.IsFooter)
+            {
+                continue;
+            }
+
+            foreach (ResultsCell cell in row.Cells)
+            {
+                if (cell.Heat != null && cell.Value is int score)
+                {
+                    scores.Add(score);
+                }
+            }
+        }
+
+        if (!ScoreHeat.TryGetRange(scores, out double min, out double max))
+        {
+            return;
+        }
+
+        foreach (ResultsGridRow row in rows)
+        {
+            if (row.IsFooter)
+            {
+                continue;
+            }
+
+            foreach (ResultsCell cell in row.Cells)
+            {
+                if (cell.Heat != null && cell.Value is int score)
+                {
+                    cell.Heat = ScoreHeat.ColorFor(score, min, max, theme);
+                }
+            }
+        }
+    }
+
+    private static ResultsScreen LoadRosterStats(
+        IReadOnlyList<KeyValuePair<string, TeamTrialResult>> files,
+        ColorTheme theme)
     {
         if (files.Count == 0)
         {
@@ -134,7 +181,7 @@ public sealed class ResultsScreen
                 {
                     Text = hasScore ? score.ToString() : "",
                     Value = hasScore ? score : null,
-                    Heat = hasScore && heatOn ? ScoreHeat.ColorFor(score, heatMin, heatMax) : null,
+                    Heat = hasScore && heatOn ? ScoreHeat.ColorFor(score, heatMin, heatMax, theme) : null,
                 });
             }
 

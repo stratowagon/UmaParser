@@ -74,4 +74,30 @@ public sealed class ResultsViewModelTests
         Assert.Equal(1, viewModel.RepaintRequest);
         Assert.True(viewModel.ShowGrid);
     }
+
+    [Fact]
+    public void ApplyTheme_recolors_heat_without_replacing_the_grid()
+    {
+        var viewModel = new ResultsViewModel();
+        viewModel.Apply(TrialSets.Build("TT-K0"));
+        int revision = viewModel.GridRevision;
+        ObservableCollection<ResultsGridRow> rows = viewModel.Rows;
+        var scores = rows
+            .Where(row => !row.IsFooter)
+            .SelectMany(row => row.Cells)
+            .Select(cell => cell.Value)
+            .OfType<int>();
+        Assert.True(ScoreHeat.TryGetRange(scores, out double min, out double max));
+        int score = Assert.IsType<int>(rows[0].Cells[1].Value);
+
+        viewModel.ApplyTheme(ColorTheme.Dark);
+
+        Assert.Equal(revision, viewModel.GridRevision);
+        Assert.Same(rows, viewModel.Rows);
+        Assert.Equal(ScoreHeat.ColorFor(score, min, max, ColorTheme.Dark), rows[0].Cells[1].Heat);
+        Assert.Equal(1, viewModel.RepaintRequest);
+
+        viewModel.ApplyTheme(ColorTheme.Dark);
+        Assert.Equal(1, viewModel.RepaintRequest);
+    }
 }

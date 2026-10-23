@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Input;
+using UmaParser.Themes;
 using UmaParser.ViewModels;
 
 namespace UmaParser.Views;
@@ -13,6 +14,7 @@ public partial class OptionsWindow : Window
         _viewModel = viewModel;
         InitializeComponent();
         DataContext = viewModel;
+        Loaded += (_, _) => WindowChromeTheme.Apply(this);
     }
 
     protected override void OnPreviewKeyDown(KeyEventArgs e)

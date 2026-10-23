@@ -53,10 +53,11 @@ public partial class ResultsView : UserControl
             return;
         }
 
-        // Column options do not change this sheet. Paint it again without moving the scroll bars.
-        if (e.PropertyName == nameof(ResultsViewModel.RepaintRequest) && IsLoaded)
+        // Column options and a theme change. Paint again without moving the scroll bars.
+        // Theme also replaces the cached brushes and the heat colors on the cells.
+        if (e.PropertyName == nameof(ResultsViewModel.RepaintRequest) && IsLoaded && _viewModel != null)
         {
-            Sheet.InvalidateVisual();
+            Sheet.RefreshAppearance(_viewModel.Rows);
         }
     }
 

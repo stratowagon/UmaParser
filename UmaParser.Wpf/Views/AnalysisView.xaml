@@ -14,7 +14,7 @@
         <Style x:Key="AnalysisCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsTeamBoundary}" Value="True">
-                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource Grid.GridLine}"/>
                     <Setter Property="BorderThickness" Value="0,2,0,0"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -46,7 +46,7 @@
                    TextAlignment="Center"
                    VerticalAlignment="Center"
                    Padding="24"
-                   Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}">
+                   Foreground="{DynamicResource Muted.Foreground}">
             <TextBlock.Style>
                 <Style TargetType="TextBlock">
                     <Setter Property="Visibility" Value="Collapsed"/>

@@ -8,15 +8,15 @@
 
         <!--
           The row is the cell's DataContext, so {Binding SpurtBand} reads TracksGridRow.
-          The total row uses the system control color, the same role as the WinForms column-header
+          The total row uses the header color, the same role as the WinForms column-header
           fill on that row. CellBand brushes are only for spurt rate and survival on data rows.
           A footer trigger wins over those setters, so the total row stays uncolored.
         -->
         <Style x:Key="TrackCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsFooter}" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                    <Setter Property="Background" Value="{DynamicResource Grid.HeaderBackground}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource Grid.HeaderForeground}"/>
                     <Setter Property="FontWeight" Value="SemiBold"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -26,8 +26,8 @@
             <Setter Property="Foreground" Value="{Binding SpurtBand, Converter={StaticResource CellBandForeground}}"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsFooter}" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                    <Setter Property="Background" Value="{DynamicResource Grid.HeaderBackground}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource Grid.HeaderForeground}"/>
                     <Setter Property="FontWeight" Value="SemiBold"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -37,8 +37,8 @@
             <Setter Property="Foreground" Value="{Binding SurvivalBand, Converter={StaticResource CellBandForeground}}"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsFooter}" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                    <Setter Property="Background" Value="{DynamicResource Grid.HeaderBackground}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource Grid.HeaderForeground}"/>
                     <Setter Property="FontWeight" Value="SemiBold"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -73,6 +73,7 @@
                   VirtualizingPanel.VirtualizationMode="Recycling"
                   VirtualizingPanel.ScrollUnit="Item"
                   ScrollViewer.CanContentScroll="True"
+                  AlternationCount="2"
                   Sorting="TracksGrid_Sorting"/>
     </DockPanel>
 </UserControl>

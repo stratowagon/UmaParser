@@ -16,9 +16,11 @@ public sealed class ResultsViewModel : ObservableObject
     private bool _showGrid;
     private int _gridRevision;
     private int _repaintRequest;
+    private ColorTheme _theme = ColorTheme.Light;
 
-    public ResultsViewModel()
+    public ResultsViewModel(ColorTheme theme = ColorTheme.Light)
     {
+        _theme = theme;
         Rows = new ObservableCollection<ResultsGridRow>();
         Message = ResultsScreen.Welcome;
     }
@@ -55,9 +57,10 @@ public sealed class ResultsViewModel : ObservableObject
         OnPropertyChanged(nameof(RepaintRequest));
     }
 
-    public void Apply(TeamTrialBatch batch)
+    public void Apply(TeamTrialBatch batch, ColorTheme theme = ColorTheme.Light)
     {
-        ResultsScreen screen = ResultsScreen.Load(batch);
+        _theme = theme;
+        ResultsScreen screen = ResultsScreen.Load(batch, theme);
         Columns = screen.Columns;
         ShowGrid = screen.ShowGrid;
         // One notification for the whole grid. Per-row adds would refresh the DataGrid
@@ -66,5 +69,21 @@ public sealed class ResultsViewModel : ObservableObject
         OnPropertyChanged(nameof(Rows));
         _gridRevision++;
         OnPropertyChanged(nameof(GridRevision));
+    }
+
+    /// <summary>
+    /// Recolors score cells for <paramref name="theme"/> and asks the sheet to paint again.
+    /// The row collection, columns, and scroll position stay put.
+    /// </summary>
+    public void ApplyTheme(ColorTheme theme)
+    {
+        if (_theme == theme)
+        {
+            return;
+        }
+
+        _theme = theme;
+        ResultsScreen.ApplyHeatTheme(Rows, theme);
+        RequestRepaint();
     }
 }

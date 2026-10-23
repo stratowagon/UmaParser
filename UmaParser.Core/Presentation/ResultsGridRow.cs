@@ -17,7 +17,9 @@ public sealed class ResultsCell
     public object? Value { get; init; }
     public bool Bold { get; init; }
     public bool Outlier { get; init; }
-    public ScoreHeatColor? Heat { get; init; }
+
+    /// <summary>Set by <see cref="ResultsScreen"/> for the active theme. A theme change writes a new color here.</summary>
+    public ScoreHeatColor? Heat { get; set; }
 }
 
 /// <summary>

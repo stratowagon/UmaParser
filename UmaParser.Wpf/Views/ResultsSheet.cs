@@ -8,11 +8,11 @@ namespace UmaParser.Views;
 /// </summary>
 internal enum ResultsTextTone
 {
-    /// <summary>Body text. Painted with the theme control-text brush.</summary>
+    /// <summary>Body text. Painted with the theme foreground, or the heat-map text when the cell has a fill.</summary>
     Theme,
 
-    /// <summary>Outlier text. Painted black, on the yellow fill.</summary>
-    Black,
+    /// <summary>Outlier text. The sheet paints <see cref="ResultsMarks.Text"/> for the active theme.</summary>
+    Outlier,
 
     /// <summary>Total row. Painted with the theme control-text brush, semibold unless bold.</summary>
     Footer,
@@ -40,7 +40,7 @@ internal sealed class ResultsSheetColumn
 internal sealed class ResultsSheetCell
 {
     public required string Text { get; init; }
-    public ScoreHeatColor? Heat { get; init; }
+    public ScoreHeatColor? Heat { get; set; }
     public bool Outlier { get; init; }
     public ResultsTextTone Tone { get; init; }
     public ResultsTextWeight Weight { get; init; }
@@ -79,7 +79,7 @@ internal static class ResultsSheetBuilder
     public const string DisplayTextProperty = nameof(ResultsSheetCell.Text);
 
     public static bool DrawsText(ResultsTextTone tone) =>
-        tone is ResultsTextTone.Theme or ResultsTextTone.Black or ResultsTextTone.Footer;
+        tone is ResultsTextTone.Theme or ResultsTextTone.Outlier or ResultsTextTone.Footer;
 
     public static ResultsSheetModel Build(IReadOnlyList<ResultsColumn> columns, IReadOnlyList<ResultsGridRow> rows)
     {
@@ -130,7 +130,7 @@ internal static class ResultsSheetBuilder
     {
         if (cell?.Outlier == true)
         {
-            return ResultsTextTone.Black;
+            return ResultsTextTone.Outlier;
         }
 
         return footer ? ResultsTextTone.Footer : ResultsTextTone.Theme;

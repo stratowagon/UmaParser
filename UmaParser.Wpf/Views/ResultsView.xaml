@@ -8,7 +8,7 @@
                    TextAlignment="Center"
                    VerticalAlignment="Center"
                    Padding="24"
-                   Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}">
+                   Foreground="{DynamicResource Muted.Foreground}">
             <TextBlock.Style>
                 <Style TargetType="TextBlock">
                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -25,7 +25,7 @@
           column that scrolls into view, and a track click does that for a whole screen.
           The sheet paints the visible window instead. The frame matches the Aero2 DataGrid border.
         -->
-        <Border BorderBrush="#FF688CAF" BorderThickness="1" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+        <Border BorderBrush="{DynamicResource Grid.Border}" BorderThickness="1" Background="{DynamicResource Grid.Background}">
             <Border.Style>
                 <Style TargetType="Border">
                     <Setter Property="Visibility" Value="Visible"/>

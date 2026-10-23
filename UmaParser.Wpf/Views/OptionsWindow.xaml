@@ -8,7 +8,9 @@
         MinHeight="480"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
-        ShowInTaskbar="False">
+        ShowInTaskbar="False"
+        Background="{DynamicResource Window.Background}"
+        Foreground="{DynamicResource Window.Foreground}">
     <TabControl Margin="8">
         <TabItem Header="Columns">
             <DockPanel Margin="8">
@@ -30,7 +32,7 @@
                     <DockPanel Grid.Column="2">
                         <TextBlock DockPanel.Dock="Top"
                                    Text="{Binding LockedColumnText}"
-                                   Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
+                                   Foreground="{DynamicResource Muted.Foreground}"
                                    Margin="0,0,0,6"/>
                         <TextBlock DockPanel.Dock="Bottom" Text="Description" Margin="0,8,0,2"/>
                         <TextBox DockPanel.Dock="Bottom"
@@ -39,8 +41,7 @@
                                  TextWrapping="Wrap"
                                  AcceptsReturn="True"
                                  VerticalScrollBarVisibility="Auto"
-                                 Height="110"
-                                 Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
+                                 Height="110"/>
                         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0">
                             <Button Content="Move Up" Width="90" IsEnabled="{Binding CanMoveUp}" Click="MoveUp_Click"/>
                             <Button Content="Move Down" Width="90" Margin="8,0,0,0" IsEnabled="{Binding CanMoveDown}" Click="MoveDown_Click"/>

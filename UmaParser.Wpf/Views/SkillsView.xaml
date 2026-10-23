@@ -50,6 +50,7 @@
                   VirtualizingPanel.VirtualizationMode="Recycling"
                   VirtualizingPanel.ScrollUnit="Item"
                   ScrollViewer.CanContentScroll="True"
+                  AlternationCount="2"
                   Sorting="SkillsGrid_Sorting"/>
     </DockPanel>
 </UserControl>
