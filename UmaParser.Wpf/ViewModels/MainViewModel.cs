@@ -6,9 +6,10 @@ using UmaParser.Presentation;
 namespace UmaParser.ViewModels;
 
 /// <summary>
-/// The window. Today it only hosts Skills. Later tabs get their own view models here.
+/// The window. <see cref="Tabs"/> is the list of screens, in tab order.
 /// A file drop calls <see cref="LoadFiles"/>, which uses the same import path as WinForms:
 /// <see cref="CaptureImportService.TryImportPath"/> then <see cref="TeamTrialBatchBuilder.Build"/>.
+/// That one batch is handed to every screen. Skills and Tracks both read it.
 /// </summary>
 public sealed class MainViewModel : ObservableObject
 {
@@ -17,11 +18,21 @@ public sealed class MainViewModel : ObservableObject
     public MainViewModel()
     {
         Skills = new SkillsViewModel();
+        Tracks = new TracksViewModel();
+        Tabs =
+        [
+            new ScreenTab { Title = "Skills", Content = Skills },
+            new ScreenTab { Title = "Tracks", Content = Tracks },
+        ];
         LoadFilesCommand = new RelayCommand(LoadFiles);
         _statusText = GameMasterService.Current.GetStatusLine();
     }
 
     public SkillsViewModel Skills { get; }
+    public TracksViewModel Tracks { get; }
+
+    /// <summary>Bound to the window's tab control. Add a screen here when the next tab is ported.</summary>
+    public IReadOnlyList<ScreenTab> Tabs { get; }
 
     public RelayCommand LoadFilesCommand { get; }
 
@@ -61,6 +72,11 @@ public sealed class MainViewModel : ObservableObject
             return;
         }
 
-        Skills.Apply(batch);
+        // One parse of the sim blobs, shared by both screens. Team Trials does not need it.
+        NonTeamTrialLoad? singleRaceLoad = batch.Kind == TeamTrialBatchKind.MixedOrNonTT
+            ? NonTeamTrialLoad.Collect(batch.SingleRaceImports)
+            : null;
+        Skills.Apply(batch, singleRaceLoad: singleRaceLoad);
+        Tracks.Apply(batch, singleRaceLoad: singleRaceLoad);
     }
 }
