@@ -75,7 +75,7 @@ public sealed class TracksViewModel : ObservableObject
 
     /// <param name="columnPreferences">
     /// Saved column prefs. The window passes null to read settings.json.
-    /// Tests pass an explicit value and do not read the WinForms settings file.
+    /// Tests pass an explicit value and do not read the settings file.
     /// </param>
     /// <param name="singleRaceLoad">
     /// The load <see cref="MainViewModel"/> already built for this drop, shared with Skills.
@@ -85,8 +85,25 @@ public sealed class TracksViewModel : ObservableObject
         GridColumnGridPreferences? columnPreferences = null,
         NonTeamTrialLoad? singleRaceLoad = null)
     {
-        GridColumnGridPreferences preferences = columnPreferences ?? TracksColumnPreferences.Load();
+        GridColumnGridPreferences preferences = columnPreferences ?? SavedGridColumns.ForTracks();
         Show(TracksScreen.Load(batch, preferences, singleRaceLoad), resetUmas: true);
+    }
+
+    /// <summary>True when the loaded drop is Team Trials, including a roster mismatch.</summary>
+    public bool IsTeamTrial => _screen.IsTeamTrial;
+
+    /// <summary>
+    /// Rebuilds columns for the uma already selected. Does nothing before the first drop,
+    /// and does not read the capture files again.
+    /// </summary>
+    public void ReloadColumns(GridColumnGridPreferences? columnPreferences = null)
+    {
+        if (ReferenceEquals(_screen, TracksScreen.Empty))
+        {
+            return;
+        }
+
+        Show(_screen.WithPreferences(columnPreferences ?? SavedGridColumns.ForTracks()), resetUmas: false);
     }
 
     private void Show(TracksScreen screen, bool resetUmas)

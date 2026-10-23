@@ -8,7 +8,7 @@
         Height="720"
         Width="1100"
         MinHeight="480"
-        MinWidth="720"
+        MinWidth="640"
         behaviors:FileDropBehavior.Command="{Binding LoadFilesCommand}">
     <Window.Resources>
         <!--
@@ -32,6 +32,19 @@
         </DataTemplate>
     </Window.Resources>
     <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="Options">
+                <MenuItem Header="Preferences..." Command="{Binding OpenPreferencesCommand}"/>
+            </MenuItem>
+            <MenuItem Header="Master Data">
+                <MenuItem Header="Status..." Command="{Binding ShowMasterDataStatusCommand}"/>
+                <MenuItem Header="Refresh" Command="{Binding RefreshMasterDataCommand}"/>
+                <Separator/>
+                <MenuItem Header="Use Default Location" Command="{Binding UseDefaultMasterDataCommand}"/>
+                <MenuItem Header="Browse for master.mdb..." Command="{Binding BrowseMasterDataCommand}"/>
+                <MenuItem Header="Open Default Master Folder" Command="{Binding OpenMasterDataFolderCommand}"/>
+            </MenuItem>
+        </Menu>
         <Border DockPanel.Dock="Bottom" Padding="8,6" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
             <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap"/>
         </Border>

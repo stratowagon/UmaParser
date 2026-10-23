@@ -16,6 +16,7 @@ public sealed class AnalysisViewModel : ObservableObject
 {
     private IReadOnlyList<GridColumnDefinition<UmaAnalysisRow>> _visibleColumns =
         Array.Empty<GridColumnDefinition<UmaAnalysisRow>>();
+    private TeamTrialBatch? _batch;
     private bool _showGrid = true;
     private string _emptyMessage = "";
     private string _summary = "";
@@ -58,11 +59,12 @@ public sealed class AnalysisViewModel : ObservableObject
 
     /// <param name="columnPreferences">
     /// Saved column prefs. The window passes null to read settings.json.
-    /// Tests pass an explicit value and do not read the WinForms settings file.
+    /// Tests pass an explicit value and do not read the settings file.
     /// </param>
     public void Apply(TeamTrialBatch batch, GridColumnGridPreferences? columnPreferences = null)
     {
-        GridColumnGridPreferences preferences = columnPreferences ?? AnalysisColumnPreferences.Load();
+        _batch = batch;
+        GridColumnGridPreferences preferences = columnPreferences ?? SavedGridColumns.ForAnalysis();
         AnalysisScreen screen = AnalysisScreen.Load(batch, preferences);
         Rows = new ObservableCollection<AnalysisGridRow>(screen.Rows);
         OnPropertyChanged(nameof(Rows));
@@ -72,5 +74,19 @@ public sealed class AnalysisViewModel : ObservableObject
         Summary = screen.Summary;
         _gridRevision++;
         OnPropertyChanged(nameof(GridRevision));
+    }
+
+    /// <summary>
+    /// Rebuilds the grid from the drop already loaded, using the latest column prefs.
+    /// Does nothing before the first drop, and does not read the capture files again.
+    /// </summary>
+    public void ReloadColumns(GridColumnGridPreferences? columnPreferences = null)
+    {
+        if (_batch == null)
+        {
+            return;
+        }
+
+        Apply(_batch, columnPreferences ?? SavedGridColumns.ForAnalysis());
     }
 }

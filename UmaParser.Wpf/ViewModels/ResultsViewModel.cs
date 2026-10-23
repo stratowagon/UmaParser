@@ -15,6 +15,7 @@ public sealed class ResultsViewModel : ObservableObject
     private IReadOnlyList<ResultsColumn> _columns = Array.Empty<ResultsColumn>();
     private bool _showGrid;
     private int _gridRevision;
+    private int _repaintRequest;
 
     public ResultsViewModel()
     {
@@ -41,6 +42,18 @@ public sealed class ResultsViewModel : ObservableObject
 
     /// <summary>Bumps when the grid is replaced so the view can rebuild the file columns.</summary>
     public int GridRevision => _gridRevision;
+
+    /// <summary>
+    /// Bumps when the sheet should paint again without rebuilding columns or moving the scroll position.
+    /// Column options do not change this grid. The sheet still repaints so an open Results tab refreshes with the others.
+    /// </summary>
+    public int RepaintRequest => _repaintRequest;
+
+    public void RequestRepaint()
+    {
+        _repaintRequest++;
+        OnPropertyChanged(nameof(RepaintRequest));
+    }
 
     public void Apply(TeamTrialBatch batch)
     {

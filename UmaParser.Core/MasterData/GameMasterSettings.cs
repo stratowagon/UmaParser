@@ -13,7 +13,7 @@ internal sealed class GameMasterSettings
     public int? WindowWidth { get; set; }
     public int? WindowHeight { get; set; }
 
-    /// <summary><see cref="FormWindowState"/> name, e.g. Normal or Maximized.</summary>
+    /// <summary>Normal or Maximized. Both apps read and write this string.</summary>
     public string? WindowState { get; set; }
 
     /// <summary>Appearance: Light or Dark. Null/empty/System = Light.</summary>
@@ -37,17 +37,26 @@ internal sealed class GameMasterSettings
         GridColumns.Grids[gridKey] = prefs;
     }
 
-    public static GameMasterSettings Load()
+    /// <param name="path">
+    /// Settings file to read. Null uses <see cref="MasterDataPaths.SettingsFilePath"/>,
+    /// the file both desktop apps share.
+    /// </param>
+    public static GameMasterSettings Load(string? path = null)
     {
-        MasterDataPaths.EnsureAppDataFolder();
-        if (!File.Exists(MasterDataPaths.SettingsFilePath))
+        string file = path ?? MasterDataPaths.SettingsFilePath;
+        if (path == null)
+        {
+            MasterDataPaths.EnsureAppDataFolder();
+        }
+
+        if (!File.Exists(file))
         {
             return new GameMasterSettings();
         }
 
         try
         {
-            string json = File.ReadAllText(MasterDataPaths.SettingsFilePath);
+            string json = File.ReadAllText(file);
             return JsonSerializer.Deserialize<GameMasterSettings>(json) ?? new GameMasterSettings();
         }
         catch
@@ -56,11 +65,27 @@ internal sealed class GameMasterSettings
         }
     }
 
-    public void Save()
+    /// <param name="path">
+    /// Settings file to write. Null uses <see cref="MasterDataPaths.SettingsFilePath"/>.
+    /// </param>
+    public void Save(string? path = null)
     {
-        MasterDataPaths.EnsureAppDataFolder();
+        string file = path ?? MasterDataPaths.SettingsFilePath;
+        if (path == null)
+        {
+            MasterDataPaths.EnsureAppDataFolder();
+        }
+        else
+        {
+            string? directory = Path.GetDirectoryName(file);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+        }
+
         var options = new JsonSerializerOptions { WriteIndented = true };
-        File.WriteAllText(MasterDataPaths.SettingsFilePath, JsonSerializer.Serialize(this, options));
+        File.WriteAllText(file, JsonSerializer.Serialize(this, options));
     }
 
     public void ClearCustomPath()

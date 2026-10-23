@@ -183,6 +183,21 @@ public sealed class TracksScreenTests
     }
 
     [Fact]
+    public void WithPreferences_keeps_the_selected_uma_and_hides_the_column()
+    {
+        TeamTrialBatch batch = TrialSets.Build("TT-K0");
+        TracksScreen screen = TracksScreen.Load(batch, AllColumns).Select(1);
+        var hidden = new GridColumnGridPreferences { Hidden = [GridColumnIds.Tracks.Survival] };
+
+        TracksScreen reloaded = screen.WithPreferences(hidden);
+
+        Assert.Equal(1, reloaded.SelectedIndex);
+        Assert.Equal(screen.Report!.UmaName, reloaded.Report!.UmaName);
+        Assert.DoesNotContain(reloaded.Columns, column => column.Id == GridColumnIds.Tracks.Survival);
+        Assert.Contains("Team type:", reloaded.Summary);
+    }
+
+    [Fact]
     public void Empty_batch_has_nothing_to_show()
     {
         var batch = new TeamTrialBatch { Kind = TeamTrialBatchKind.Empty };

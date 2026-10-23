@@ -127,4 +127,25 @@ public sealed class TracksViewModelTests
         Assert.Empty(viewModel.Rows);
         Assert.Equal(1, viewModel.GridRevision);
     }
+
+    [Fact]
+    public void ReloadColumns_keeps_the_selected_uma_and_applies_the_new_hidden_column()
+    {
+        var viewModel = new TracksViewModel();
+        viewModel.ReloadColumns(AllColumns);
+        Assert.Equal(0, viewModel.GridRevision);
+
+        viewModel.Apply(TrialSets.Build("TT-K0"), AllColumns);
+        viewModel.SelectedUma = viewModel.Umas[1];
+        int revision = viewModel.GridRevision;
+        TracksUmaOption selected = viewModel.SelectedUma!;
+
+        viewModel.ReloadColumns(new GridColumnGridPreferences { Hidden = [GridColumnIds.Tracks.Survival] });
+
+        Assert.Equal(revision + 1, viewModel.GridRevision);
+        Assert.Same(selected, viewModel.SelectedUma);
+        Assert.Equal(GridColumnIds.Tracks.Track, viewModel.VisibleColumns[0].Id);
+        Assert.DoesNotContain(viewModel.VisibleColumns, column => column.Id == GridColumnIds.Tracks.Survival);
+        Assert.Contains(viewModel.Umas[1].Name, viewModel.Summary);
+    }
 }
