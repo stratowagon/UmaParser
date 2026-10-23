@@ -13,10 +13,16 @@
     <Window.Resources>
         <!--
           The tab control's content is a view model (ScreenTab.Content).
-          WPF picks the view from that type. SkillsViewModel becomes SkillsView,
-          and the view's DataContext is the view model, so its bindings read Skills or Tracks.
+          WPF picks the view from that type. ResultsViewModel becomes ResultsView,
+          and the view's DataContext is the view model.
           A new tab needs one more template here. It does not need a change to this rule.
         -->
+        <DataTemplate DataType="{x:Type vm:ResultsViewModel}">
+            <views:ResultsView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:AnalysisViewModel}">
+            <views:AnalysisView/>
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:SkillsViewModel}">
             <views:SkillsView/>
         </DataTemplate>
@@ -28,7 +34,7 @@
         <Border DockPanel.Dock="Bottom" Padding="8,6" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
             <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap"/>
         </Border>
-        <TabControl ItemsSource="{Binding Tabs}">
+        <TabControl ItemsSource="{Binding Tabs}" SelectedIndex="{Binding SelectedTabIndex}">
             <TabControl.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Title}" Margin="8,2"/>

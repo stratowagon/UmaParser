@@ -1,0 +1,66 @@
+<UserControl x:Class="UmaParser.Views.ResultsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <!--
+          File columns are built in code. This style is the base for each column so the
+          team line can sit on top of the heat-map fill. Outlier yellow is the light-mode
+          color from the WinForms styler (255, 255, 200). Dark-mode outlier coloring is
+          part of the later theme pass.
+        -->
+        <Style x:Key="ResultsCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}"/>
+        <SolidColorBrush x:Key="ResultsOutlierBrush" Color="#FFFFC8"/>
+    </UserControl.Resources>
+
+    <Grid Margin="8">
+        <TextBlock Text="{Binding Message}"
+                   TextWrapping="Wrap"
+                   TextAlignment="Center"
+                   VerticalAlignment="Center"
+                   Padding="24"
+                   Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ShowGrid}" Value="False">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+        <DataGrid x:Name="ResultsGrid"
+                  ItemsSource="{Binding Rows}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  CanUserResizeRows="False"
+                  CanUserReorderColumns="False"
+                  CanUserSortColumns="False"
+                  HeadersVisibility="Column"
+                  SelectionMode="Extended"
+                  SelectionUnit="FullRow"
+                  ClipboardCopyMode="ExcludeHeader"
+                  GridLinesVisibility="All"
+                  AlternatingRowBackground="{x:Null}">
+            <DataGrid.Style>
+                <Style TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}">
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ShowGrid}" Value="False">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.Style>
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                    <Setter Property="Height" Value="40"/>
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+        </DataGrid>
+    </Grid>
+</UserControl>

@@ -20,15 +20,15 @@ UmaParser.sln
 │   └── Ui/                 Theming and shared UI helpers
 ├── UmaParser.Wpf/          WPF UI (MVVM by hand). New UI work goes here.
 │   ├── Mvvm/               ObservableObject and RelayCommand
-│   ├── ViewModels/         MainViewModel, tab list, SkillsViewModel, TracksViewModel
-│   ├── Views/              MainWindow, SkillsView, and TracksView
+│   ├── ViewModels/         MainViewModel, tab list, Results, Team Analysis, Skills, Tracks
+│   ├── Views/              MainWindow plus one view per tab
 │   ├── Behaviors/          File drop forwarded to a command
 │   ├── Converters/         CellBand to brush
 │   └── Themes/             Cell band colors, same values as AppColors
 ├── UmaParser.Core/         All non-UI logic
 │   ├── Import/             JSON capture decoding and batch loading
 │   ├── Analysis/           Score/skill/track analysis engines
-│   ├── Presentation/       Shared column lists, Skills and Tracks screens, status text
+│   ├── Presentation/       Shared column lists and the Results, Team Analysis, Skills, and Tracks screens
 │   ├── MasterData/         Game master DB (master.mdb) + embedded fallback
 │   ├── DataModel/          Deserialized API/capture shapes
 │   └── ObjectModel/        App-level domain types (e.g. TeamTrialResult)
@@ -79,7 +79,7 @@ Published executables land in `publish/`, `release/`, or `_publish-sc/` (all git
 
 ### Keep logic out of the UI
 
-- **UmaParser.Core** owns parsing, analysis, master-data access, domain types, and the shared Skills screen (`UmaParser.Presentation`).
+- **UmaParser.Core** owns parsing, analysis, master-data access, domain types, and the shared screen models (`UmaParser.Presentation`).
 - **UmaParser.Wpf** owns the WPF shell. New screens go here and call Core. Do not reimplement a calculation in the view model.
 - **UmaParser** owns the existing WinForms wiring. Leave it in place until WPF covers that tab. Do not add new tabs there.
 

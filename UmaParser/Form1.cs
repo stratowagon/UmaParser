@@ -93,9 +93,7 @@ namespace UmaParser
 
             if (!batch.HasAnyData)
             {
-                SetStatus(batch.SkippedFileCount > 0
-                    ? $"No supported race files loaded ({batch.SkippedFileCount} file(s) skipped)."
-                    : "No supported race files loaded.");
+                SetStatus(DropStatusText.NoneLoaded(batch.SkippedFileCount));
                 return;
             }
 
