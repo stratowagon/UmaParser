@@ -34,7 +34,10 @@
                                    Text="{Binding LockedColumnText}"
                                    Foreground="{DynamicResource Muted.Foreground}"
                                    Margin="0,0,0,6"/>
-                        <TextBlock DockPanel.Dock="Bottom" Text="Description" Margin="0,8,0,2"/>
+                        <TextBlock DockPanel.Dock="Bottom"
+                                   Text="Description"
+                                   Margin="0,8,0,2"
+                                   Foreground="{DynamicResource Window.Foreground}"/>
                         <TextBox DockPanel.Dock="Bottom"
                                  Text="{Binding Description, Mode=OneWay}"
                                  IsReadOnly="True"

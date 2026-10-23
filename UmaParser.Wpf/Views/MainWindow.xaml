@@ -57,7 +57,7 @@
         <views:CachingTabControl ItemsSource="{Binding Tabs}" SelectedIndex="{Binding SelectedTabIndex}">
             <TabControl.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding Title}" Margin="8,2"/>
+                    <TextBlock Text="{Binding Title}" Margin="8,2" Foreground="{DynamicResource Window.Foreground}"/>
                 </DataTemplate>
             </TabControl.ItemTemplate>
         </views:CachingTabControl>

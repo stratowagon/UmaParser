@@ -13,6 +13,9 @@ public sealed class SkillsUmaOption
 
     /// <summary>Set for Champions Meet, Room Match, and Practice. Null for Team Trials.</summary>
     public UmaIdentity? Identity { get; init; }
+
+    /// <summary>The selector shows this. A combo box with no item template falls back to it.</summary>
+    public override string ToString() => Name;
 }
 
 /// <summary>
