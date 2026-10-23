@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>UmaParser</RootNamespace>
+    <AssemblyName>UmaParser.Wpf</AssemblyName>
+    <!-- Lets a Linux agent compile the Windows desktop project. No effect on Windows. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UmaParser.Core\UmaParser.Core.csproj" />
+  </ItemGroup>
+
+</Project>

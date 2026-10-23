@@ -1,6 +1,6 @@
 using UmaParser.Settings;
 
-namespace UmaParser.Ui;
+namespace UmaParser.Presentation;
 
 public sealed class GridColumnDefinition<TRow>
 {

@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using UmaParser.Presentation;
 using UmaParser.Settings;
 
 namespace UmaParser.Ui;
@@ -8,32 +9,8 @@ public static class GridColumnBinder
     public static IReadOnlyList<GridColumnDefinition<TRow>> ResolveEffectiveColumns<TRow>(
         IReadOnlyList<GridColumnDefinition<TRow>> registry,
         GridColumnGridPreferences prefs,
-        GridColumnContext context)
-    {
-        var customizable = registry.Where(c => !c.IsLocked).Select(c => c.Id).ToList();
-        var visibleIds = GridColumnPreferencesMerger.ResolveVisibleOrder(
-            customizable,
-            prefs,
-            id => registry.First(c => c.Id == id).CheckAvailable(context));
-
-        var byId = registry.ToDictionary(c => c.Id, StringComparer.Ordinal);
-        var effective = new List<GridColumnDefinition<TRow>>();
-
-        foreach (var locked in registry.Where(c => c.IsLocked))
-        {
-            if (locked.CheckAvailable(context))
-            {
-                effective.Add(locked);
-            }
-        }
-
-        foreach (string id in visibleIds)
-        {
-            effective.Add(byId[id]);
-        }
-
-        return effective;
-    }
+        GridColumnContext context) =>
+        GridColumnLayout.ResolveEffectiveColumns(registry, prefs, context);
 
     public static void Bind<TRow>(
         DataGridView grid,
@@ -79,7 +56,7 @@ public static class GridColumnBinder
 
     public static IReadOnlyList<string> GetDefaultCustomizableOrder<TRow>(
         IReadOnlyList<GridColumnDefinition<TRow>> registry) =>
-        registry.Where(c => !c.IsLocked).Select(c => c.Id).ToList();
+        GridColumnLayout.GetDefaultCustomizableOrder(registry);
 
     public static DataGridViewColumn? FindColumn(DataGridView grid, string columnId) =>
         grid.Columns.Cast<DataGridViewColumn>().FirstOrDefault(c => c.Name == columnId);

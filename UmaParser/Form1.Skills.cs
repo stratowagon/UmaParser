@@ -1,6 +1,7 @@
-﻿using System.ComponentModel;
-using UmaParser.Analysis;
+﻿using UmaParser.Analysis;
+using UmaParser.Import;
 using UmaParser.ObjectModel;
+using UmaParser.Presentation;
 using UmaParser.Settings;
 using UmaParser.Ui;
 
@@ -9,33 +10,69 @@ namespace UmaParser
     public partial class Form1
     {
         private IReadOnlyDictionary<string, TeamTrialResult>? _skillsTrialResults;
-        private List<NamedRosterUma> _skillsRosterEntries = new();
         private SkillActivationReport? _lastSkillReport;
+        private SkillsScreen? _skillsScreen;
+        private bool _suppressSkillsSelection;
 
         private void PopulateSkills(Dictionary<string, TeamTrialResult> trialResults)
         {
             _skillsTrialResults = trialResults;
-            var first = trialResults.First().Value;
-            _skillsRosterEntries = RosterListing.FromTrial(first);
-
-            comboBoxSkillsUma.Items.Clear();
-            foreach (var entry in _skillsRosterEntries)
+            var batch = new TeamTrialBatch
             {
-                comboBoxSkillsUma.Items.Add(entry.Name);
+                Kind = TeamTrialBatchKind.RosterStats,
+                Trials = trialResults,
+            };
+            ShowSkills(SkillsScreen.Load(batch, SkillsColumnPreferences()));
+        }
+
+        private GridColumnGridPreferences SkillsColumnPreferences() =>
+            LoadGridColumnPreferences<SkillActivationRow>(GridKeys.Skills);
+
+        private void ShowSkills(SkillsScreen screen)
+        {
+            _skillsScreen = screen;
+            _lastSkillReport = screen.Report;
+
+            _suppressSkillsSelection = true;
+            try
+            {
+                comboBoxSkillsUma.Items.Clear();
+                foreach (SkillsUmaOption uma in screen.Umas)
+                {
+                    comboBoxSkillsUma.Items.Add(uma.Name);
+                }
+
+                comboBoxSkillsUma.SelectedIndex = screen.SelectedIndex;
+            }
+            finally
+            {
+                _suppressSkillsSelection = false;
             }
 
-            if (comboBoxSkillsUma.Items.Count > 0)
+            if (screen.Report != null)
             {
-                comboBoxSkillsUma.SelectedIndex = 0;
+                BindSkillsGrid(screen.Report);
             }
+            else
+            {
+                dataGridViewSkills.Rows.Clear();
+                dataGridViewSkills.Columns.Clear();
+            }
+
+            // BindSkillsGrid writes the per-uma report line. A fresh mismatch or single-race
+            // load replaces that with the screen's load summary, matching the old order:
+            // the combo event bound the grid, then the caller set the summary.
+            labelSkillsSummary.Text = screen.Summary;
         }
 
         private void ClearSkills()
         {
             _skillsTrialResults = null;
-            _skillsRosterEntries.Clear();
+            _skillsScreen = null;
             _lastSkillReport = null;
+            _suppressSkillsSelection = true;
             comboBoxSkillsUma.Items.Clear();
+            _suppressSkillsSelection = false;
             dataGridViewSkills.Rows.Clear();
             dataGridViewSkills.Columns.Clear();
             labelSkillsSummary.Text = string.Empty;
@@ -46,47 +83,14 @@ namespace UmaParser
 
         private void ComboBoxSkillsUma_SelectedIndexChanged(object? sender, EventArgs e)
         {
-            if (comboBoxSkillsUma.SelectedIndex < 0)
+            if (_suppressSkillsSelection || _skillsScreen == null)
                 return;
 
-            if (_skillsTrialResults != null && comboBoxSkillsUma.SelectedIndex < _skillsRosterEntries.Count)
-            {
-                var (trainedCharaId, name) = _skillsRosterEntries[comboBoxSkillsUma.SelectedIndex];
-                _lastSkillReport = SkillActivationAnalyzer.Analyze(
-                    _skillsTrialResults.Values,
-                    trainedCharaId,
-                    name);
-                BindSkillsGrid(_lastSkillReport);
-                _openOptionsDialog?.RefreshAvailability();
+            if (comboBoxSkillsUma.SelectedIndex < 0 || comboBoxSkillsUma.SelectedIndex == _skillsScreen.SelectedIndex)
                 return;
-            }
 
-            if (_currentNonTtIdentities != null && comboBoxSkillsUma.SelectedIndex < _currentNonTtIdentities.Count && _currentSingleRaces != null)
-            {
-                var selectedId = _currentNonTtIdentities[comboBoxSkillsUma.SelectedIndex];
-                var displayName = selectedId.GetDisplayName();
-                var apps = RaceAppearanceBuilder.ForSkills(_currentSingleRaces, selectedId);
-
-                if (apps.Count > 0)
-                {
-                    _lastSkillReport = SkillActivationAnalyzer.Analyze(apps, displayName);
-                    BindSkillsGrid(_lastSkillReport);
-                    _openOptionsDialog?.RefreshAvailability();
-                }
-                else
-                {
-                    labelSkillsSummary.Text = $"{displayName}: No appearances found.";
-                    dataGridViewSkills.Rows.Clear();
-                    dataGridViewSkills.Columns.Clear();
-                }
-                return;
-            }
-
-            if (comboBoxSkillsUma.SelectedIndex < _skillsRosterEntries.Count)
-            {
-                var (_, displayName) = _skillsRosterEntries[comboBoxSkillsUma.SelectedIndex];
-                labelSkillsSummary.Text = $"{displayName}: analysis not available for this selection.";
-            }
+            ShowSkills(_skillsScreen.Select(comboBoxSkillsUma.SelectedIndex));
+            _openOptionsDialog?.RefreshAvailability();
         }
 
         private void BindSkillsGrid(SkillActivationReport report)
@@ -107,10 +111,7 @@ namespace UmaParser
                 DataGridViewColumnSortMode.Automatic,
                 (row, data) => row.Tag = data);
 
-            labelSkillsSummary.Text =
-                $"{report.UmaName}: {report.Rows.Count} skills, {report.RaceCount} race(s). " +
-                $"Click column headers to sort. " +
-                $"Avg wit {report.AverageWit} → {report.ExpectedWitPercentForUma:0.#}% activation rate. ";
+            labelSkillsSummary.Text = SkillsScreen.FormatReport(report);
 
             GridColumnBinder.ApplyDefaultSort(
                 dataGridViewSkills,
@@ -134,25 +135,7 @@ namespace UmaParser
                 return;
             }
 
-            double? a = rowA.WitDeltaPercent;
-            double? b = rowB.WitDeltaPercent;
-            if (!a.HasValue && !b.HasValue)
-            {
-                e.SortResult = 0;
-            }
-            else if (!a.HasValue)
-            {
-                e.SortResult = 1;
-            }
-            else if (!b.HasValue)
-            {
-                e.SortResult = -1;
-            }
-            else
-            {
-                e.SortResult = a.Value.CompareTo(b.Value);
-            }
-
+            e.SortResult = SkillWitDeltaSort.Compare(rowA.WitDeltaPercent, rowB.WitDeltaPercent);
             e.Handled = true;
         }
 
@@ -177,22 +160,22 @@ namespace UmaParser
 
             if (columnId == GridColumnIds.Skills.PtsRace && e.Value is double pts)
             {
-                e.Value = pts.ToString("0");
+                e.Value = SkillCellText.PointsPerRace(pts);
                 e.FormattingApplied = true;
             }
             else if (columnId == GridColumnIds.Skills.PerRacePct && e.Value is double perRace)
             {
-                e.Value = perRace.ToString("0.#");
+                e.Value = SkillCellText.OneDecimal(perRace);
                 e.FormattingApplied = true;
             }
             else if (columnId == GridColumnIds.Skills.ProcsPerRacePct && e.Value is double procRate)
             {
-                e.Value = procRate.ToString("0.#");
+                e.Value = SkillCellText.OneDecimal(procRate);
                 e.FormattingApplied = true;
             }
             else if (columnId == GridColumnIds.Skills.WitDelta)
             {
-                e.Value = FormatWitDelta(row);
+                e.Value = SkillCellText.FormatWitDelta(row);
                 e.FormattingApplied = true;
             }
 
@@ -203,17 +186,6 @@ namespace UmaParser
             }
 
             CellBandStyling.Apply(e, CellBands.ForSkillMetric(row));
-        }
-
-        private static string FormatWitDelta(SkillActivationRow row)
-        {
-            if (!row.WitDeltaPercent.HasValue)
-            {
-                return "—";
-            }
-
-            double delta = row.WitDeltaPercent.Value;
-            return delta >= 0 ? $"+{delta:0.#}" : delta.ToString("0.#");
         }
 
         private void FinalizeSkillsGrid()
