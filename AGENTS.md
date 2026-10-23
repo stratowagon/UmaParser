@@ -20,15 +20,15 @@ UmaParser.sln
 │   └── Ui/                 Theming and shared UI helpers
 ├── UmaParser.Wpf/          WPF UI (MVVM by hand). New UI work goes here.
 │   ├── Mvvm/               ObservableObject and RelayCommand
-│   ├── ViewModels/         MainViewModel, SkillsViewModel
-│   ├── Views/              MainWindow and SkillsView
+│   ├── ViewModels/         MainViewModel, tab list, SkillsViewModel, TracksViewModel
+│   ├── Views/              MainWindow, SkillsView, and TracksView
 │   ├── Behaviors/          File drop forwarded to a command
 │   ├── Converters/         CellBand to brush
 │   └── Themes/             Cell band colors, same values as AppColors
 ├── UmaParser.Core/         All non-UI logic
 │   ├── Import/             JSON capture decoding and batch loading
 │   ├── Analysis/           Score/skill/track analysis engines
-│   ├── Presentation/       Shared column lists, Skills screen, status text
+│   ├── Presentation/       Shared column lists, Skills and Tracks screens, status text
 │   ├── MasterData/         Game master DB (master.mdb) + embedded fallback
 │   ├── DataModel/          Deserialized API/capture shapes
 │   └── ObjectModel/        App-level domain types (e.g. TeamTrialResult)

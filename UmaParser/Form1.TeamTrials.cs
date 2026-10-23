@@ -66,24 +66,13 @@ namespace UmaParser
 
             SetStatus(msg + "  Results + Analysis are for uniform TT rosters only. Skills/Tracks support non-uniform data.");
 
-            // Skills uses the same screen model as the WPF app. Tracks keeps its own selector.
-            // Pass the load we just built so the sim blobs are not parsed a second time.
+            // Skills and Tracks share this load so the sim blobs are not parsed a second time.
+            // Both screens are the same models the WPF window displays.
             _skillsTrialResults = null; // not TT
             ShowSkills(SkillsScreen.Load(batch, SkillsColumnPreferences(), load));
 
-            // Also prepare Tracks combo the same way (they share similar roster list in current design)
             _tracksTrialResults = null;
-            _tracksRosterEntries.Clear();
-            comboBoxTracksUma.Items.Clear();
-
-            foreach (var id in _currentNonTtIdentities)
-            {
-                _tracksRosterEntries.Add(new NamedRosterUma(id.TrainedCharaId, id.GetDisplayName()));
-                comboBoxTracksUma.Items.Add(id.GetDisplayName());
-            }
-
-            if (comboBoxTracksUma.Items.Count > 0)
-                comboBoxTracksUma.SelectedIndex = 0;
+            ShowTracks(TracksScreen.Load(batch, TracksColumnPreferences(), load));
 
             // Explicit non-grid message on the Team Analysis tab (like Results empty state)
             ClearAnalysis("Team Analysis is only active for Team Trials files that all have the exact same roster of 15 umas.");
@@ -114,24 +103,9 @@ namespace UmaParser
             _skillsTrialResults = consistency.StableCore.Count > 0 ? batch.Trials : null;
             ShowSkills(SkillsScreen.Load(batch, SkillsColumnPreferences()));
 
-            if (consistency.StableCore.Count > 0)
-            {
-                _tracksTrialResults = batch.Trials;
-                _tracksRosterEntries = consistency.StableCore
-                    .Select(uma => new NamedRosterUma(uma.TrainedCharaId, uma.DisplayName))
-                    .ToList();
-                comboBoxTracksUma.Items.Clear();
-                foreach (NamedRosterUma entry in _tracksRosterEntries)
-                    comboBoxTracksUma.Items.Add(entry.Name);
-                if (comboBoxTracksUma.Items.Count > 0)
-                    comboBoxTracksUma.SelectedIndex = 0;
-
-                labelTracksSummary.Text = $"{consistency.StableCore.Count} consistent uma(s) for track performance.";
-            }
-            else
-            {
-                labelTracksSummary.Text = "No consistent umas for Tracks.";
-            }
+            // Same stable core as Skills. The summary text comes from TracksScreen.
+            _tracksTrialResults = consistency.StableCore.Count > 0 ? batch.Trials : null;
+            ShowTracks(TracksScreen.Load(batch, TracksColumnPreferences()));
 
             for (int c = 0; c < n; c++)
             {

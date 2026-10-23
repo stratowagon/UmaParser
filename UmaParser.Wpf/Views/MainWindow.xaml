@@ -3,16 +3,44 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:behaviors="clr-namespace:UmaParser.Behaviors"
         xmlns:views="clr-namespace:UmaParser.Views"
+        xmlns:vm="clr-namespace:UmaParser.ViewModels"
         Title="Uma Parser"
         Height="720"
         Width="1100"
         MinHeight="480"
         MinWidth="720"
         behaviors:FileDropBehavior.Command="{Binding LoadFilesCommand}">
+    <Window.Resources>
+        <!--
+          The tab control's content is a view model (ScreenTab.Content).
+          WPF picks the view from that type. SkillsViewModel becomes SkillsView,
+          and the view's DataContext is the view model, so its bindings read Skills or Tracks.
+          A new tab needs one more template here. It does not need a change to this rule.
+        -->
+        <DataTemplate DataType="{x:Type vm:SkillsViewModel}">
+            <views:SkillsView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:TracksViewModel}">
+            <views:TracksView/>
+        </DataTemplate>
+    </Window.Resources>
     <DockPanel>
         <Border DockPanel.Dock="Bottom" Padding="8,6" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
             <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap"/>
         </Border>
-        <views:SkillsView DataContext="{Binding Skills}"/>
+        <TabControl ItemsSource="{Binding Tabs}">
+            <TabControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Title}" Margin="8,2"/>
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+            <TabControl.ContentTemplate>
+                <DataTemplate>
+                    <ContentControl Content="{Binding Content}"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Stretch"/>
+                </DataTemplate>
+            </TabControl.ContentTemplate>
+        </TabControl>
     </DockPanel>
 </Window>

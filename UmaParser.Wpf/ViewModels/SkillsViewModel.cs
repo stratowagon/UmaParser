@@ -75,10 +75,17 @@ public sealed class SkillsViewModel : ObservableObject
     /// Saved column prefs. The window passes null to read settings.json.
     /// Tests of <see cref="SkillsScreen"/> pass an explicit value and do not come through here.
     /// </param>
-    public void Apply(TeamTrialBatch batch, GridColumnGridPreferences? columnPreferences = null)
+    /// <param name="singleRaceLoad">
+    /// The load <see cref="MainViewModel"/> already built for this drop.
+    /// Passing it avoids parsing the sim blobs a second time when Tracks loads the same files.
+    /// </param>
+    public void Apply(
+        TeamTrialBatch batch,
+        GridColumnGridPreferences? columnPreferences = null,
+        NonTeamTrialLoad? singleRaceLoad = null)
     {
         GridColumnGridPreferences preferences = columnPreferences ?? SkillsColumnPreferences.Load();
-        Show(SkillsScreen.Load(batch, preferences), resetUmas: true);
+        Show(SkillsScreen.Load(batch, preferences, singleRaceLoad), resetUmas: true);
     }
 
     private void Show(SkillsScreen screen, bool resetUmas)

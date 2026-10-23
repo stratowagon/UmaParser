@@ -1,6 +1,5 @@
-﻿using System.ComponentModel;
-using System.Drawing;
-using UmaParser.Analysis;
+﻿using UmaParser.Analysis;
+using UmaParser.Import;
 using UmaParser.ObjectModel;
 using UmaParser.Presentation;
 using UmaParser.Settings;
@@ -13,33 +12,71 @@ namespace UmaParser
         private static readonly object TracksFooterRowTag = new();
 
         private IReadOnlyDictionary<string, TeamTrialResult>? _tracksTrialResults;
-        private List<NamedRosterUma> _tracksRosterEntries = new();
         private TracksReport? _lastTracksReport;
+        private TracksScreen? _tracksScreen;
+        private bool _suppressTracksSelection;
 
         private void PopulateTracks(Dictionary<string, TeamTrialResult> trialResults)
         {
             _tracksTrialResults = trialResults;
-            var first = trialResults.First().Value;
-            _tracksRosterEntries = RosterListing.FromTrial(first);
-
-            comboBoxTracksUma.Items.Clear();
-            foreach (var entry in _tracksRosterEntries)
+            var batch = new TeamTrialBatch
             {
-                comboBoxTracksUma.Items.Add(entry.Name);
+                Kind = TeamTrialBatchKind.RosterStats,
+                Trials = trialResults,
+            };
+            ShowTracks(TracksScreen.Load(batch, TracksColumnPreferences()));
+        }
+
+        private GridColumnGridPreferences TracksColumnPreferences() =>
+            LoadGridColumnPreferences<TracksRow>(GridKeys.Tracks);
+
+        private void ShowTracks(TracksScreen screen)
+        {
+            _tracksScreen = screen;
+
+            _suppressTracksSelection = true;
+            try
+            {
+                comboBoxTracksUma.Items.Clear();
+                foreach (TracksUmaOption uma in screen.Umas)
+                {
+                    comboBoxTracksUma.Items.Add(uma.Name);
+                }
+
+                comboBoxTracksUma.SelectedIndex = screen.SelectedIndex;
+            }
+            finally
+            {
+                _suppressTracksSelection = false;
             }
 
-            if (comboBoxTracksUma.Items.Count > 0)
+            if (screen.Report != null)
             {
-                comboBoxTracksUma.SelectedIndex = 0;
+                // No appearances leaves the previous report in place. The old handler only
+                // assigned this when it had appearances to analyze.
+                _lastTracksReport = screen.Report;
+                BindTracksGrid(screen.Report);
             }
+            else
+            {
+                dataGridViewTracks.Rows.Clear();
+                dataGridViewTracks.Columns.Clear();
+            }
+
+            // BindTracksGrid writes the per-uma report line. A fresh mismatch load replaces
+            // that with the screen's load summary, matching the old order: the combo event
+            // bound the grid, then the caller set the summary.
+            labelTracksSummary.Text = screen.Summary;
         }
 
         private void ClearTracks()
         {
             _tracksTrialResults = null;
-            _tracksRosterEntries.Clear();
             _lastTracksReport = null;
+            _tracksScreen = null;
+            _suppressTracksSelection = true;
             comboBoxTracksUma.Items.Clear();
+            _suppressTracksSelection = false;
             dataGridViewTracks.Rows.Clear();
             dataGridViewTracks.Columns.Clear();
             labelTracksSummary.Text = string.Empty;
@@ -50,47 +87,14 @@ namespace UmaParser
 
         private void ComboBoxTracksUma_SelectedIndexChanged(object? sender, EventArgs e)
         {
-            if (comboBoxTracksUma.SelectedIndex < 0)
+            if (_suppressTracksSelection || _tracksScreen == null)
                 return;
 
-            if (_tracksTrialResults != null && comboBoxTracksUma.SelectedIndex < _tracksRosterEntries.Count)
-            {
-                var (trainedCharaId, name) = _tracksRosterEntries[comboBoxTracksUma.SelectedIndex];
-                _lastTracksReport = TracksAnalyzer.Analyze(
-                    _tracksTrialResults.Values,
-                    trainedCharaId,
-                    name);
-                BindTracksGrid(_lastTracksReport!);
-                _openOptionsDialog?.RefreshAvailability();
+            if (comboBoxTracksUma.SelectedIndex < 0 || comboBoxTracksUma.SelectedIndex == _tracksScreen.SelectedIndex)
                 return;
-            }
 
-            if (_currentNonTtIdentities != null && comboBoxTracksUma.SelectedIndex < _currentNonTtIdentities.Count && _currentSingleRaces != null)
-            {
-                var selectedId = _currentNonTtIdentities[comboBoxTracksUma.SelectedIndex];
-                var displayName = selectedId.GetDisplayName();
-                var nonTtItems = RaceAppearanceBuilder.ForTracks(_currentSingleRaces, selectedId);
-
-                if (nonTtItems.Count > 0)
-                {
-                    _lastTracksReport = TracksAnalyzer.Analyze(nonTtItems, displayName);
-                    BindTracksGrid(_lastTracksReport!);
-                    _openOptionsDialog?.RefreshAvailability();
-                }
-                else
-                {
-                    labelTracksSummary.Text = $"{displayName}: No appearances found.";
-                    dataGridViewTracks.Rows.Clear();
-                    dataGridViewTracks.Columns.Clear();
-                }
-                return;
-            }
-
-            if (comboBoxTracksUma.SelectedIndex < _tracksRosterEntries.Count)
-            {
-                var (_, displayName) = _tracksRosterEntries[comboBoxTracksUma.SelectedIndex];
-                labelTracksSummary.Text = $"{displayName}: tracks analysis not available.";
-            }
+            ShowTracks(_tracksScreen.Select(comboBoxTracksUma.SelectedIndex));
+            _openOptionsDialog?.RefreshAvailability();
         }
 
         private void BindTracksGrid(TracksReport report)
@@ -117,8 +121,7 @@ namespace UmaParser
 
             FinalizeTracksGrid();
 
-            labelTracksSummary.Text =
-                $"{report.UmaName}: {report.Rows.Count} tracks, {report.TotalRaces} race(s) total. Team type: {report.TeamType}. ";
+            labelTracksSummary.Text = TrackCellText.Report(report);
 
             if (report.Rows.Count > 0)
             {
@@ -129,20 +132,9 @@ namespace UmaParser
         private void AddTracksFooterRow(TracksTotals totals, GridColumnGridPreferences prefs, GridColumnContext context)
         {
             var effective = GridColumnBinder.ResolveEffectiveColumns(TracksColumnSet.All, prefs, context);
-            var values = GridColumnBinder.BuildRowValues(effective, id => id switch
-            {
-                GridColumnIds.Tracks.Track => "Total",
-                GridColumnIds.Tracks.Distance => null,
-                GridColumnIds.Tracks.Races => totals.Races,
-                GridColumnIds.Tracks.AvgPlace => totals.AvgPlace,
-                GridColumnIds.Tracks.PctFirst => totals.PctFirst,
-                GridColumnIds.Tracks.PctTop3 => totals.PctTop3,
-                GridColumnIds.Tracks.PctTop5 => totals.PctTop5,
-                GridColumnIds.Tracks.SpurtRate => totals.SpurtRate,
-                GridColumnIds.Tracks.Survival => totals.Survival,
-                GridColumnIds.Tracks.AvgSkillPts => context.IsTeamTrial ? totals.AvgSkillPointsPerRace : null,
-                _ => null,
-            });
+            var values = GridColumnBinder.BuildRowValues(
+                effective,
+                id => TracksFooterValues.Get(id, totals, context.IsTeamTrial));
 
             int rowIndex = dataGridViewTracks.Rows.Add(values);
             var footerRow = dataGridViewTracks.Rows[rowIndex];
@@ -271,17 +263,17 @@ namespace UmaParser
                 || columnId == GridColumnIds.Tracks.PctTop3
                 || columnId == GridColumnIds.Tracks.PctTop5) && e.Value is double pct)
             {
-                e.Value = pct.ToString("0.#") + "%";
+                e.Value = TrackCellText.Percent(pct);
                 e.FormattingApplied = true;
             }
             else if (columnId == GridColumnIds.Tracks.AvgPlace && e.Value is double ap)
             {
-                e.Value = ap.ToString("0.00");
+                e.Value = TrackCellText.AveragePlace(ap);
                 e.FormattingApplied = true;
             }
             else if (columnId == GridColumnIds.Tracks.SpurtRate && e.Value is double rate)
             {
-                e.Value = rate.ToString("0.#") + "%";
+                e.Value = TrackCellText.Percent(rate);
                 e.FormattingApplied = true;
 
                 if (isFooter)
@@ -293,7 +285,7 @@ namespace UmaParser
             }
             else if (columnId == GridColumnIds.Tracks.Survival && e.Value is double surv)
             {
-                e.Value = surv.ToString("0.#") + "%";
+                e.Value = TrackCellText.Percent(surv);
                 e.FormattingApplied = true;
 
                 if (isFooter)
@@ -305,7 +297,7 @@ namespace UmaParser
             }
             else if (columnId == GridColumnIds.Tracks.AvgSkillPts && e.Value is double sp)
             {
-                e.Value = sp.ToString("0");
+                e.Value = TrackCellText.SkillPoints(sp);
                 e.FormattingApplied = true;
             }
         }

@@ -1,0 +1,73 @@
+<UserControl x:Class="UmaParser.Views.TracksView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:UmaParser.Converters">
+    <UserControl.Resources>
+        <converters:CellBandBrushConverter x:Key="CellBandBackground"/>
+        <converters:CellBandBrushConverter x:Key="CellBandForeground" Foreground="True"/>
+
+        <!--
+          The row is the cell's DataContext, so {Binding SpurtBand} reads TracksGridRow.
+          The total row uses the system control color, the same role as the WinForms column-header
+          fill on that row. CellBand brushes are only for spurt rate and survival on data rows.
+          A footer trigger wins over those setters, so the total row stays uncolored.
+        -->
+        <Style x:Key="TrackCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsFooter}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="TrackSpurtCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource TrackCellStyle}">
+            <Setter Property="Background" Value="{Binding SpurtBand, Converter={StaticResource CellBandBackground}}"/>
+            <Setter Property="Foreground" Value="{Binding SpurtBand, Converter={StaticResource CellBandForeground}}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsFooter}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="TrackSurvivalCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource TrackCellStyle}">
+            <Setter Property="Background" Value="{Binding SurvivalBand, Converter={StaticResource CellBandBackground}}"/>
+            <Setter Property="Foreground" Value="{Binding SurvivalBand, Converter={StaticResource CellBandForeground}}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsFooter}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <DockPanel Margin="8">
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8" LastChildFill="True">
+            <TextBlock Text="Uma:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <ComboBox ItemsSource="{Binding Umas}"
+                      SelectedItem="{Binding SelectedUma}"
+                      DisplayMemberPath="Name"
+                      IsEditable="False"/>
+        </DockPanel>
+        <TextBlock DockPanel.Dock="Top"
+                   Text="{Binding Summary}"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,8"/>
+        <DataGrid x:Name="TracksGrid"
+                  ItemsSource="{Binding Rows}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  CanUserResizeRows="False"
+                  HeadersVisibility="Column"
+                  SelectionMode="Single"
+                  SelectionUnit="FullRow"
+                  GridLinesVisibility="Horizontal"
+                  Sorting="TracksGrid_Sorting"/>
+    </DockPanel>
+</UserControl>

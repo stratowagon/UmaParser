@@ -1,8 +1,7 @@
 using UmaParser.Analysis;
-using UmaParser.Presentation;
 using UmaParser.Settings;
 
-namespace UmaParser.Ui;
+namespace UmaParser.Presentation;
 
 public static class TracksColumnSet
 {

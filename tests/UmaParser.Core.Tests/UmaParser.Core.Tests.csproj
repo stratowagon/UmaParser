@@ -20,6 +20,17 @@
     <ProjectReference Include="..\..\UmaParser.Core\UmaParser.Core.csproj" />
   </ItemGroup>
 
+  <!--
+    TracksViewModel does not use a window or a dispatcher. Compile it into this project so the
+    tests run on Linux, where the WPF desktop runtime does not start. The WPF project compiles
+    the same files for the app.
+  -->
+  <ItemGroup>
+    <Compile Include="..\..\UmaParser.Wpf\Mvvm\ObservableObject.cs" Link="Linked\ObservableObject.cs" />
+    <Compile Include="..\..\UmaParser.Wpf\ViewModels\TracksViewModel.cs" Link="Linked\TracksViewModel.cs" />
+    <Compile Include="..\..\UmaParser.Wpf\ViewModels\TracksColumnPreferences.cs" Link="Linked\TracksColumnPreferences.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Update="Fixtures\**\*.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
