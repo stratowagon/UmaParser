@@ -182,6 +182,52 @@ public sealed class TracksScreen
         return Build(Umas, index, _trials, _races, _preferences, _teamTrial, pinnedSummary: null);
     }
 
+    /// <summary>
+    /// Same drop and selected uma, with a new column order. When a report is showing, the
+    /// summary becomes that report line, which is what the WinForms grid rebind writes.
+    /// A selection with no report keeps its summary.
+    /// </summary>
+    public TracksScreen WithPreferences(GridColumnGridPreferences preferences)
+    {
+        if (Report == null)
+        {
+            return new TracksScreen(
+                Umas,
+                SelectedIndex,
+                Summary,
+                Rows,
+                GridRows,
+                Columns,
+                Report,
+                Footer,
+                _trials,
+                _races,
+                preferences,
+                _teamTrial);
+        }
+
+        var context = new GridColumnContext { IsTeamTrial = _teamTrial };
+        IReadOnlyList<GridColumnDefinition<TracksRow>> columns =
+            GridColumnLayout.ResolveEffectiveColumns(TracksColumnSet.All, preferences, context);
+        TracksTotals? footer = Report.Rows.Count > 0
+            ? TracksTotals.Compute(Report.Rows, _teamTrial)
+            : null;
+        IReadOnlyList<TracksGridRow> gridRows = TracksGridRows.Build(Report.Rows, _teamTrial);
+        return new TracksScreen(
+            Umas,
+            SelectedIndex,
+            TrackCellText.Report(Report),
+            Report.Rows,
+            gridRows,
+            columns,
+            Report,
+            footer,
+            _trials,
+            _races,
+            preferences,
+            _teamTrial);
+    }
+
     private static TracksScreen Build(
         IReadOnlyList<TracksUmaOption> umas,
         int index,

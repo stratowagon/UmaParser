@@ -168,6 +168,50 @@ public sealed class SkillsScreen
         return Build(Umas, index, _trials, _races, _preferences, _teamTrial, pinnedSummary: null);
     }
 
+    /// <summary>
+    /// Same drop and selected uma, with a new column order. When a report is showing, the
+    /// summary becomes that report line, which is what the WinForms grid rebind writes.
+    /// A selection with no report keeps its summary.
+    /// </summary>
+    public SkillsScreen WithPreferences(GridColumnGridPreferences preferences)
+    {
+        if (Report == null)
+        {
+            return new SkillsScreen(
+                Umas,
+                SelectedIndex,
+                Summary,
+                Rows,
+                Columns,
+                Report,
+                _trials,
+                _races,
+                preferences,
+                _teamTrial);
+        }
+
+        var context = new GridColumnContext
+        {
+            IsTeamTrial = _teamTrial,
+            HasSkillLotMetadata = Report.HasSkillLotMetadata,
+        };
+        IReadOnlyList<GridColumnDefinition<SkillActivationRow>> columns =
+            GridColumnLayout.ResolveEffectiveColumns(SkillsColumnSet.All, preferences, context);
+        bool pointsVisible = columns.Any(column => column.Id == GridColumnIds.Skills.PtsRace);
+        List<SkillActivationRow> rows = SortRows(Report.Rows, pointsVisible);
+        return new SkillsScreen(
+            Umas,
+            SelectedIndex,
+            FormatReport(Report),
+            rows,
+            columns,
+            Report,
+            _trials,
+            _races,
+            preferences,
+            _teamTrial);
+    }
+
     private static SkillsScreen Build(
         IReadOnlyList<SkillsUmaOption> umas,
         int index,

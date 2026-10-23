@@ -43,24 +43,45 @@ internal static class MasterDataPaths
 
     public static string ResolveMasterDbPath(string? customPath)
     {
-        if (!string.IsNullOrWhiteSpace(customPath))
+        if (TryResolveCustomMasterDbFile(customPath, out string resolved))
         {
-            string trimmed = customPath.Trim();
-            if (Directory.Exists(trimmed))
-            {
-                string inFolder = Path.Combine(trimmed, "master.mdb");
-                if (File.Exists(inFolder))
-                {
-                    return inFolder;
-                }
-            }
-
-            if (File.Exists(trimmed))
-            {
-                return trimmed;
-            }
+            return resolved;
         }
 
         return DefaultMasterDbPath;
+    }
+
+    /// <summary>
+    /// Resolves a chosen master file, or a folder that contains <c>master.mdb</c>.
+    /// A missing or empty choice does not fall through to <see cref="DefaultMasterDbPath"/>.
+    /// </summary>
+    public static bool TryResolveCustomMasterDbFile(string? customPath, out string resolvedPath)
+    {
+        resolvedPath = string.Empty;
+        if (string.IsNullOrWhiteSpace(customPath))
+        {
+            return false;
+        }
+
+        string trimmed = customPath.Trim();
+        if (Directory.Exists(trimmed))
+        {
+            string inFolder = Path.Combine(trimmed, "master.mdb");
+            if (File.Exists(inFolder))
+            {
+                resolvedPath = inFolder;
+                return true;
+            }
+
+            return false;
+        }
+
+        if (File.Exists(trimmed))
+        {
+            resolvedPath = trimmed;
+            return true;
+        }
+
+        return false;
     }
 }

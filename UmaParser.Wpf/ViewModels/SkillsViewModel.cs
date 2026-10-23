@@ -72,7 +72,7 @@ public sealed class SkillsViewModel : ObservableObject
 
     /// <param name="columnPreferences">
     /// Saved column prefs. The window passes null to read settings.json.
-    /// Tests of <see cref="SkillsScreen"/> pass an explicit value and do not come through here.
+    /// Tests pass an explicit value and do not read the settings file.
     /// </param>
     /// <param name="singleRaceLoad">
     /// The load <see cref="MainViewModel"/> already built for this drop.
@@ -83,8 +83,28 @@ public sealed class SkillsViewModel : ObservableObject
         GridColumnGridPreferences? columnPreferences = null,
         NonTeamTrialLoad? singleRaceLoad = null)
     {
-        GridColumnGridPreferences preferences = columnPreferences ?? SkillsColumnPreferences.Load();
+        GridColumnGridPreferences preferences = columnPreferences ?? SavedGridColumns.ForSkills();
         Show(SkillsScreen.Load(batch, preferences, singleRaceLoad), resetUmas: true);
+    }
+
+    /// <summary>True when the loaded drop is Team Trials, including a roster mismatch.</summary>
+    public bool IsTeamTrial => _screen.IsTeamTrial;
+
+    /// <summary>True when the selected uma's report has skill-lot metadata.</summary>
+    public bool HasSkillLotMetadata => _screen.Report?.HasSkillLotMetadata ?? false;
+
+    /// <summary>
+    /// Rebuilds columns for the uma already selected. Does nothing before the first drop,
+    /// and does not read the capture files again.
+    /// </summary>
+    public void ReloadColumns(GridColumnGridPreferences? columnPreferences = null)
+    {
+        if (ReferenceEquals(_screen, SkillsScreen.Empty))
+        {
+            return;
+        }
+
+        Show(_screen.WithPreferences(columnPreferences ?? SavedGridColumns.ForSkills()), resetUmas: false);
     }
 
     private void Show(SkillsScreen screen, bool resetUmas)

@@ -50,6 +50,13 @@ public partial class ResultsView : UserControl
         if (e.PropertyName == nameof(ResultsViewModel.GridRevision) && IsLoaded)
         {
             ApplySheet();
+            return;
+        }
+
+        // Column options do not change this sheet. Paint it again without moving the scroll bars.
+        if (e.PropertyName == nameof(ResultsViewModel.RepaintRequest) && IsLoaded)
+        {
+            Sheet.InvalidateVisual();
         }
     }
 

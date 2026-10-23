@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using UmaParser.Core.Tests.TestSupport;
 using UmaParser.Import;
 using UmaParser.Presentation;
@@ -56,5 +57,21 @@ public sealed class ResultsViewModelTests
         Assert.Empty(viewModel.Columns);
         Assert.Equal(ResultsScreen.Welcome, viewModel.Message);
         Assert.Equal(2, viewModel.GridRevision);
+    }
+
+    [Fact]
+    public void RequestRepaint_does_not_replace_the_loaded_grid()
+    {
+        var viewModel = new ResultsViewModel();
+        viewModel.Apply(TrialSets.Build("TT-K0"));
+        int revision = viewModel.GridRevision;
+        ObservableCollection<ResultsGridRow> rows = viewModel.Rows;
+
+        viewModel.RequestRepaint();
+
+        Assert.Equal(revision, viewModel.GridRevision);
+        Assert.Same(rows, viewModel.Rows);
+        Assert.Equal(1, viewModel.RepaintRequest);
+        Assert.True(viewModel.ShowGrid);
     }
 }

@@ -104,6 +104,21 @@ public sealed class SkillsScreenTests
     }
 
     [Fact]
+    public void WithPreferences_keeps_the_selected_uma_and_hides_the_column()
+    {
+        TeamTrialBatch batch = TrialSets.Build("TT-K0");
+        SkillsScreen screen = SkillsScreen.Load(batch, AllColumns).Select(1);
+        var hidden = new GridColumnGridPreferences { Hidden = [GridColumnIds.Skills.Activations] };
+
+        SkillsScreen reloaded = screen.WithPreferences(hidden);
+
+        Assert.Equal(1, reloaded.SelectedIndex);
+        Assert.Equal(screen.Report!.UmaName, reloaded.Report!.UmaName);
+        Assert.DoesNotContain(reloaded.Columns, column => column.Id == GridColumnIds.Skills.Activations);
+        Assert.Contains("Click column headers", reloaded.Summary);
+    }
+
+    [Fact]
     public void Wit_delta_text_and_sort_match_the_winforms_grid()
     {
         Assert.Equal("—", SkillCellText.FormatWitDelta(new SkillActivationRow()));

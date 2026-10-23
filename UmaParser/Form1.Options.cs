@@ -1,5 +1,4 @@
 using UmaParser.Analysis;
-using UmaParser.MasterData;
 using UmaParser.Presentation;
 using UmaParser.Settings;
 using UmaParser.Ui;
@@ -24,7 +23,7 @@ public partial class Form1
             return;
         }
 
-        var dialog = new OptionsDialog(BuildGridColumnOptionsGrids(), BuildGridColumnContext);
+        var dialog = new OptionsDialog(BuildGridColumnContext);
         dialog.PreferencesApplied += (_, _) => RebindGridsFromCachedData();
         dialog.FormClosed += (_, _) => _openOptionsDialog = null;
         _openOptionsDialog = dialog;
@@ -38,40 +37,10 @@ public partial class Form1
             HasSkillLotMetadata = _lastSkillReport?.HasSkillLotMetadata ?? false,
         };
 
-    private static IReadOnlyList<GridColumnOptionsGrid> BuildGridColumnOptionsGrids() =>
-    [
-        BuildOptionsGrid(GridKeys.Analysis, "Team Analysis", AnalysisColumnSet.All),
-        BuildOptionsGrid(GridKeys.Skills, "Skills", SkillsColumnSet.All),
-        BuildOptionsGrid(GridKeys.Tracks, "Tracks", TracksColumnSet.All),
-    ];
-
-    private static GridColumnOptionsGrid BuildOptionsGrid<TRow>(
-        string key,
-        string displayName,
-        IReadOnlyList<GridColumnDefinition<TRow>> columns) =>
-        new()
-        {
-            Key = key,
-            DisplayName = displayName,
-            Columns = columns.Select(c => new GridColumnOptionsEntry
-            {
-                Id = c.Id,
-                Header = c.Header,
-                Tooltip = c.Tooltip,
-                Description = c.Description,
-                IsLocked = c.IsLocked,
-                IsAvailable = c.CheckAvailable,
-                UnavailableReason = ctx => c.GetUnavailableReason(ctx) ?? string.Empty,
-            }).ToList(),
-        };
-
-    private GridColumnGridPreferences LoadGridColumnPreferences<TRow>(string gridKey)
-    {
-        var settings = GameMasterSettings.Load();
-        var defaultOrder = GridColumnBinder.GetDefaultCustomizableOrder(
-            GetRegistry<TRow>(gridKey));
-        return GridColumnPreferencesMerger.Merge(defaultOrder, settings.GetGridColumnPreferences(gridKey));
-    }
+    private GridColumnGridPreferences LoadGridColumnPreferences<TRow>(string gridKey) =>
+        SavedGridColumns.Load(
+            gridKey,
+            GridColumnBinder.GetDefaultCustomizableOrder(GetRegistry<TRow>(gridKey)));
 
     private static IReadOnlyList<GridColumnDefinition<TRow>> GetRegistry<TRow>(string gridKey) =>
         gridKey switch

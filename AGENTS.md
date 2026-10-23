@@ -136,6 +136,8 @@ This overwrites `UmaParser.Core/MasterData/EmbeddedMasterFallback.cs`. Commit th
 
 **Never commit `*.mdb` files** — they are gitignored.
 
+Open `master.mdb` read-only only at startup or on explicit refresh/browse, read once, and close it immediately. Never hold it open, and never write to it or its folder; the game writes to it during updates.
+
 ## Code style
 
 - C# with **nullable reference types** enabled.
@@ -152,6 +154,7 @@ This overwrites `UmaParser.Core/MasterData/EmbeddedMasterFallback.cs`. Commit th
 - Do not move `Tools/` projects into the solution unless asked — they are run ad hoc.
 - Do not commit unscrubbed race captures. Fixtures under `tests/UmaParser.Core.Tests/Fixtures/` are already scrubbed; add new ones with `Tools/FixtureScrubber`.
 - Do not edit `Form1.Designer.cs` by hand except through the WinForms designer pattern already in use.
+- Do not hold `master.mdb` open or write to it or its folder. Open it read-only only at startup or on explicit refresh/browse, read once, and close it immediately. The game writes to it during updates.
 
 ## Commit guidance
 

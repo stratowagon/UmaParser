@@ -59,4 +59,24 @@ public sealed class AnalysisViewModelTests
         Assert.False(viewModel.ShowGrid);
         Assert.Equal(AnalysisCellText.Unavailable, viewModel.EmptyMessage);
     }
+
+    [Fact]
+    public void ReloadColumns_rebuilds_the_open_grid_from_the_drop_already_loaded()
+    {
+        var viewModel = new AnalysisViewModel();
+        viewModel.ReloadColumns(AllColumns);
+        Assert.Equal(0, viewModel.GridRevision);
+
+        viewModel.Apply(TrialSets.Build("TT-K0"), AllColumns);
+        int rows = viewModel.Rows.Count;
+        string summary = viewModel.Summary;
+
+        viewModel.ReloadColumns(new GridColumnGridPreferences { Hidden = [GridColumnIds.Analysis.Gap] });
+
+        Assert.Equal(2, viewModel.GridRevision);
+        Assert.Equal(rows, viewModel.Rows.Count);
+        Assert.Equal(summary, viewModel.Summary);
+        Assert.Equal(GridColumnIds.Analysis.Uma, viewModel.VisibleColumns[0].Id);
+        Assert.DoesNotContain(viewModel.VisibleColumns, column => column.Id == GridColumnIds.Analysis.Gap);
+    }
 }

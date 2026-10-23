@@ -28,10 +28,9 @@
   <ItemGroup>
     <Compile Include="..\..\UmaParser.Wpf\Mvvm\ObservableObject.cs" Link="Linked\ObservableObject.cs" />
     <Compile Include="..\..\UmaParser.Wpf\ViewModels\TracksViewModel.cs" Link="Linked\TracksViewModel.cs" />
-    <Compile Include="..\..\UmaParser.Wpf\ViewModels\TracksColumnPreferences.cs" Link="Linked\TracksColumnPreferences.cs" />
     <Compile Include="..\..\UmaParser.Wpf\ViewModels\ResultsViewModel.cs" Link="Linked\ResultsViewModel.cs" />
     <Compile Include="..\..\UmaParser.Wpf\ViewModels\AnalysisViewModel.cs" Link="Linked\AnalysisViewModel.cs" />
-    <Compile Include="..\..\UmaParser.Wpf\ViewModels\AnalysisColumnPreferences.cs" Link="Linked\AnalysisColumnPreferences.cs" />
+    <Compile Include="..\..\UmaParser.Wpf\ViewModels\OptionsViewModel.cs" Link="Linked\OptionsViewModel.cs" />
     <Compile Include="..\..\UmaParser.Wpf\Views\ResultsSheet.cs" Link="Linked\ResultsSheet.cs" />
   </ItemGroup>
 

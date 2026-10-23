@@ -1,8 +1,12 @@
+using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using UmaParser.Import;
 using UmaParser.MasterData;
 using UmaParser.Mvvm;
 using UmaParser.Presentation;
+using UmaParser.Services;
+using UmaParser.Settings;
 
 namespace UmaParser.ViewModels;
 
@@ -19,11 +23,14 @@ public sealed class MainViewModel : ObservableObject
     public const int SkillsTabIndex = 2;
     public const int TracksTabIndex = 3;
 
+    private readonly IShellServices _shell;
+    private OptionsViewModel? _options;
     private string _statusText;
     private int _selectedTabIndex;
 
-    public MainViewModel()
+    internal MainViewModel(IShellServices shell)
     {
+        _shell = shell;
         Results = new ResultsViewModel();
         Analysis = new AnalysisViewModel();
         Skills = new SkillsViewModel();
@@ -36,6 +43,14 @@ public sealed class MainViewModel : ObservableObject
             new ScreenTab { Title = "Tracks", Content = Tracks },
         ];
         LoadFilesCommand = new RelayCommand(LoadFiles);
+        OpenPreferencesCommand = new RelayCommand(OpenPreferences);
+        ShowMasterDataStatusCommand = new RelayCommand(ShowMasterDataStatus);
+        RefreshMasterDataCommand = new RelayCommand(RefreshMasterData);
+        UseDefaultMasterDataCommand = new RelayCommand(UseDefaultMasterData);
+        BrowseMasterDataCommand = new RelayCommand(BrowseMasterData);
+        OpenMasterDataFolderCommand = new RelayCommand(OpenMasterDataFolder);
+        Skills.PropertyChanged += OnUmaSelectionChanged;
+        Tracks.PropertyChanged += OnUmaSelectionChanged;
         _statusText = GameMasterService.Current.GetStatusLine();
     }
 
@@ -48,6 +63,18 @@ public sealed class MainViewModel : ObservableObject
     public IReadOnlyList<ScreenTab> Tabs { get; }
 
     public RelayCommand LoadFilesCommand { get; }
+
+    public RelayCommand OpenPreferencesCommand { get; }
+
+    public RelayCommand ShowMasterDataStatusCommand { get; }
+
+    public RelayCommand RefreshMasterDataCommand { get; }
+
+    public RelayCommand UseDefaultMasterDataCommand { get; }
+
+    public RelayCommand BrowseMasterDataCommand { get; }
+
+    public RelayCommand OpenMasterDataFolderCommand { get; }
 
     /// <summary>
     /// The open tab. A drop selects the same tab WinForms selects:
@@ -136,7 +163,86 @@ public sealed class MainViewModel : ObservableObject
             TeamTrialBatchKind.MixedOrNonTT => SkillsTabIndex,
             _ => SelectedTabIndex,
         };
+        _options?.RefreshAvailability();
     }
+
+    private void OpenPreferences(object? parameter)
+    {
+        if (_options != null)
+        {
+            _options.RefreshAvailability();
+            _shell.ActivateOptions();
+            return;
+        }
+
+        _options = new OptionsViewModel(ColumnContext);
+        _options.PreferencesApplied += (_, _) => OnPreferencesApplied();
+        _options.Closed += (_, _) => _options = null;
+        _shell.ShowOptions(_options);
+    }
+
+    private void OnPreferencesApplied()
+    {
+        Analysis.ReloadColumns();
+        Skills.ReloadColumns();
+        Tracks.ReloadColumns();
+        Results.RequestRepaint();
+        _options?.RefreshAvailability();
+    }
+
+    private void OnUmaSelectionChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(SkillsViewModel.SelectedUma))
+        {
+            _options?.RefreshAvailability();
+        }
+    }
+
+    private GridColumnContext ColumnContext() =>
+        new()
+        {
+            IsTeamTrial = Skills.IsTeamTrial || Tracks.IsTeamTrial,
+            HasSkillLotMetadata = Skills.HasSkillLotMetadata,
+        };
+
+    private void ShowMasterDataStatus(object? parameter) =>
+        _shell.ShowInformation("Master data", GameMasterService.Current.GetDetailedStatus());
+
+    private void RefreshMasterData(object? parameter)
+    {
+        GameMasterService.Current.Refresh();
+        StatusText = GameMasterService.Current.GetStatusLine();
+    }
+
+    private void UseDefaultMasterData(object? parameter)
+    {
+        GameMasterService.Current.UseDefaultDatabaseLocation();
+        StatusText = GameMasterService.Current.GetStatusLine();
+    }
+
+    private void BrowseMasterData(object? parameter)
+    {
+        string initial = Directory.Exists(MasterDataPaths.DefaultMasterFolder)
+            ? MasterDataPaths.DefaultMasterFolder
+            : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        string? path = _shell.PickMasterDatabase(initial);
+        if (path == null)
+        {
+            return;
+        }
+
+        if (!GameMasterService.Current.TrySetCustomDatabasePath(path))
+        {
+            _shell.ShowWarning(
+                "Master data",
+                GameMasterService.Current.LastError ?? "Could not load the selected file.");
+        }
+
+        StatusText = GameMasterService.Current.GetStatusLine();
+    }
+
+    private void OpenMasterDataFolder(object? parameter) =>
+        _shell.OpenFolder(MasterDataPaths.DefaultMasterFolder);
 
     private static double ElapsedMs(long started) =>
         Stopwatch.GetElapsedTime(started).TotalMilliseconds;

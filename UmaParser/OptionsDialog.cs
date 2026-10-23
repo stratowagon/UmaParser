@@ -1,34 +1,12 @@
 using UmaParser.MasterData;
 using UmaParser.Settings;
-using UmaParser.Ui;
 
 namespace UmaParser;
 
-public sealed class GridColumnOptionsGrid
+internal sealed class OptionsDialog : Form
 {
-    public required string Key { get; init; }
-    public required string DisplayName { get; init; }
-    public required IReadOnlyList<GridColumnOptionsEntry> Columns { get; init; }
-}
-
-public sealed class GridColumnOptionsEntry
-{
-    public required string Id { get; init; }
-    public required string Header { get; init; }
-    public required string Tooltip { get; init; }
-    public required string Description { get; init; }
-    public bool IsLocked { get; init; }
-    public required Func<GridColumnContext, bool> IsAvailable { get; init; }
-    public required Func<GridColumnContext, string?> UnavailableReason { get; init; }
-
-    public override string ToString() => Header;
-}
-
-public sealed class OptionsDialog : Form
-{
-    private readonly IReadOnlyList<GridColumnOptionsGrid> _grids;
     private readonly Func<GridColumnContext> _getContext;
-    private readonly Dictionary<string, GridColumnGridPreferences> _workingPrefs;
+    private readonly ColumnOptionsSession _session;
     private readonly ListBox _gridList;
     private readonly Label _lockedColumnLabel;
     private readonly CheckedListBox _columnList;
@@ -39,16 +17,12 @@ public sealed class OptionsDialog : Form
     private readonly Button _okButton;
     private readonly Button _cancelButton;
     private readonly Button _applyButton;
-    private string? _currentGridKey;
     private bool _suppressColumnEvents;
 
-    public OptionsDialog(
-        IReadOnlyList<GridColumnOptionsGrid> grids,
-        Func<GridColumnContext> getContext)
+    public OptionsDialog(Func<GridColumnContext> getContext)
     {
-        _grids = grids;
         _getContext = getContext;
-        _workingPrefs = LoadWorkingPreferences(grids);
+        _session = ColumnOptionsSession.Load(GameMasterSettings.Load(), getContext());
 
         Text = "Options";
         StartPosition = FormStartPosition.CenterParent;
@@ -82,7 +56,7 @@ public sealed class OptionsDialog : Form
         columnsLayout.Controls.Add(split, 0, 0);
 
         _gridList = new ListBox { Dock = DockStyle.Fill, IntegralHeight = false };
-        foreach (var grid in _grids)
+        foreach (GridColumnOptionsGrid grid in _session.Grids)
         {
             _gridList.Items.Add(grid);
         }
@@ -117,7 +91,16 @@ public sealed class OptionsDialog : Form
             CheckOnClick = true,
             IntegralHeight = false,
         };
-        _columnList.SelectedIndexChanged += (_, _) => UpdateDescription();
+        _columnList.SelectedIndexChanged += (_, _) =>
+        {
+            if (_suppressColumnEvents)
+            {
+                return;
+            }
+
+            _session.SelectColumn(_columnList.SelectedIndex);
+            UpdateDetails();
+        };
         _columnList.ItemCheck += ColumnList_ItemCheck;
         rightPanel.Controls.Add(_columnList, 0, 1);
 
@@ -207,99 +190,44 @@ public sealed class OptionsDialog : Form
 
     public void RefreshAvailability()
     {
-        if (_currentGridKey != null)
-        {
-            UpdateColumnAvailability();
-            UpdateDescription();
-        }
+        _session.SetContext(_getContext());
+        UpdateDetails();
     }
-
-    private static Dictionary<string, GridColumnGridPreferences> LoadWorkingPreferences(
-        IReadOnlyList<GridColumnOptionsGrid> grids)
-    {
-        var settings = GameMasterSettings.Load();
-        var result = new Dictionary<string, GridColumnGridPreferences>(StringComparer.Ordinal);
-
-        foreach (var grid in grids)
-        {
-            var defaultOrder = grid.Columns.Where(c => !c.IsLocked).Select(c => c.Id).ToList();
-            var saved = settings.GetGridColumnPreferences(grid.Key);
-            result[grid.Key] = GridColumnPreferencesMerger.Merge(defaultOrder, saved);
-        }
-
-        return result;
-    }
-
-    private GridColumnOptionsGrid? GetSelectedGrid() =>
-        _gridList.SelectedItem as GridColumnOptionsGrid;
 
     private void ShowSelectedGrid()
     {
-        SaveCurrentGridStateToWorking();
-
-        var grid = GetSelectedGrid();
-        if (grid == null)
+        if (_suppressColumnEvents)
         {
             return;
         }
 
-        _currentGridKey = grid.Key;
-        var locked = grid.Columns.FirstOrDefault(c => c.IsLocked);
-        _lockedColumnLabel.Text = locked == null
-            ? string.Empty
-            : $"{locked.Header} — always shown first";
+        if (_gridList.SelectedItem is not GridColumnOptionsGrid grid)
+        {
+            return;
+        }
 
+        _session.SelectGrid(grid.Key);
+        RenderColumns();
+    }
+
+    private void RenderColumns()
+    {
         _suppressColumnEvents = true;
         _columnList.Items.Clear();
-        var prefs = _workingPrefs[grid.Key];
-        var order = prefs.Order;
-        var hidden = new HashSet<string>(prefs.Hidden, StringComparer.Ordinal);
-
-        foreach (string id in order)
+        foreach (ColumnOptionRow row in _session.Rows)
         {
-            var entry = grid.Columns.First(c => c.Id == id);
+            GridColumnOptionsEntry entry = _session.CurrentGrid.Columns.First(column => column.Id == row.Id);
             int index = _columnList.Items.Add(entry);
-            _columnList.SetItemChecked(index, !hidden.Contains(id));
+            _columnList.SetItemChecked(index, row.IsVisible);
+        }
+
+        if (_columnList.Items.Count > 0)
+        {
+            _columnList.SelectedIndex = _session.SelectedIndex;
         }
 
         _suppressColumnEvents = false;
-        if (_columnList.Items.Count > 0)
-        {
-            _columnList.SelectedIndex = 0;
-        }
-
-        UpdateColumnAvailability();
-        UpdateDescription();
-    }
-
-    private void SaveCurrentGridStateToWorking()
-    {
-        if (_currentGridKey == null)
-        {
-            return;
-        }
-
-        var order = new List<string>();
-        var hidden = new List<string>();
-        for (int i = 0; i < _columnList.Items.Count; i++)
-        {
-            if (_columnList.Items[i] is not GridColumnOptionsEntry entry)
-            {
-                continue;
-            }
-
-            order.Add(entry.Id);
-            if (!_columnList.GetItemChecked(i))
-            {
-                hidden.Add(entry.Id);
-            }
-        }
-
-        _workingPrefs[_currentGridKey] = new GridColumnGridPreferences
-        {
-            Order = order,
-            Hidden = hidden,
-        };
+        UpdateDetails();
     }
 
     private void ColumnList_ItemCheck(object? sender, ItemCheckEventArgs e)
@@ -309,117 +237,44 @@ public sealed class OptionsDialog : Form
             return;
         }
 
-        if (_columnList.Items[e.Index] is GridColumnOptionsEntry entry
-            && !entry.IsAvailable(_getContext()))
+        bool visible = e.NewValue == CheckState.Checked;
+        if (!_session.TrySetVisible(e.Index, visible))
         {
             e.NewValue = e.CurrentValue;
             return;
         }
 
-        BeginInvoke(() =>
-        {
-            UpdateColumnAvailability();
-            UpdateDescription();
-        });
+        BeginInvoke(new Action(UpdateDetails));
     }
 
     private void MoveSelectedColumn(int delta)
     {
-        int index = _columnList.SelectedIndex;
-        if (index < 0)
+        if (!_session.TryMoveSelected(delta))
         {
             return;
         }
 
-        int newIndex = index + delta;
-        if (newIndex < 0 || newIndex >= _columnList.Items.Count)
-        {
-            return;
-        }
-
-        var entry = _columnList.Items[index];
-        bool checkedState = _columnList.GetItemChecked(index);
-
-        _suppressColumnEvents = true;
-        _columnList.Items.RemoveAt(index);
-        _columnList.Items.Insert(newIndex, entry);
-        _columnList.SetItemChecked(newIndex, checkedState);
-        _columnList.SelectedIndex = newIndex;
-        _suppressColumnEvents = false;
-
-        UpdateColumnAvailability();
-        UpdateDescription();
+        RenderColumns();
     }
 
     private void RestoreDefaultsForCurrentGrid()
     {
-        var grid = GetSelectedGrid();
-        if (grid == null)
-        {
-            return;
-        }
-
-        _workingPrefs[grid.Key] = new GridColumnGridPreferences
-        {
-            Order = grid.Columns.Where(c => !c.IsLocked).Select(c => c.Id).ToList(),
-            Hidden = new List<string>(),
-        };
-
-        ShowSelectedGrid();
+        _session.RestoreDefaults();
+        RenderColumns();
     }
 
-    private void UpdateColumnAvailability()
+    private void UpdateDetails()
     {
-        int selected = _columnList.SelectedIndex;
-        bool canMove = selected >= 0
-            && _columnList.Items[selected] is GridColumnOptionsEntry selectedEntry
-            && selectedEntry.IsAvailable(_getContext());
-
-        _moveUpButton.Enabled = canMove && selected > 0
-            && _columnList.Items[selected - 1] is GridColumnOptionsEntry prev
-            && prev.IsAvailable(_getContext());
-        _moveDownButton.Enabled = canMove && selected >= 0 && selected < _columnList.Items.Count - 1
-            && _columnList.Items[selected + 1] is GridColumnOptionsEntry next
-            && next.IsAvailable(_getContext());
-    }
-
-    private void UpdateDescription()
-    {
-        if (_columnList.SelectedItem is not GridColumnOptionsEntry entry)
-        {
-            _descriptionBox.Text = string.Empty;
-            return;
-        }
-
-        var context = _getContext();
-        var lines = new List<string> { entry.Description };
-        if (!string.IsNullOrWhiteSpace(entry.Tooltip) && entry.Tooltip != entry.Description)
-        {
-            lines.Add(string.Empty);
-            lines.Add($"Tooltip: {entry.Tooltip}");
-        }
-
-        string? reason = entry.UnavailableReason(context);
-        if (!entry.IsAvailable(context) && !string.IsNullOrWhiteSpace(reason))
-        {
-            lines.Add(string.Empty);
-            lines.Add($"Not available: {reason}");
-        }
-
-        _descriptionBox.Text = string.Join(Environment.NewLine, lines);
-        UpdateColumnAvailability();
+        _lockedColumnLabel.Text = _session.LockedColumnText;
+        _descriptionBox.Text = _session.Description;
+        _moveUpButton.Enabled = _session.CanMoveUp;
+        _moveDownButton.Enabled = _session.CanMoveDown;
     }
 
     private bool SavePreferences()
     {
-        SaveCurrentGridStateToWorking();
-
         var settings = GameMasterSettings.Load();
-        foreach (var (gridKey, prefs) in _workingPrefs)
-        {
-            settings.SetGridColumnPreferences(gridKey, prefs);
-        }
-
+        _session.WriteTo(settings);
         settings.Save();
         PreferencesApplied?.Invoke(this, EventArgs.Empty);
         return true;
