@@ -1,9 +1,5 @@
 ﻿using System.ComponentModel;
-using System.Drawing;
 using UmaParser.Analysis;
-using UmaParser.DataModel.ResponseData;
-using UmaParser.Import;
-using UmaParser.MasterData;
 using UmaParser.ObjectModel;
 using UmaParser.Settings;
 using UmaParser.Ui;
@@ -13,22 +9,14 @@ namespace UmaParser
     public partial class Form1
     {
         private IReadOnlyDictionary<string, TeamTrialResult>? _skillsTrialResults;
-        private List<(int TrainedCharaId, string Name)> _skillsRosterEntries = new();
+        private List<NamedRosterUma> _skillsRosterEntries = new();
         private SkillActivationReport? _lastSkillReport;
 
         private void PopulateSkills(Dictionary<string, TeamTrialResult> trialResults)
         {
             _skillsTrialResults = trialResults;
             var first = trialResults.First().Value;
-
-            _skillsRosterEntries.Clear();
-            var names = first.RosterNames;
-            int i = 0;
-            foreach (var uma in first.RaceRoster.Values)
-            {
-                _skillsRosterEntries.Add((uma.TrainedCharaId, names[i]));
-                i++;
-            }
+            _skillsRosterEntries = RosterListing.FromTrial(first);
 
             comboBoxSkillsUma.Items.Clear();
             foreach (var entry in _skillsRosterEntries)
@@ -77,19 +65,7 @@ namespace UmaParser
             {
                 var selectedId = _currentNonTtIdentities[comboBoxSkillsUma.SelectedIndex];
                 var displayName = selectedId.GetDisplayName();
-
-                var apps = new List<RaceAppearance>();
-                foreach (var sr in _currentSingleRaces)
-                {
-                    foreach (var (id, horse) in sr.LocalPlayerHorses)
-                    {
-                        if (selectedId.IsSameUma(id))
-                        {
-                            var dummyResult = new RaceResult();
-                            apps.Add(new RaceAppearance(dummyResult, sr.Simulation, horse));
-                        }
-                    }
-                }
+                var apps = RaceAppearanceBuilder.ForSkills(_currentSingleRaces, selectedId);
 
                 if (apps.Count > 0)
                 {
@@ -222,38 +198,11 @@ namespace UmaParser
 
             if (columnId == GridColumnIds.Skills.Skill)
             {
-                double avg = row.ActivationCount > 0
-                    ? row.TotalPointsEarned / (double)row.ActivationCount
-                    : 0.0;
-
-                if (avg >= 1150 && avg <= 1250)
-                {
-                    e.CellStyle.BackColor = AppColors.SkillGoldBack;
-                    e.CellStyle.ForeColor = AppColors.SkillGoldFore;
-                    e.CellStyle.SelectionBackColor = ControlPaint.Light(e.CellStyle.BackColor, 0.25f);
-                    e.CellStyle.SelectionForeColor = AppColors.SkillGoldFore;
-                }
-                else if (avg > 1250 || (avg > 0 && avg < 450))
-                {
-                    e.CellStyle.BackColor = AppColors.SkillUniqueBack;
-                    e.CellStyle.ForeColor = AppColors.SkillUniqueFore;
-                    e.CellStyle.SelectionBackColor = ControlPaint.Light(e.CellStyle.BackColor, 0.25f);
-                    e.CellStyle.SelectionForeColor = AppColors.SkillUniqueFore;
-                }
-
+                CellBandStyling.Apply(e, CellBands.ForSkillName(row));
                 return;
             }
 
-            if (row.IsUnderperformingVsWit)
-            {
-                ApplySeverityStyle(e, SeverityNeedsWork);
-                return;
-            }
-
-            if (row.IsLowActivation && row.ActivateLot != SkillActivateLotKind.Wit)
-            {
-                ApplySeverityStyle(e, SeverityNeedsWork);
-            }
+            CellBandStyling.Apply(e, CellBands.ForSkillMetric(row));
         }
 
         private static string FormatWitDelta(SkillActivationRow row)
@@ -276,20 +225,6 @@ namespace UmaParser
             }
 
             ClearGridSelection(dataGridViewSkills);
-        }
-
-        private static void ApplySeverityStyle(DataGridViewCellFormattingEventArgs e, Color backColor)
-        {
-            if (e.CellStyle == null)
-            {
-                return;
-            }
-
-            e.CellStyle.BackColor = backColor;
-            var fore = AppColors.SeverityForeFor(backColor);
-            e.CellStyle.ForeColor = fore;
-            e.CellStyle.SelectionBackColor = ControlPaint.Light(backColor, 0.28f);
-            e.CellStyle.SelectionForeColor = fore;
         }
     }
 }

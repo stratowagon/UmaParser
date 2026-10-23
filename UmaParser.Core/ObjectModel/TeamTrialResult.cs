@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using UmaParser.Analysis;
 using UmaParser.DataModel.RaceScenario;
 using UmaParser.DataModel.ResponseData;
@@ -18,20 +16,6 @@ namespace UmaParser.ObjectModel
         //*************************************************
 
         public new TeamRaceData? Data { get; set; }
-
-        public static Type? DetermineType(JsonElement dataElement)
-        {
-            if (dataElement.ValueKind == JsonValueKind.Null)
-            {
-                return null;
-            }
-
-            if (dataElement.TryGetProperty("race_result_array", out _))
-            {
-                return typeof(TeamTrialResult);
-            }
-            return null;
-        }
 
         public TeamTrialResult(TeamRaceData data)
         {

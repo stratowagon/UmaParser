@@ -1,5 +1,4 @@
 ﻿using System.Windows.Forms;
-using UmaParser.DataModel.ResponseData;
 using UmaParser.MasterData;
 
 namespace UmaParser
@@ -13,7 +12,6 @@ namespace UmaParser
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            UmaApiResponse.RegisterAllKnownTypes();
             GameMasterService.Current.Initialize();
 
             Application.Run(new Form1());
