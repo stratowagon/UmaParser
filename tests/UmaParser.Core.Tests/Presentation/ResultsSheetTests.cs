@@ -194,4 +194,13 @@ public sealed class ResultsSheetTests
         pointer.Release();
         Assert.False(pointer.CaptureHeld);
     }
+
+    [Fact]
+    public void A_selected_row_uses_the_datagrid_highlight_over_the_heat_fill()
+    {
+        Assert.Equal(ResultsRowChrome.Content, ResultsRowPaint.Chrome(selected: false, sheetFocused: true));
+        Assert.Equal(ResultsRowChrome.ActiveSelection, ResultsRowPaint.Chrome(selected: true, sheetFocused: true));
+        Assert.Equal(ResultsRowChrome.InactiveSelection, ResultsRowPaint.Chrome(selected: true, sheetFocused: false));
+        Assert.Equal(ResultsRowChrome.Content, ResultsRowPaint.Chrome(selected: false, sheetFocused: false));
+    }
 }

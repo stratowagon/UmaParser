@@ -29,8 +29,6 @@ public sealed class ResultsSheetView : FrameworkElement
 
     private static readonly Pen GridLinePen = FreezePen(Brushes.Black, 1);
     private static readonly Pen TeamLinePen = FreezePen(SystemColors.ControlDarkBrush, 2);
-    private static readonly Pen SelectedRowPen = FreezePen(SystemColors.HighlightBrush, 1);
-    private static readonly Pen InactiveSelectedRowPen = FreezePen(SystemColors.InactiveSelectionHighlightBrush, 1);
     private static readonly Pen HeaderLinePen = FreezePen(SystemColors.ControlDarkBrush, 1);
     private static readonly SolidColorBrush OutlierBrush = FreezeBrush(Color.FromRgb(0xFF, 0xFF, 0xC8));
     private static readonly LinearGradientBrush HeaderBrush = FreezeHeaderBrush();
@@ -403,13 +401,12 @@ public sealed class ResultsSheetView : FrameworkElement
             double left = _prefix[column] - _horizontalOffset;
             double columnWidth = _widths[column];
             var rect = new Rect(left, top, columnWidth, _rowHeight);
-            bool ownFill = row.Footer || cell.Outlier || cell.Heat is not null;
-            Brush fill = Fill(row, cell, selected, active);
-            dc.DrawRectangle(fill, null, rect);
+            ResultsRowChrome chrome = ResultsRowPaint.Chrome(selected, active);
+            dc.DrawRectangle(Fill(row, cell, chrome), null, rect);
             dc.PushClip(new RectangleGeometry(rect));
             if (cell.Text.Length > 0)
             {
-                FormattedText text = Text(cell.Text, cell.Weight, GlyphFor(cell, selected, ownFill, active));
+                FormattedText text = Text(cell.Text, cell.Weight, GlyphFor(cell, chrome));
                 double textY = top + (row.TeamBoundary ? 2 : 1);
                 dc.DrawText(text, new Point(left + 2, textY));
             }
@@ -424,20 +421,22 @@ public sealed class ResultsSheetView : FrameworkElement
                 dc.DrawLine(TeamLinePen, new Point(left, lineY), new Point(left + columnWidth, lineY));
             }
         }
-
-        if (selected && window.Count > 0)
-        {
-            double left = _prefix[window.First] - _horizontalOffset;
-            double right = _prefix[window.LastExclusive] - _horizontalOffset;
-            dc.DrawRectangle(
-                null,
-                active ? SelectedRowPen : InactiveSelectedRowPen,
-                new Rect(left + 0.5, top + 0.5, Math.Max(0, right - left - 1), Math.Max(0, _rowHeight - 1)));
-        }
     }
 
-    private Brush Fill(ResultsSheetRow row, ResultsSheetCell cell, bool selected, bool active)
+    /// <summary>
+    /// A selected row uses the DataGrid highlight over the heat map. Unselected cells keep
+    /// their content fill. Highlight text is the matching DataGrid foreground so the score stays readable.
+    /// </summary>
+    private Brush Fill(ResultsSheetRow row, ResultsSheetCell cell, ResultsRowChrome chrome)
     {
+        switch (chrome)
+        {
+            case ResultsRowChrome.ActiveSelection:
+                return SystemColors.HighlightBrush;
+            case ResultsRowChrome.InactiveSelection:
+                return SystemColors.InactiveSelectionHighlightBrush;
+        }
+
         if (row.Footer)
         {
             return SystemColors.ControlBrush;
@@ -453,21 +452,17 @@ public sealed class ResultsSheetView : FrameworkElement
             return HeatBrush(heat);
         }
 
-        if (selected)
-        {
-            return active
-                ? SystemColors.HighlightBrush
-                : SystemColors.InactiveSelectionHighlightBrush;
-        }
-
         return SystemColors.WindowBrush;
     }
 
-    private static GlyphBrush GlyphFor(ResultsSheetCell cell, bool selected, bool ownFill, bool active)
+    private static GlyphBrush GlyphFor(ResultsSheetCell cell, ResultsRowChrome chrome)
     {
-        if (selected && !ownFill)
+        switch (chrome)
         {
-            return active ? GlyphBrush.Highlight : GlyphBrush.InactiveHighlight;
+            case ResultsRowChrome.ActiveSelection:
+                return GlyphBrush.Highlight;
+            case ResultsRowChrome.InactiveSelection:
+                return GlyphBrush.InactiveHighlight;
         }
 
         return cell.Tone switch
@@ -519,7 +514,7 @@ public sealed class ResultsSheetView : FrameworkElement
             foreach (ResultsSheetRow row in _model.Rows)
             {
                 ResultsSheetCell cell = row.Cells[column];
-                width = Math.Max(width, Text(cell.Text, cell.Weight, GlyphFor(cell, selected: false, ownFill: true, active: true)).Width + CellChrome);
+                width = Math.Max(width, Text(cell.Text, cell.Weight, GlyphFor(cell, ResultsRowChrome.Content)).Width + CellChrome);
             }
 
             width = Snap(Math.Max(width, MinColumnWidth));

@@ -286,6 +286,32 @@ internal static class ResultsSheetHitTest
     }
 }
 
+/// <summary>
+/// How a selected Results row is painted. <see cref="ActiveSelection"/> is the focused DataGrid
+/// highlight (system highlight brush and highlight text). <see cref="InactiveSelection"/> is the
+/// same row when the sheet is not focused. Either one covers the heat fill so the row reads as
+/// selected. <see cref="Content"/> keeps heat, outlier, and footer colors.
+/// </summary>
+internal enum ResultsRowChrome
+{
+    Content,
+    ActiveSelection,
+    InactiveSelection,
+}
+
+internal static class ResultsRowPaint
+{
+    public static ResultsRowChrome Chrome(bool selected, bool sheetFocused)
+    {
+        if (!selected)
+        {
+            return ResultsRowChrome.Content;
+        }
+
+        return sheetFocused ? ResultsRowChrome.ActiveSelection : ResultsRowChrome.InactiveSelection;
+    }
+}
+
 /// <summary>Plain click, row-range drag, or column resize. Capture is only for an active drag.</summary>
 internal enum ResultsDrag
 {
