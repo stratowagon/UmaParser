@@ -16,9 +16,26 @@ internal sealed class TempSettingsFile : IDisposable
 
     public void Dispose()
     {
-        if (Directory.Exists(DirectoryPath))
+        if (!Directory.Exists(DirectoryPath))
         {
-            Directory.Delete(DirectoryPath, recursive: true);
+            return;
+        }
+
+        for (int attempt = 0; ; attempt++)
+        {
+            try
+            {
+                Directory.Delete(DirectoryPath, recursive: true);
+                return;
+            }
+            catch (IOException) when (attempt < 2)
+            {
+                Thread.Sleep(20);
+            }
+            catch (UnauthorizedAccessException) when (attempt < 2)
+            {
+                Thread.Sleep(20);
+            }
         }
     }
 }

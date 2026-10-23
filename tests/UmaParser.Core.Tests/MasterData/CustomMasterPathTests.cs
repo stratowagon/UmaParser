@@ -7,8 +7,11 @@ namespace UmaParser.Core.Tests.MasterData;
 
 /// <summary>
 /// A custom master.mdb path is written to settings.json only after the file loads.
-/// These tests use a private settings file and never call <see cref="GameMasterService.Current"/>.
+/// Each test has its own temp directory from <see cref="TempSettingsFile"/>.
+/// SQLite's connection pool is process-wide, so the class runs in one non-parallel collection.
+/// These tests never call <see cref="GameMasterService.Current"/>.
 /// </summary>
+[Collection("CustomMasterPath")]
 public sealed class CustomMasterPathTests
 {
     private const int MarkerSkillId = 900001;
@@ -208,6 +211,35 @@ public sealed class CustomMasterPathTests
         Assert.DoesNotContain("Saved master database could not be loaded", again.GetStatusLine());
     }
 
+    [Fact]
+    public void Load_releases_the_source_file()
+    {
+        using var file = new TempSettingsFile();
+        string dbPath = Path.Combine(file.DirectoryPath, "release-" + Guid.NewGuid().ToString("n") + ".mdb");
+        string invalidPath = Path.Combine(file.DirectoryPath, "invalid-" + Guid.NewGuid().ToString("n") + ".mdb");
+        WriteMasterDatabase(dbPath, MarkerSkillId, "Released Skill");
+        File.WriteAllText(invalidPath, "this is not a master database");
+
+        var settings = new GameMasterSettings { WindowX = 10, ColorMode = "Dark" };
+        settings.Save(file.FilePath);
+        string[] before = Directory.GetFiles(file.DirectoryPath).OrderBy(path => path, StringComparer.Ordinal).ToArray();
+
+        var service = NewService(file);
+        service.Initialize();
+        Assert.Equal("Dark", service.Settings.ColorMode);
+        Assert.True(service.TrySetCustomDatabasePath(dbPath));
+        Assert.Equal("Released Skill", service.Catalog.FormatSkillName(MarkerSkillId));
+        Assert.Equal(before, Directory.GetFiles(file.DirectoryPath).OrderBy(path => path, StringComparer.Ordinal).ToArray());
+        AssertNoSidecar(dbPath);
+        AssertReleasedThenReplaceAndDelete(dbPath);
+
+        Assert.False(service.TrySetCustomDatabasePath(invalidPath));
+        Assert.False(string.IsNullOrEmpty(service.LastError));
+        Assert.Equal("Dark", service.Settings.ColorMode);
+        AssertNoSidecar(invalidPath);
+        AssertReleasedThenReplaceAndDelete(invalidPath);
+    }
+
     private static GameMasterService NewService(TempSettingsFile file, string? defaultDbPath = null)
     {
         string defaultPath = defaultDbPath ?? Path.Combine(file.DirectoryPath, "no-default-master.mdb");
@@ -217,32 +249,97 @@ public sealed class CustomMasterPathTests
 
     private static void WriteMasterDatabase(string path, int skillId, string skillName)
     {
-        using var connection = new SqliteConnection($"Data Source={path}");
-        connection.Open();
-        Execute(connection, "CREATE TABLE text_data (category INTEGER, [index] INTEGER, text TEXT);");
-        Execute(connection, "CREATE TABLE skill_data (id INTEGER, activate_lot INTEGER);");
-        Execute(connection, "CREATE TABLE team_stadium_raw_score (id INTEGER, score INTEGER);");
-        Execute(connection, "CREATE TABLE race_instance (id INTEGER, race_id INTEGER);");
-        Execute(connection, "CREATE TABLE race (id INTEGER, course_set INTEGER);");
-        Execute(
-            connection,
-            """
-            CREATE TABLE race_course_set (
-                id INTEGER,
-                race_track_id INTEGER,
-                distance INTEGER,
-                ground INTEGER,
-                turn INTEGER,
-                inout INTEGER);
-            """);
+        var connection = new SqliteConnection(new SqliteConnectionStringBuilder
+        {
+            DataSource = path,
+            Mode = SqliteOpenMode.ReadWriteCreate,
+            Pooling = false,
+        }.ToString());
+        try
+        {
+            connection.Open();
+            Execute(connection, "CREATE TABLE text_data (category INTEGER, [index] INTEGER, text TEXT);");
+            Execute(connection, "CREATE TABLE skill_data (id INTEGER, activate_lot INTEGER);");
+            Execute(connection, "CREATE TABLE team_stadium_raw_score (id INTEGER, score INTEGER);");
+            Execute(connection, "CREATE TABLE race_instance (id INTEGER, race_id INTEGER);");
+            Execute(connection, "CREATE TABLE race (id INTEGER, course_set INTEGER);");
+            Execute(
+                connection,
+                """
+                CREATE TABLE race_course_set (
+                    id INTEGER,
+                    race_track_id INTEGER,
+                    distance INTEGER,
+                    ground INTEGER,
+                    turn INTEGER,
+                    inout INTEGER);
+                """);
 
-        using var insert = connection.CreateCommand();
-        insert.CommandText =
-            "INSERT INTO text_data (category, [index], text) VALUES ($category, $index, $text);";
-        insert.Parameters.AddWithValue("$category", (int)MasterTextCategory.SkillName);
-        insert.Parameters.AddWithValue("$index", skillId);
-        insert.Parameters.AddWithValue("$text", skillName);
-        insert.ExecuteNonQuery();
+            using var insert = connection.CreateCommand();
+            insert.CommandText =
+                "INSERT INTO text_data (category, [index], text) VALUES ($category, $index, $text);";
+            insert.Parameters.AddWithValue("$category", (int)MasterTextCategory.SkillName);
+            insert.Parameters.AddWithValue("$index", skillId);
+            insert.Parameters.AddWithValue("$text", skillName);
+            insert.ExecuteNonQuery();
+        }
+        finally
+        {
+            connection.Close();
+            SqliteConnection.ClearPool(connection);
+            connection.Dispose();
+        }
+    }
+
+    private static void AssertNoSidecar(string path)
+    {
+        Assert.False(File.Exists(path + "-wal"));
+        Assert.False(File.Exists(path + "-journal"));
+        Assert.False(File.Exists(path + "-shm"));
+    }
+
+    private static void AssertReleasedThenReplaceAndDelete(string path)
+    {
+        using (var exclusive = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
+            Assert.True(exclusive.CanRead);
+        }
+
+        AssertNotHeldByThisProcess(path);
+        File.WriteAllText(path, "replaced");
+        File.Delete(path);
+        Assert.False(File.Exists(path));
+    }
+
+    private static void AssertNotHeldByThisProcess(string path)
+    {
+        if (!Directory.Exists("/proc/self/fd"))
+        {
+            return;
+        }
+
+        string fullPath = Path.GetFullPath(path);
+        foreach (string fd in Directory.EnumerateFiles("/proc/self/fd"))
+        {
+            FileSystemInfo? target;
+            try
+            {
+                target = File.ResolveLinkTarget(fd, returnFinalTarget: true);
+            }
+            catch (IOException)
+            {
+                continue;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                continue;
+            }
+
+            if (target != null && string.Equals(target.FullName, fullPath, StringComparison.Ordinal))
+            {
+                Assert.Fail($"master database is still open: {path}");
+            }
+        }
     }
 
     private static void Execute(SqliteConnection connection, string sql)
@@ -251,4 +348,9 @@ public sealed class CustomMasterPathTests
         command.CommandText = sql;
         command.ExecuteNonQuery();
     }
+}
+
+[CollectionDefinition("CustomMasterPath", DisableParallelization = true)]
+public sealed class CustomMasterPathCollection
+{
 }
