@@ -1,0 +1,49 @@
+<UserControl x:Class="UmaParser.Views.SkillsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:UmaParser.Converters">
+    <UserControl.Resources>
+        <converters:CellBandBrushConverter x:Key="CellBandBackground"/>
+        <converters:CellBandBrushConverter x:Key="CellBandForeground" Foreground="True"/>
+
+        <!--
+          The row is the cell's DataContext, so {Binding NameBand} reads SkillRowViewModel.
+          DataGridColumn is not in the visual tree, which is why these styles are applied
+          from code when the columns are built, instead of a Visibility binding on the column.
+        -->
+        <Style x:Key="SkillNameCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+            <Setter Property="Background" Value="{Binding NameBand, Converter={StaticResource CellBandBackground}}"/>
+            <Setter Property="Foreground" Value="{Binding NameBand, Converter={StaticResource CellBandForeground}}"/>
+        </Style>
+        <Style x:Key="SkillMetricCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+            <Setter Property="Background" Value="{Binding MetricBand, Converter={StaticResource CellBandBackground}}"/>
+            <Setter Property="Foreground" Value="{Binding MetricBand, Converter={StaticResource CellBandForeground}}"/>
+        </Style>
+    </UserControl.Resources>
+
+    <DockPanel Margin="8">
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8" LastChildFill="True">
+            <TextBlock Text="Uma:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <ComboBox ItemsSource="{Binding Umas}"
+                      SelectedItem="{Binding SelectedUma}"
+                      DisplayMemberPath="Name"
+                      IsEditable="False"/>
+        </DockPanel>
+        <TextBlock DockPanel.Dock="Top"
+                   Text="{Binding Summary}"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,8"/>
+        <DataGrid x:Name="SkillsGrid"
+                  ItemsSource="{Binding Rows}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  CanUserResizeRows="False"
+                  HeadersVisibility="Column"
+                  SelectionMode="Single"
+                  SelectionUnit="FullRow"
+                  GridLinesVisibility="Horizontal"
+                  Sorting="SkillsGrid_Sorting"/>
+    </DockPanel>
+</UserControl>

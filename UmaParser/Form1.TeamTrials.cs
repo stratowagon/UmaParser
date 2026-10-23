@@ -1,6 +1,7 @@
 ﻿using UmaParser.Analysis;
 using UmaParser.Import;
 using UmaParser.ObjectModel;
+using UmaParser.Presentation;
 using UmaParser.Ui;
 
 namespace UmaParser
@@ -65,16 +66,10 @@ namespace UmaParser
 
             SetStatus(msg + "  Results + Analysis are for uniform TT rosters only. Skills/Tracks support non-uniform data.");
 
-            // Populate Skills (and Tracks) selector using the extracted identities with differentiation (rank score etc.)
+            // Skills uses the same screen model as the WPF app. Tracks keeps its own selector.
+            // Pass the load we just built so the sim blobs are not parsed a second time.
             _skillsTrialResults = null; // not TT
-            _skillsRosterEntries.Clear();
-            comboBoxSkillsUma.Items.Clear();
-
-            foreach (var id in _currentNonTtIdentities)
-            {
-                _skillsRosterEntries.Add(new NamedRosterUma(id.TrainedCharaId, id.GetDisplayName()));
-                comboBoxSkillsUma.Items.Add(id.GetDisplayName());
-            }
+            ShowSkills(SkillsScreen.Load(batch, SkillsColumnPreferences(), load));
 
             // Also prepare Tracks combo the same way (they share similar roster list in current design)
             _tracksTrialResults = null;
@@ -87,18 +82,8 @@ namespace UmaParser
                 comboBoxTracksUma.Items.Add(id.GetDisplayName());
             }
 
-            if (comboBoxSkillsUma.Items.Count > 0)
-            {
-                comboBoxSkillsUma.SelectedIndex = 0;
-                if (comboBoxTracksUma.Items.Count > 0)
-                    comboBoxTracksUma.SelectedIndex = 0;
-
-                labelSkillsSummary.Text = $"{_currentNonTtIdentities.Count} local player uma(s) across {singleCount} single-race file(s). Select one to see skill performance.";
-            }
-            else
-            {
-                labelSkillsSummary.Text = "No local player umas detected in the loaded non-TT captures.";
-            }
+            if (comboBoxTracksUma.Items.Count > 0)
+                comboBoxTracksUma.SelectedIndex = 0;
 
             // Explicit non-grid message on the Team Analysis tab (like Results empty state)
             ClearAnalysis("Team Analysis is only active for Team Trials files that all have the exact same roster of 15 umas.");
@@ -125,33 +110,26 @@ namespace UmaParser
             RosterConsistencyReport consistency = RosterConsistencyAnalyzer.Analyze(
                 fileEntries.Select(entry => entry.Value).ToList());
 
+            // Skills shows the stable core. The summary text comes from SkillsScreen.
+            _skillsTrialResults = consistency.StableCore.Count > 0 ? batch.Trials : null;
+            ShowSkills(SkillsScreen.Load(batch, SkillsColumnPreferences()));
+
             if (consistency.StableCore.Count > 0)
             {
-                // Enable Skills/Tracks for the stable subset, using the full TT trials for the analyzers.
-                _skillsTrialResults = batch.Trials;
-                _skillsRosterEntries = consistency.StableCore
+                _tracksTrialResults = batch.Trials;
+                _tracksRosterEntries = consistency.StableCore
                     .Select(uma => new NamedRosterUma(uma.TrainedCharaId, uma.DisplayName))
                     .ToList();
-                comboBoxSkillsUma.Items.Clear();
-                foreach (NamedRosterUma entry in _skillsRosterEntries)
-                    comboBoxSkillsUma.Items.Add(entry.Name);
-                if (comboBoxSkillsUma.Items.Count > 0)
-                    comboBoxSkillsUma.SelectedIndex = 0;
-
-                _tracksTrialResults = batch.Trials;
-                _tracksRosterEntries = new List<NamedRosterUma>(_skillsRosterEntries);
                 comboBoxTracksUma.Items.Clear();
                 foreach (NamedRosterUma entry in _tracksRosterEntries)
                     comboBoxTracksUma.Items.Add(entry.Name);
                 if (comboBoxTracksUma.Items.Count > 0)
                     comboBoxTracksUma.SelectedIndex = 0;
 
-                labelSkillsSummary.Text = $"{consistency.StableCore.Count} consistent uma(s) across all {n} files (same team + style; position within team may vary).";
                 labelTracksSummary.Text = $"{consistency.StableCore.Count} consistent uma(s) for track performance.";
             }
             else
             {
-                labelSkillsSummary.Text = "No umas are consistent (same team position + style) across all files.";
                 labelTracksSummary.Text = "No consistent umas for Tracks.";
             }
 

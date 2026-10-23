@@ -1,7 +1,7 @@
 using UmaParser.Analysis;
 using UmaParser.Settings;
 
-namespace UmaParser.Ui;
+namespace UmaParser.Presentation;
 
 public static class SkillsColumnSet
 {
