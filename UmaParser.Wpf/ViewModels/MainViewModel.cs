@@ -9,18 +9,28 @@ namespace UmaParser.ViewModels;
 /// The window. <see cref="Tabs"/> is the list of screens, in tab order.
 /// A file drop calls <see cref="LoadFiles"/>, which uses the same import path as WinForms:
 /// <see cref="CaptureImportService.TryImportPath"/> then <see cref="TeamTrialBatchBuilder.Build"/>.
-/// That one batch is handed to every screen. Skills and Tracks both read it.
+/// That one batch is handed to every screen.
 /// </summary>
 public sealed class MainViewModel : ObservableObject
 {
+    public const int ResultsTabIndex = 0;
+    public const int AnalysisTabIndex = 1;
+    public const int SkillsTabIndex = 2;
+    public const int TracksTabIndex = 3;
+
     private string _statusText;
+    private int _selectedTabIndex;
 
     public MainViewModel()
     {
+        Results = new ResultsViewModel();
+        Analysis = new AnalysisViewModel();
         Skills = new SkillsViewModel();
         Tracks = new TracksViewModel();
         Tabs =
         [
+            new ScreenTab { Title = "Results", Content = Results },
+            new ScreenTab { Title = "Team Analysis", Content = Analysis },
             new ScreenTab { Title = "Skills", Content = Skills },
             new ScreenTab { Title = "Tracks", Content = Tracks },
         ];
@@ -28,13 +38,25 @@ public sealed class MainViewModel : ObservableObject
         _statusText = GameMasterService.Current.GetStatusLine();
     }
 
+    public ResultsViewModel Results { get; }
+    public AnalysisViewModel Analysis { get; }
     public SkillsViewModel Skills { get; }
     public TracksViewModel Tracks { get; }
 
-    /// <summary>Bound to the window's tab control. Add a screen here when the next tab is ported.</summary>
+    /// <summary>Bound to the window's tab control. Order matches WinForms: Results, Team Analysis, Skills, Tracks.</summary>
     public IReadOnlyList<ScreenTab> Tabs { get; }
 
     public RelayCommand LoadFilesCommand { get; }
+
+    /// <summary>
+    /// The open tab. A drop selects the same tab WinForms selects:
+    /// Team Analysis for a uniform roster, Results for a mismatch, Skills for anything else with data.
+    /// </summary>
+    public int SelectedTabIndex
+    {
+        get => _selectedTabIndex;
+        set => SetProperty(ref _selectedTabIndex, value);
+    }
 
     public string StatusText
     {
@@ -66,17 +88,30 @@ public sealed class MainViewModel : ObservableObject
         // Each dropped path is imported on its own. A folder is not walked: WinForms does not
         // walk folders either, and Core reports a path that is not a .json file as skipped.
         TeamTrialBatch batch = TeamTrialBatchBuilder.Build(paths.Select(CaptureImportService.TryImportPath));
-        StatusText = ImportStatusText.Format(batch);
         if (!batch.HasAnyData)
         {
+            StatusText = DropStatusText.NoneLoaded(batch.SkippedFileCount);
             return;
         }
 
-        // One parse of the sim blobs, shared by both screens. Team Trials does not need it.
+        // One parse of the sim blobs, shared by Skills and Tracks. Results and Team Analysis
+        // do not read the blobs. A uniform Team Trials drop does not parse them at all.
         NonTeamTrialLoad? singleRaceLoad = batch.Kind == TeamTrialBatchKind.MixedOrNonTT
             ? NonTeamTrialLoad.Collect(batch.SingleRaceImports)
             : null;
+        Results.Apply(batch);
+        Analysis.Apply(batch);
         Skills.Apply(batch, singleRaceLoad: singleRaceLoad);
         Tracks.Apply(batch, singleRaceLoad: singleRaceLoad);
+        StatusText = batch.Kind == TeamTrialBatchKind.RosterStats && Analysis.Summary.Length > 0
+            ? Analysis.Summary
+            : DropStatusText.For(batch, singleRaceLoad);
+        SelectedTabIndex = batch.Kind switch
+        {
+            TeamTrialBatchKind.RosterStats => AnalysisTabIndex,
+            TeamTrialBatchKind.RosterMismatch => ResultsTabIndex,
+            TeamTrialBatchKind.MixedOrNonTT => SkillsTabIndex,
+            _ => SelectedTabIndex,
+        };
     }
 }

@@ -1,4 +1,5 @@
 ﻿using UmaParser.Analysis;
+using UmaParser.Import;
 using UmaParser.ObjectModel;
 using UmaParser.Presentation;
 using UmaParser.Ui;
@@ -11,9 +12,23 @@ namespace UmaParser
 
         private void PopulateAnalysis(Dictionary<string, TeamTrialResult> trialResults)
         {
-            _lastAnalysisReport = UmaAnalysisEngine.Analyze(trialResults.Values.ToList());
-            BindAnalysisGrid(_lastAnalysisReport);
-            SetStatus(FormatAnalysisSummary(_lastAnalysisReport));
+            var batch = new TeamTrialBatch
+            {
+                Kind = TeamTrialBatchKind.RosterStats,
+                Trials = trialResults,
+            };
+            AnalysisScreen screen = AnalysisScreen.Load(
+                batch,
+                LoadGridColumnPreferences<UmaAnalysisRow>(GridKeys.Analysis));
+            _lastAnalysisReport = screen.Report;
+            if (screen.Report == null)
+            {
+                ClearAnalysis();
+                return;
+            }
+
+            BindAnalysisGrid(screen.Report);
+            SetStatus(screen.Summary);
             mainTabControl.SelectedTab = tabPageAnalysis;
         }
 
@@ -71,32 +86,6 @@ namespace UmaParser
                 int width = column.GetPreferredWidth(DataGridViewAutoSizeColumnMode.AllCells, true) + padding;
                 column.Width = Math.Max(width, column.MinimumWidth);
             }
-        }
-
-        private static string FormatAnalysisSummary(UmaAnalysisReport report)
-        {
-            var lines = new List<string>
-            {
-                $"Analysis uses base scores (all bonuses removed) across {report.TrialCount} trial(s). Team avg (raw): {report.TeamAverage:N0}."
-            };
-
-            foreach (var ace in report.AceRecommendations)
-            {
-                if (!String.IsNullOrEmpty(ace.Note))
-                {
-                    lines.Add($"{ace.Distance}: {ace.Note}");
-                }
-            }
-
-            foreach (var overlap in report.StyleOverlapRecommendations)
-            {
-                if (!String.IsNullOrEmpty(overlap.Note))
-                {
-                    lines.Add($"{overlap.Distance}: {overlap.Note}");
-                }
-            }
-
-            return string.Join(Environment.NewLine, lines);
         }
 
         private void DataGridViewAnalysis_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
