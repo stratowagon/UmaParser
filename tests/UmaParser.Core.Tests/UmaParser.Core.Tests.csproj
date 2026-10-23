@@ -32,6 +32,7 @@
     <Compile Include="..\..\UmaParser.Wpf\ViewModels\ResultsViewModel.cs" Link="Linked\ResultsViewModel.cs" />
     <Compile Include="..\..\UmaParser.Wpf\ViewModels\AnalysisViewModel.cs" Link="Linked\AnalysisViewModel.cs" />
     <Compile Include="..\..\UmaParser.Wpf\ViewModels\AnalysisColumnPreferences.cs" Link="Linked\AnalysisColumnPreferences.cs" />
+    <Compile Include="..\..\UmaParser.Wpf\Views\ResultsSheet.cs" Link="Linked\ResultsSheet.cs" />
   </ItemGroup>
 
   <ItemGroup>

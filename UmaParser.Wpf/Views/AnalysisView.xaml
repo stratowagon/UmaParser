@@ -72,7 +72,13 @@
                   SelectionUnit="FullRow"
                   ClipboardCopyMode="ExcludeHeader"
                   GridLinesVisibility="All"
-                  AlternatingRowBackground="{x:Null}">
+                  AlternatingRowBackground="{x:Null}"
+                  EnableRowVirtualization="True"
+                  EnableColumnVirtualization="True"
+                  VirtualizingPanel.IsVirtualizing="True"
+                  VirtualizingPanel.VirtualizationMode="Recycling"
+                  VirtualizingPanel.ScrollUnit="Item"
+                  ScrollViewer.CanContentScroll="True">
             <DataGrid.Style>
                 <Style TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}">
                     <Setter Property="Visibility" Value="Visible"/>

@@ -44,6 +44,12 @@
                   SelectionMode="Single"
                   SelectionUnit="FullRow"
                   GridLinesVisibility="Horizontal"
+                  EnableRowVirtualization="True"
+                  EnableColumnVirtualization="True"
+                  VirtualizingPanel.IsVirtualizing="True"
+                  VirtualizingPanel.VirtualizationMode="Recycling"
+                  VirtualizingPanel.ScrollUnit="Item"
+                  ScrollViewer.CanContentScroll="True"
                   Sorting="SkillsGrid_Sorting"/>
     </DockPanel>
 </UserControl>

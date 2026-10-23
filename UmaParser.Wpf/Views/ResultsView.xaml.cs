@@ -1,22 +1,23 @@
-using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Media;
-using UmaParser.Converters;
-using UmaParser.Presentation;
+using System.Windows.Controls.Primitives;
 using UmaParser.ViewModels;
 
 namespace UmaParser.Views;
 
 public partial class ResultsView : UserControl
 {
-    private readonly ScoreHeatBrushConverter _heatBrush = new();
     private ResultsViewModel? _viewModel;
+    private int _appliedRevision = -1;
+    private bool _syncingScroll;
 
     public ResultsView()
     {
         InitializeComponent();
+        Sheet.ScrollMetricsChanged += (_, _) => SyncScrollBars();
+        HorizontalScroll.ValueChanged += (_, e) => OnScrollBar(e.NewValue, horizontal: true);
+        VerticalScroll.ValueChanged += (_, e) => OnScrollBar(e.NewValue, horizontal: false);
+        Loaded += OnLoaded;
         DataContextChanged += OnDataContextChanged;
     }
 
@@ -33,95 +34,78 @@ public partial class ResultsView : UserControl
             _viewModel.PropertyChanged += OnViewModelPropertyChanged;
         }
 
-        ApplyColumns();
-    }
-
-    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName is nameof(ResultsViewModel.GridRevision) or nameof(ResultsViewModel.Columns))
+        // The tab host sets DataContext before the view is in the tree. Wait for
+        // Loaded so font inheritance and DPI are the ones the sheet will paint with.
+        if (IsLoaded)
         {
-            ApplyColumns();
+            ApplySheet();
         }
     }
 
-    /// <summary>
-    /// One text column per file. WinForms does not sort this grid, so these columns are not sortable.
-    /// The total row stays last because nothing reorders the rows.
-    /// </summary>
-    private void ApplyColumns()
+    private void OnLoaded(object sender, RoutedEventArgs e) => ApplySheet();
+
+    private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        ResultsGrid.Columns.Clear();
+        // Columns changes on the same drop as GridRevision. Rebuild once, from the revision.
+        if (e.PropertyName == nameof(ResultsViewModel.GridRevision) && IsLoaded)
+        {
+            ApplySheet();
+        }
+    }
+
+    private void ApplySheet()
+    {
         if (_viewModel == null)
+        {
+            Sheet.SetModel(ResultsSheetModel.Empty);
+            _appliedRevision = -1;
+            return;
+        }
+
+        if (_appliedRevision == _viewModel.GridRevision)
         {
             return;
         }
 
-        var baseStyle = (Style)FindResource("ResultsCellStyle");
-        var outlierBrush = (Brush)FindResource("ResultsOutlierBrush");
-        for (int index = 0; index < _viewModel.Columns.Count; index++)
-        {
-            ResultsColumn column = _viewModel.Columns[index];
-            ResultsGrid.Columns.Add(new DataGridTextColumn
-            {
-                Header = new TextBlock
-                {
-                    Text = column.Header,
-                    ToolTip = column.ToolTip.Length == 0 ? null : column.ToolTip,
-                    TextAlignment = TextAlignment.Center,
-                    TextWrapping = TextWrapping.Wrap,
-                },
-                Binding = new Binding($"Cells[{index}].Text"),
-                CellStyle = BuildCellStyle(baseStyle, outlierBrush, index),
-                Width = DataGridLength.Auto,
-                CanUserSort = false,
-            });
-        }
-
-        ResultsGrid.UnselectAll();
+        Sheet.SetModel(ResultsSheetBuilder.Build(_viewModel.Columns, _viewModel.Rows));
+        _appliedRevision = _viewModel.GridRevision;
+        SyncScrollBars();
     }
 
-    private Style BuildCellStyle(Style baseStyle, Brush outlierBrush, int index)
+    private void OnScrollBar(double value, bool horizontal)
     {
-        var style = new Style(typeof(DataGridCell), baseStyle);
-        style.Setters.Add(new Setter(
-            Control.BackgroundProperty,
-            new Binding($"Cells[{index}].Heat") { Converter = _heatBrush }));
-
-        var outlier = new DataTrigger
+        if (_syncingScroll)
         {
-            Binding = new Binding($"Cells[{index}].Outlier"),
-            Value = true,
-        };
-        outlier.Setters.Add(new Setter(Control.BackgroundProperty, outlierBrush));
-        outlier.Setters.Add(new Setter(Control.ForegroundProperty, Brushes.Black));
-        style.Triggers.Add(outlier);
+            return;
+        }
 
-        var footer = new DataTrigger
+        if (horizontal)
         {
-            Binding = new Binding(nameof(ResultsGridRow.IsFooter)),
-            Value = true,
-        };
-        footer.Setters.Add(new Setter(Control.BackgroundProperty, SystemColors.ControlBrush));
-        footer.Setters.Add(new Setter(Control.ForegroundProperty, SystemColors.ControlTextBrush));
-        footer.Setters.Add(new Setter(Control.FontWeightProperty, FontWeights.SemiBold));
-        style.Triggers.Add(footer);
+            Sheet.HorizontalOffset = value;
+        }
+        else
+        {
+            Sheet.VerticalOffset = value;
+        }
+    }
 
-        var bold = new DataTrigger
-        {
-            Binding = new Binding($"Cells[{index}].Bold"),
-            Value = true,
-        };
-        bold.Setters.Add(new Setter(Control.FontWeightProperty, FontWeights.Bold));
-        style.Triggers.Add(bold);
+    private void SyncScrollBars()
+    {
+        _syncingScroll = true;
+        Sync(HorizontalScroll, Sheet.HorizontalOffset, Sheet.ExtentWidth, Sheet.ViewportWidth, smallChange: 16);
+        Sync(VerticalScroll, Sheet.VerticalOffset, Sheet.ExtentHeight, Sheet.ViewportHeight, smallChange: Math.Max(1, Sheet.RowHeight));
+        _syncingScroll = false;
+    }
 
-        var boundary = new DataTrigger
-        {
-            Binding = new Binding(nameof(ResultsGridRow.IsTeamBoundary)),
-            Value = true,
-        };
-        boundary.Setters.Add(new Setter(Control.BorderBrushProperty, SystemColors.ControlDarkBrush));
-        boundary.Setters.Add(new Setter(Control.BorderThicknessProperty, new Thickness(0, 2, 0, 0)));
-        style.Triggers.Add(boundary);
-        return style;
+    private static void Sync(ScrollBar bar, double offset, double extent, double viewport, double smallChange)
+    {
+        double max = Math.Max(0, extent - viewport);
+        bar.Minimum = 0;
+        bar.ViewportSize = Math.Max(0, viewport);
+        bar.Maximum = max;
+        bar.LargeChange = Math.Max(1, viewport);
+        bar.SmallChange = smallChange;
+        bar.Value = Math.Min(Math.Max(0, offset), max);
+        bar.Visibility = max <= 0.5 ? Visibility.Collapsed : Visibility.Visible;
     }
 }

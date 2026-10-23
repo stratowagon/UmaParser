@@ -14,7 +14,6 @@ namespace UmaParser.ViewModels;
 /// </summary>
 public sealed class AnalysisViewModel : ObservableObject
 {
-    private readonly ObservableCollection<AnalysisGridRow> _rows = new();
     private IReadOnlyList<GridColumnDefinition<UmaAnalysisRow>> _visibleColumns =
         Array.Empty<GridColumnDefinition<UmaAnalysisRow>>();
     private bool _showGrid = true;
@@ -24,10 +23,10 @@ public sealed class AnalysisViewModel : ObservableObject
 
     public AnalysisViewModel()
     {
-        Rows = _rows;
+        Rows = new ObservableCollection<AnalysisGridRow>();
     }
 
-    public ObservableCollection<AnalysisGridRow> Rows { get; }
+    public ObservableCollection<AnalysisGridRow> Rows { get; private set; }
 
     public bool ShowGrid
     {
@@ -65,12 +64,8 @@ public sealed class AnalysisViewModel : ObservableObject
     {
         GridColumnGridPreferences preferences = columnPreferences ?? AnalysisColumnPreferences.Load();
         AnalysisScreen screen = AnalysisScreen.Load(batch, preferences);
-        _rows.Clear();
-        foreach (AnalysisGridRow row in screen.Rows)
-        {
-            _rows.Add(row);
-        }
-
+        Rows = new ObservableCollection<AnalysisGridRow>(screen.Rows);
+        OnPropertyChanged(nameof(Rows));
         VisibleColumns = screen.Columns;
         ShowGrid = screen.ShowGrid;
         EmptyMessage = screen.EmptyMessage;

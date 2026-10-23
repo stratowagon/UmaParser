@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using UmaParser.Import;
 using UmaParser.MasterData;
 using UmaParser.Mvvm;
@@ -87,22 +88,44 @@ public sealed class MainViewModel : ObservableObject
 
         // Each dropped path is imported on its own. A folder is not walked: WinForms does not
         // walk folders either, and Core reports a path that is not a .json file as skipped.
+        long started = Stopwatch.GetTimestamp();
         TeamTrialBatch batch = TeamTrialBatchBuilder.Build(paths.Select(CaptureImportService.TryImportPath));
+        double importMs = ElapsedMs(started);
         if (!batch.HasAnyData)
         {
             StatusText = DropStatusText.NoneLoaded(batch.SkippedFileCount);
+            Trace.WriteLine($"UmaParser load: files={paths.Count} import={importMs:0.0} ms, no data");
             return;
         }
 
         // One parse of the sim blobs, shared by Skills and Tracks. Results and Team Analysis
         // do not read the blobs. A uniform Team Trials drop does not parse them at all.
+        started = Stopwatch.GetTimestamp();
         NonTeamTrialLoad? singleRaceLoad = batch.Kind == TeamTrialBatchKind.MixedOrNonTT
             ? NonTeamTrialLoad.Collect(batch.SingleRaceImports)
             : null;
+        double parseMs = ElapsedMs(started);
+
+        started = Stopwatch.GetTimestamp();
         Results.Apply(batch);
+        double resultsMs = ElapsedMs(started);
+
+        started = Stopwatch.GetTimestamp();
         Analysis.Apply(batch);
+        double analysisMs = ElapsedMs(started);
+
+        started = Stopwatch.GetTimestamp();
         Skills.Apply(batch, singleRaceLoad: singleRaceLoad);
+        double skillsMs = ElapsedMs(started);
+
+        started = Stopwatch.GetTimestamp();
         Tracks.Apply(batch, singleRaceLoad: singleRaceLoad);
+        double tracksMs = ElapsedMs(started);
+
+        // Results/Analysis include the grid rebuild when that tab's view is already loaded.
+        // Import and the single-race parse are the part a tab switch does not repeat.
+        Trace.WriteLine(
+            $"UmaParser load: files={paths.Count} kind={batch.Kind} import={importMs:0.0} ms, parse={parseMs:0.0} ms, results={resultsMs:0.0} ms, analysis={analysisMs:0.0} ms, skills={skillsMs:0.0} ms, tracks={tracksMs:0.0} ms");
         StatusText = batch.Kind == TeamTrialBatchKind.RosterStats && Analysis.Summary.Length > 0
             ? Analysis.Summary
             : DropStatusText.For(batch, singleRaceLoad);
@@ -114,4 +137,7 @@ public sealed class MainViewModel : ObservableObject
             _ => SelectedTabIndex,
         };
     }
+
+    private static double ElapsedMs(long started) =>
+        Stopwatch.GetElapsedTime(started).TotalMilliseconds;
 }

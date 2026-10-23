@@ -63,11 +63,16 @@
                   IsReadOnly="True"
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
-                  CanUserResizeRows="False"
                   HeadersVisibility="Column"
                   SelectionMode="Single"
                   SelectionUnit="FullRow"
                   GridLinesVisibility="Horizontal"
+                  EnableRowVirtualization="True"
+                  EnableColumnVirtualization="True"
+                  VirtualizingPanel.IsVirtualizing="True"
+                  VirtualizingPanel.VirtualizationMode="Recycling"
+                  VirtualizingPanel.ScrollUnit="Item"
+                  ScrollViewer.CanContentScroll="True"
                   Sorting="TracksGrid_Sorting"/>
     </DockPanel>
 </UserControl>

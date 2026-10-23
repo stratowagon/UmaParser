@@ -16,6 +16,7 @@
           WPF picks the view from that type. ResultsViewModel becomes ResultsView,
           and the view's DataContext is the view model.
           A new tab needs one more template here. It does not need a change to this rule.
+          CachingTabControl keeps each view in the tree after the first visit.
         -->
         <DataTemplate DataType="{x:Type vm:ResultsViewModel}">
             <views:ResultsView/>
@@ -34,19 +35,12 @@
         <Border DockPanel.Dock="Bottom" Padding="8,6" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
             <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap"/>
         </Border>
-        <TabControl ItemsSource="{Binding Tabs}" SelectedIndex="{Binding SelectedTabIndex}">
+        <views:CachingTabControl ItemsSource="{Binding Tabs}" SelectedIndex="{Binding SelectedTabIndex}">
             <TabControl.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Title}" Margin="8,2"/>
                 </DataTemplate>
             </TabControl.ItemTemplate>
-            <TabControl.ContentTemplate>
-                <DataTemplate>
-                    <ContentControl Content="{Binding Content}"
-                                    HorizontalContentAlignment="Stretch"
-                                    VerticalContentAlignment="Stretch"/>
-                </DataTemplate>
-            </TabControl.ContentTemplate>
-        </TabControl>
+        </views:CachingTabControl>
     </DockPanel>
 </Window>
