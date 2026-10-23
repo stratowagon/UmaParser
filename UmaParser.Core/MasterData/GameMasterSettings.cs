@@ -88,15 +88,15 @@ internal sealed class GameMasterSettings
         File.WriteAllText(file, JsonSerializer.Serialize(this, options));
     }
 
-    public void ClearCustomPath()
+    public void ClearCustomPath(string? path = null)
     {
         CustomMasterDbPath = null;
-        Save();
+        Save(path);
     }
 
-    public void SetCustomPath(string path)
+    public void SetCustomPath(string path, string? settingsPath = null)
     {
         CustomMasterDbPath = path;
-        Save();
+        Save(settingsPath);
     }
 }

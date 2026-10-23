@@ -14,11 +14,44 @@ internal sealed class GameMasterService
 {
     public static GameMasterService Current { get; } = new();
 
+    private readonly string? _settingsFilePath;
+    private readonly string? _defaultDbPath;
+    private readonly string? _cacheFilePath;
+    private readonly bool _persistCache;
+
     private GameMasterSettings _settings = new();
     private GameMasterCatalog _catalog = new();
     private MasterDataSourceKind _primarySource = MasterDataSourceKind.None;
     private string? _resolvedDbPath;
     private string? _lastError;
+    private string? _statusNotice;
+
+    public GameMasterService()
+        : this(settingsFilePath: null, defaultDbPath: null, cacheFilePath: null, persistCache: true)
+    {
+    }
+
+    /// <summary>
+    /// Reads and writes <paramref name="settingsFilePath"/> instead of AppData, and looks for
+    /// the default <c>master.mdb</c> and cache at the given paths. Does not write a cache file.
+    /// Tests use this so they do not touch the machine's master data.
+    /// </summary>
+    internal GameMasterService(string settingsFilePath, string defaultDbPath, string cacheFilePath)
+        : this(settingsFilePath, defaultDbPath, cacheFilePath, persistCache: false)
+    {
+    }
+
+    private GameMasterService(
+        string? settingsFilePath,
+        string? defaultDbPath,
+        string? cacheFilePath,
+        bool persistCache)
+    {
+        _settingsFilePath = settingsFilePath;
+        _defaultDbPath = defaultDbPath;
+        _cacheFilePath = cacheFilePath;
+        _persistCache = persistCache;
+    }
 
     public GameMasterCatalog Catalog => _catalog;
 
@@ -30,9 +63,13 @@ internal sealed class GameMasterService
 
     public GameMasterSettings Settings => _settings;
 
+    private string DefaultDatabasePath => _defaultDbPath ?? MasterDataPaths.DefaultMasterDbPath;
+
+    private string CacheFilePath => _cacheFilePath ?? MasterDataPaths.CacheFilePath;
+
     public void Initialize()
     {
-        _settings = GameMasterSettings.Load();
+        _settings = GameMasterSettings.Load(_settingsFilePath);
         Refresh();
     }
 
@@ -46,6 +83,7 @@ internal sealed class GameMasterService
         _settings = new GameMasterSettings();
         _resolvedDbPath = null;
         _lastError = null;
+        _statusNotice = null;
         var catalog = new GameMasterCatalog();
         EmbeddedMasterFallback.Apply(catalog);
         _catalog = catalog;
@@ -55,62 +93,53 @@ internal sealed class GameMasterService
     public void Refresh()
     {
         _lastError = null;
-        _resolvedDbPath = MasterDataPaths.ResolveMasterDbPath(_settings.CustomMasterDbPath);
-        var catalog = new GameMasterCatalog();
-
-        // Apply embedded fallbacks first. They provide built-in defaults.
-        // Live DB or cache loads below will overlay fresher data (via MergeSection / Set* calls).
-        EmbeddedMasterFallback.Apply(catalog);
-
-        MasterDataSourceKind source = MasterDataSourceKind.Embedded;
-
-        if (File.Exists(_resolvedDbPath))
+        string? customPath = _settings.CustomMasterDbPath;
+        if (!string.IsNullOrWhiteSpace(customPath))
         {
-            if (MasterDbReader.TryLoad(_resolvedDbPath, catalog, out var loadError))
+            if (TryReadDatabase(customPath, out var customCatalog, out string resolved, out string failure))
             {
-                source = MasterDataSourceKind.LiveDatabase;
-                TryWriteCache(catalog, _resolvedDbPath);
+                Apply(customCatalog, MasterDataSourceKind.LiveDatabase, resolved, statusNotice: null);
+                return;
             }
-            else
-            {
-                _lastError = loadError;
-                if (TryLoadCache(catalog, out _))
-                {
-                    source = MasterDataSourceKind.Cache;
-                }
-            }
-        }
-        else if (TryLoadCache(catalog, out _))
-        {
-            source = MasterDataSourceKind.Cache;
-            _lastError = "Master database not found; using cached names.";
-        }
-        else
-        {
-            _lastError = "Master database not found; using built-in names.";
+
+            // Missing or unreadable saved file. Load the default location first (default
+            // master.mdb, then the cache, then built-in names). Clear the saved path only
+            // after that catalog is applied. If the settings write fails, the file still
+            // has the old path and the next launch tries this fallback again.
+            LoadDefaultLocation(out var fallbackCatalog, out var fallbackSource, out string defaultPath);
+            string notice =
+                $"Saved master database could not be loaded ({customPath.Trim()}): {failure}. Using the default location.";
+            Apply(fallbackCatalog, fallbackSource, defaultPath, notice);
+            _settings.ClearCustomPath(_settingsFilePath);
+            return;
         }
 
-        _catalog = catalog;
-        _primarySource = source;
+        LoadDefaultLocation(out var catalog, out var source, out string path);
+        Apply(catalog, source, path, statusNotice: null);
     }
 
     public void UseDefaultDatabaseLocation()
     {
-        _settings.ClearCustomPath();
+        _settings.ClearCustomPath(_settingsFilePath);
         Refresh();
     }
 
+    /// <summary>
+    /// Loads <paramref name="path"/> and, only when that load succeeds, stores it as the custom
+    /// master database. A file that is missing or not a master database leaves the current
+    /// catalog and the saved path untouched.
+    /// </summary>
     public bool TrySetCustomDatabasePath(string path)
     {
-        string resolved = MasterDataPaths.ResolveMasterDbPath(path);
-        if (!File.Exists(resolved))
+        if (!TryReadDatabase(path, out var catalog, out string resolved, out string failure))
         {
-            _lastError = $"File not found: {resolved}";
+            _lastError = failure;
             return false;
         }
 
-        _settings.SetCustomPath(path);
-        Refresh();
+        _settings.SetCustomPath(path.Trim(), _settingsFilePath);
+        _lastError = null;
+        Apply(catalog, MasterDataSourceKind.LiveDatabase, resolved, statusNotice: null);
         return true;
     }
 
@@ -151,6 +180,11 @@ internal sealed class GameMasterService
             }
         }
 
+        if (!string.IsNullOrEmpty(_statusNotice))
+        {
+            parts.Add($"— {_statusNotice}");
+        }
+
         if (!string.IsNullOrEmpty(_lastError) && _primarySource != MasterDataSourceKind.LiveDatabase)
         {
             parts.Add($"— {_lastError}");
@@ -167,7 +201,7 @@ internal sealed class GameMasterService
             "",
             $"Resolved path: {_resolvedDbPath ?? "(none)"}",
             $"Custom path setting: {_settings.CustomMasterDbPath ?? "(default)"}",
-            $"Cache file: {MasterDataPaths.CacheFilePath}",
+            $"Cache file: {CacheFilePath}",
         };
 
         foreach (var (category, count) in _catalog.SectionCounts.OrderBy(kv => kv.Key))
@@ -195,10 +229,100 @@ internal sealed class GameMasterService
         return string.Join(Environment.NewLine, lines);
     }
 
-    private static bool TryLoadCache(GameMasterCatalog catalog, out string? error)
+    /// <summary>
+    /// Loads a chosen file into a new catalog. Does not read or write settings.
+    /// A folder is accepted when it contains <c>master.mdb</c>. The default install path is not used.
+    /// </summary>
+    private static bool TryReadDatabase(
+        string? path,
+        out GameMasterCatalog catalog,
+        out string resolved,
+        out string failure)
+    {
+        catalog = new GameMasterCatalog();
+        resolved = string.Empty;
+        if (string.IsNullOrWhiteSpace(path) ||
+            !MasterDataPaths.TryResolveCustomMasterDbFile(path, out resolved))
+        {
+            failure = string.IsNullOrWhiteSpace(path)
+                ? "File not found."
+                : $"File not found: {path.Trim()}";
+            return false;
+        }
+
+        EmbeddedMasterFallback.Apply(catalog);
+        if (MasterDbReader.TryLoad(resolved, catalog, out string? loadError))
+        {
+            failure = string.Empty;
+            return true;
+        }
+
+        catalog = new GameMasterCatalog();
+        failure = string.IsNullOrEmpty(loadError) ? "Could not load the selected file." : loadError;
+        return false;
+    }
+
+    private void LoadDefaultLocation(
+        out GameMasterCatalog catalog,
+        out MasterDataSourceKind source,
+        out string resolvedPath)
+    {
+        catalog = new GameMasterCatalog();
+        EmbeddedMasterFallback.Apply(catalog);
+        resolvedPath = DefaultDatabasePath;
+        source = MasterDataSourceKind.Embedded;
+
+        if (File.Exists(resolvedPath))
+        {
+            if (MasterDbReader.TryLoad(resolvedPath, catalog, out string? loadError))
+            {
+                source = MasterDataSourceKind.LiveDatabase;
+                return;
+            }
+
+            _lastError = loadError;
+            catalog = new GameMasterCatalog();
+            EmbeddedMasterFallback.Apply(catalog);
+            if (TryLoadCache(catalog, out _))
+            {
+                source = MasterDataSourceKind.Cache;
+            }
+
+            return;
+        }
+
+        if (TryLoadCache(catalog, out _))
+        {
+            source = MasterDataSourceKind.Cache;
+            _lastError = "Master database not found; using cached names.";
+            return;
+        }
+
+        _lastError = "Master database not found; using built-in names.";
+    }
+
+    private void Apply(
+        GameMasterCatalog catalog,
+        MasterDataSourceKind source,
+        string? resolvedPath,
+        string? statusNotice)
+    {
+        _catalog = catalog;
+        _primarySource = source;
+        _resolvedDbPath = resolvedPath;
+        _statusNotice = statusNotice;
+        if (_persistCache &&
+            source == MasterDataSourceKind.LiveDatabase &&
+            !string.IsNullOrEmpty(resolvedPath))
+        {
+            TryWriteCache(catalog, resolvedPath);
+        }
+    }
+
+    private bool TryLoadCache(GameMasterCatalog catalog, out string? error)
     {
         error = null;
-        string path = MasterDataPaths.CacheFilePath;
+        string path = CacheFilePath;
         if (!File.Exists(path))
         {
             error = "No cache file.";
@@ -224,7 +348,7 @@ internal sealed class GameMasterService
         }
     }
 
-    private static void TryWriteCache(GameMasterCatalog catalog, string sourcePath)
+    private void TryWriteCache(GameMasterCatalog catalog, string sourcePath)
     {
         try
         {
@@ -234,7 +358,7 @@ internal sealed class GameMasterService
                 : null;
             var cache = catalog.ExportToCache(sourcePath, lastWrite);
             var options = new JsonSerializerOptions { WriteIndented = false };
-            File.WriteAllText(MasterDataPaths.CacheFilePath, JsonSerializer.Serialize(cache, options));
+            File.WriteAllText(CacheFilePath, JsonSerializer.Serialize(cache, options));
         }
         catch
         {
