@@ -15,7 +15,6 @@ namespace UmaParser.ViewModels;
 public sealed class SkillsViewModel : ObservableObject
 {
     private readonly ObservableCollection<SkillsUmaOption> _umas = new();
-    private readonly ObservableCollection<SkillRowViewModel> _rows = new();
     private SkillsScreen _screen = SkillsScreen.Empty;
     private SkillsUmaOption? _selectedUma;
     private string _summary = "Drop one or more .json capture files onto this window.";
@@ -25,11 +24,11 @@ public sealed class SkillsViewModel : ObservableObject
     public SkillsViewModel()
     {
         Umas = _umas;
-        Rows = _rows;
+        Rows = new ObservableCollection<SkillRowViewModel>();
     }
 
     public ObservableCollection<SkillsUmaOption> Umas { get; }
-    public ObservableCollection<SkillRowViewModel> Rows { get; }
+    public ObservableCollection<SkillRowViewModel> Rows { get; private set; }
 
     public string Summary
     {
@@ -108,11 +107,14 @@ public sealed class SkillsViewModel : ObservableObject
                 : null;
             SetProperty(ref _selectedUma, selected, nameof(SelectedUma));
 
-            _rows.Clear();
+            var rows = new ObservableCollection<SkillRowViewModel>();
             foreach (var row in screen.Rows)
             {
-                _rows.Add(new SkillRowViewModel(row));
+                rows.Add(new SkillRowViewModel(row));
             }
+
+            Rows = rows;
+            OnPropertyChanged(nameof(Rows));
 
             Summary = screen.Summary.Length > 0
                 ? screen.Summary

@@ -18,7 +18,6 @@ public sealed class TracksViewModel : ObservableObject
     public const string DropPrompt = "Drop one or more .json capture files onto this window.";
 
     private readonly ObservableCollection<TracksUmaOption> _umas = new();
-    private readonly ObservableCollection<TracksGridRow> _rows = new();
     private TracksScreen _screen = TracksScreen.Empty;
     private TracksUmaOption? _selectedUma;
     private string _summary = DropPrompt;
@@ -28,11 +27,11 @@ public sealed class TracksViewModel : ObservableObject
     public TracksViewModel()
     {
         Umas = _umas;
-        Rows = _rows;
+        Rows = new ObservableCollection<TracksGridRow>();
     }
 
     public ObservableCollection<TracksUmaOption> Umas { get; }
-    public ObservableCollection<TracksGridRow> Rows { get; }
+    public ObservableCollection<TracksGridRow> Rows { get; private set; }
 
     public string Summary
     {
@@ -110,11 +109,8 @@ public sealed class TracksViewModel : ObservableObject
                 : null;
             SetProperty(ref _selectedUma, selected, nameof(SelectedUma));
 
-            _rows.Clear();
-            foreach (TracksGridRow row in screen.GridRows)
-            {
-                _rows.Add(row);
-            }
+            Rows = new ObservableCollection<TracksGridRow>(screen.GridRows);
+            OnPropertyChanged(nameof(Rows));
 
             // A blank summary is real. WinForms clears the line when a non-TT drop has no local umas.
             // The drop hint is only the text set before the first Apply.

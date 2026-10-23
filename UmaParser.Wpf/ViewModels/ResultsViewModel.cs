@@ -12,18 +12,17 @@ namespace UmaParser.ViewModels;
 /// </summary>
 public sealed class ResultsViewModel : ObservableObject
 {
-    private readonly ObservableCollection<ResultsGridRow> _rows = new();
     private IReadOnlyList<ResultsColumn> _columns = Array.Empty<ResultsColumn>();
     private bool _showGrid;
     private int _gridRevision;
 
     public ResultsViewModel()
     {
-        Rows = _rows;
+        Rows = new ObservableCollection<ResultsGridRow>();
         Message = ResultsScreen.Welcome;
     }
 
-    public ObservableCollection<ResultsGridRow> Rows { get; }
+    public ObservableCollection<ResultsGridRow> Rows { get; private set; }
 
     /// <summary>Welcome paragraph. Shown when <see cref="ShowGrid"/> is false.</summary>
     public string Message { get; }
@@ -46,14 +45,12 @@ public sealed class ResultsViewModel : ObservableObject
     public void Apply(TeamTrialBatch batch)
     {
         ResultsScreen screen = ResultsScreen.Load(batch);
-        _rows.Clear();
-        foreach (ResultsGridRow row in screen.Rows)
-        {
-            _rows.Add(row);
-        }
-
         Columns = screen.Columns;
         ShowGrid = screen.ShowGrid;
+        // One notification for the whole grid. Per-row adds would refresh the DataGrid
+        // once per uma while the file columns are still the previous drop.
+        Rows = new ObservableCollection<ResultsGridRow>(screen.Rows);
+        OnPropertyChanged(nameof(Rows));
         _gridRevision++;
         OnPropertyChanged(nameof(GridRevision));
     }

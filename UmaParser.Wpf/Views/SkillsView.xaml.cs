@@ -1,5 +1,6 @@
 using System.Collections;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -36,7 +37,8 @@ public partial class SkillsView : UserControl
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(SkillsViewModel.GridRevision) or nameof(SkillsViewModel.VisibleColumns))
+        // VisibleColumns changes on the same drop as GridRevision. Rebuild once.
+        if (e.PropertyName == nameof(SkillsViewModel.GridRevision))
         {
             ApplyColumnsAndSort();
         }
@@ -50,6 +52,7 @@ public partial class SkillsView : UserControl
     /// </summary>
     private void ApplyColumnsAndSort()
     {
+        long started = Stopwatch.GetTimestamp();
         SkillsGrid.Columns.Clear();
         if (_viewModel == null)
         {
@@ -105,6 +108,10 @@ public partial class SkillsView : UserControl
                 ? ListSortDirection.Descending
                 : null;
         }
+
+        double elapsed = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+        Trace.WriteLine(
+            $"UmaParser Skills grid: {SkillsGrid.Columns.Count} columns, {_viewModel.Rows.Count} rows, built in {elapsed:0.0} ms");
     }
 
     /// <summary>

@@ -3,10 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <UserControl.Resources>
         <!--
-          File columns are built in code. This style is the base for each column so the
-          team line can sit on top of the heat-map fill. Outlier yellow is the light-mode
-          color from the WinForms styler (255, 255, 200). Dark-mode outlier coloring is
-          part of the later theme pass.
+          File columns are built in code. This style is the base for each column.
+          Heat, outlier, footer, and team-line brushes are chosen once per drop and bound
+          directly. Outlier yellow is the light-mode color from the WinForms styler
+          (255, 255, 200). Dark-mode outlier coloring is part of the later theme pass.
         -->
         <Style x:Key="ResultsCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}"/>
         <SolidColorBrush x:Key="ResultsOutlierBrush" Color="#FFFFC8"/>
@@ -30,8 +30,14 @@
                 </Style>
             </TextBlock.Style>
         </TextBlock>
+        <!--
+          Column virtualization is off on a stock DataGrid. This grid has one column per
+          file, so it has to be on. Widths are pixels set in code: an Auto width has no
+          DisplayValue yet, and the first layout then realizes every column.
+          ScrollUnit stays Item, which is the stock vertical step. CanContentScroll stays
+          true so the row panel is the scroll owner; false would realize every row.
+        -->
         <DataGrid x:Name="ResultsGrid"
-                  ItemsSource="{Binding Rows}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
                   CanUserAddRows="False"
@@ -44,7 +50,13 @@
                   SelectionUnit="FullRow"
                   ClipboardCopyMode="ExcludeHeader"
                   GridLinesVisibility="All"
-                  AlternatingRowBackground="{x:Null}">
+                  AlternatingRowBackground="{x:Null}"
+                  EnableRowVirtualization="True"
+                  EnableColumnVirtualization="True"
+                  VirtualizingPanel.IsVirtualizing="True"
+                  VirtualizingPanel.VirtualizationMode="Recycling"
+                  VirtualizingPanel.ScrollUnit="Item"
+                  ScrollViewer.CanContentScroll="True">
             <DataGrid.Style>
                 <Style TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}">
                     <Setter Property="Visibility" Value="Visible"/>
