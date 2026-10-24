@@ -27,14 +27,8 @@ public sealed class ResultsSheetView : FrameworkElement
     private const double MinColumnWidth = 20;
     private const double ResizeSlop = 5;
 
-    private static readonly Pen GridLinePen = FreezePen(Brushes.Black, 1);
-    private static readonly Pen TeamLinePen = FreezePen(SystemColors.ControlDarkBrush, 2);
-    private static readonly Pen HeaderLinePen = FreezePen(SystemColors.ControlDarkBrush, 1);
-    private static readonly SolidColorBrush OutlierBrush = FreezeBrush(Color.FromRgb(0xFF, 0xFF, 0xC8));
-    private static readonly LinearGradientBrush HeaderBrush = FreezeHeaderBrush();
-    private static readonly Dictionary<ScoreHeatColor, SolidColorBrush> HeatBrushes = new();
-
     private readonly Dictionary<(string Text, ResultsTextWeight Weight, GlyphBrush Brush), FormattedText> _text = new();
+    private ResultsSheetPaint? _paint;
     private readonly ResultsInteraction _pointer = new();
 
     private ResultsSheetModel _model = ResultsSheetModel.Empty;
@@ -109,6 +103,18 @@ public sealed class ResultsSheetView : FrameworkElement
             $"UmaParser Results sheet: {model.Columns.Count} columns, {model.Rows.Count} rows, built in {elapsed:0.0} ms");
     }
 
+    /// <summary>
+    /// Theme change. Copies new heat colors onto the cells already on screen, drops the text
+    /// cache (each entry holds the brush it was drawn with), and keeps the scroll position.
+    /// </summary>
+    internal void RefreshAppearance(IReadOnlyList<ResultsGridRow> rows)
+    {
+        CopyHeat(rows);
+        _paint = ResultsSheetPaint.Capture();
+        _text.Clear();
+        InvalidateVisual();
+    }
+
     protected override Size MeasureOverride(Size available)
     {
         EnsureMeasured(force: false);
@@ -143,7 +149,7 @@ public sealed class ResultsSheetView : FrameworkElement
             return;
         }
 
-        dc.DrawRectangle(SystemColors.ControlBrush, null, new Rect(0, 0, width, height));
+        dc.DrawRectangle(Paint.Backdrop, null, new Rect(0, 0, width, height));
         ColumnWindow window = ResultsSheetViewport.VisibleRange(_widths, _horizontalOffset, width);
         int firstRow = FirstVisibleRow();
         int lastRow = LastVisibleRow(height);
@@ -370,22 +376,22 @@ public sealed class ResultsSheetView : FrameworkElement
 
     private void DrawHeader(DrawingContext dc, ColumnWindow window, double width)
     {
-        dc.DrawRectangle(HeaderBrush, null, new Rect(0, 0, width, HeaderHeight));
+        dc.DrawRectangle(Paint.Header, null, new Rect(0, 0, width, HeaderHeight));
         double yLine = HeaderHeight - 0.5;
-        dc.DrawLine(HeaderLinePen, new Point(0, yLine), new Point(width, yLine));
+        dc.DrawLine(Paint.GridLine, new Point(0, yLine), new Point(width, yLine));
         for (int column = window.First; column < window.LastExclusive; column++)
         {
             double left = _prefix[column] - _horizontalOffset;
             double columnWidth = _widths[column];
             var rect = new Rect(left, 0, columnWidth, HeaderHeight);
             dc.PushClip(new RectangleGeometry(rect));
-            FormattedText header = Text(_model.Columns[column].Header, ResultsTextWeight.Normal, GlyphBrush.ControlText);
+            FormattedText header = Text(_model.Columns[column].Header, ResultsTextWeight.Normal, GlyphBrush.Header);
             double textX = left + Math.Max(2, (columnWidth - header.Width) / 2);
             double textY = Math.Max(0, (HeaderHeight - header.Height) / 2);
             dc.DrawText(header, new Point(textX, textY));
             dc.Pop();
             double edge = left + columnWidth - 0.5;
-            dc.DrawLine(HeaderLinePen, new Point(edge, 2), new Point(edge, HeaderHeight - 2));
+            dc.DrawLine(Paint.GridLine, new Point(edge, 2), new Point(edge, HeaderHeight - 2));
         }
     }
 
@@ -413,46 +419,46 @@ public sealed class ResultsSheetView : FrameworkElement
 
             dc.Pop();
 
-            dc.DrawLine(GridLinePen, new Point(left + columnWidth - 0.5, top), new Point(left + columnWidth - 0.5, top + _rowHeight));
-            dc.DrawLine(GridLinePen, new Point(left, top + _rowHeight - 0.5), new Point(left + columnWidth, top + _rowHeight - 0.5));
+            dc.DrawLine(Paint.GridLine, new Point(left + columnWidth - 0.5, top), new Point(left + columnWidth - 0.5, top + _rowHeight));
+            dc.DrawLine(Paint.GridLine, new Point(left, top + _rowHeight - 0.5), new Point(left + columnWidth, top + _rowHeight - 0.5));
             if (row.TeamBoundary)
             {
                 double lineY = top + 1;
-                dc.DrawLine(TeamLinePen, new Point(left, lineY), new Point(left + columnWidth, lineY));
+                dc.DrawLine(Paint.TeamLine, new Point(left, lineY), new Point(left + columnWidth, lineY));
             }
         }
     }
 
     /// <summary>
-    /// A selected row uses the DataGrid highlight over the heat map. Unselected cells keep
-    /// their content fill. Highlight text is the matching DataGrid foreground so the score stays readable.
+    /// A selected row uses a filled highlight over the heat map. Unselected cells keep
+    /// their content fill. Highlight text is the matching foreground so the score stays readable.
     /// </summary>
     private Brush Fill(ResultsSheetRow row, ResultsSheetCell cell, ResultsRowChrome chrome)
     {
         switch (chrome)
         {
             case ResultsRowChrome.ActiveSelection:
-                return SystemColors.HighlightBrush;
+                return Paint.Selection;
             case ResultsRowChrome.InactiveSelection:
-                return SystemColors.InactiveSelectionHighlightBrush;
+                return Paint.InactiveSelection;
         }
 
         if (row.Footer)
         {
-            return SystemColors.ControlBrush;
+            return Paint.Footer;
         }
 
         if (cell.Outlier)
         {
-            return OutlierBrush;
+            return Paint.Outlier;
         }
 
         if (cell.Heat is ScoreHeatColor heat)
         {
-            return HeatBrush(heat);
+            return Paint.Heat(heat);
         }
 
-        return SystemColors.WindowBrush;
+        return Paint.Row;
     }
 
     private static GlyphBrush GlyphFor(ResultsSheetCell cell, ResultsRowChrome chrome)
@@ -467,9 +473,10 @@ public sealed class ResultsSheetView : FrameworkElement
 
         return cell.Tone switch
         {
-            ResultsTextTone.Black => GlyphBrush.Black,
-            ResultsTextTone.Footer => GlyphBrush.ControlText,
-            ResultsTextTone.Theme => GlyphBrush.ControlText,
+            ResultsTextTone.Outlier => GlyphBrush.Outlier,
+            ResultsTextTone.Footer => GlyphBrush.Header,
+            ResultsTextTone.Theme when cell.Heat != null => GlyphBrush.Heat,
+            ResultsTextTone.Theme => GlyphBrush.Body,
             _ => throw new InvalidOperationException($"Results text tone {cell.Tone} is not drawn."),
         };
     }
@@ -501,16 +508,16 @@ public sealed class ResultsSheetView : FrameworkElement
         }
 
         double sample = Math.Max(
-            Text("Mg", ResultsTextWeight.Normal, GlyphBrush.ControlText).Height,
+            Text("Mg", ResultsTextWeight.Normal, GlyphBrush.Body).Height,
             Math.Max(
-                Text("Mg", ResultsTextWeight.SemiBold, GlyphBrush.ControlText).Height,
-                Text("Mg", ResultsTextWeight.Bold, GlyphBrush.ControlText).Height));
+                Text("Mg", ResultsTextWeight.SemiBold, GlyphBrush.Body).Height,
+                Text("Mg", ResultsTextWeight.Bold, GlyphBrush.Body).Height));
         // Room for a 1px grid line, plus the 2px team line on boundary rows.
         _rowHeight = Math.Ceiling(sample + 3);
 
         for (int column = 0; column < count; column++)
         {
-            double width = Text(_model.Columns[column].Header, ResultsTextWeight.Normal, GlyphBrush.ControlText).Width + HeaderChrome;
+            double width = Text(_model.Columns[column].Header, ResultsTextWeight.Normal, GlyphBrush.Header).Width + HeaderChrome;
             foreach (ResultsSheetRow row in _model.Rows)
             {
                 ResultsSheetCell cell = row.Cells[column];
@@ -556,20 +563,24 @@ public sealed class ResultsSheetView : FrameworkElement
         return formatted;
     }
 
-    private static Brush BrushFor(GlyphBrush brush) => brush switch
+    private Brush BrushFor(GlyphBrush brush) => brush switch
     {
-        GlyphBrush.Black => Brushes.Black,
-        GlyphBrush.Highlight => SystemColors.HighlightTextBrush,
-        GlyphBrush.InactiveHighlight => SystemColors.InactiveSelectionHighlightTextBrush,
-        GlyphBrush.ControlText => SystemColors.ControlTextBrush,
+        GlyphBrush.Body => Paint.BodyText,
+        GlyphBrush.Heat => Paint.HeatText,
+        GlyphBrush.Header => Paint.HeaderText,
+        GlyphBrush.Outlier => Paint.OutlierText,
+        GlyphBrush.Highlight => Paint.SelectionText,
+        GlyphBrush.InactiveHighlight => Paint.InactiveSelectionText,
         _ => throw new InvalidOperationException($"Results text brush {brush} is not drawn."),
     };
 
     /// <summary>Which frozen brush a string is drawn with. The cache key, so a null brush cannot get in.</summary>
     private enum GlyphBrush
     {
-        ControlText,
-        Black,
+        Body,
+        Heat,
+        Header,
+        Outlier,
         Highlight,
         InactiveHighlight,
     };
@@ -580,17 +591,6 @@ public sealed class ResultsSheetView : FrameworkElement
         ResultsTextWeight.SemiBold => FontWeights.SemiBold,
         _ => FontWeights.Normal,
     };
-
-    private static SolidColorBrush HeatBrush(ScoreHeatColor color)
-    {
-        if (!HeatBrushes.TryGetValue(color, out SolidColorBrush? brush))
-        {
-            brush = FreezeBrush(Color.FromRgb(color.R, color.G, color.B));
-            HeatBrushes[color] = brush;
-        }
-
-        return brush;
-    }
 
     private void SetOffset(ref double field, double value, double max)
     {
@@ -719,28 +719,20 @@ public sealed class ResultsSheetView : FrameworkElement
         return Math.Ceiling((width * _pixelsPerDip) - 1e-4) / _pixelsPerDip;
     }
 
-    private static SolidColorBrush FreezeBrush(Color color)
-    {
-        var brush = new SolidColorBrush(color);
-        brush.Freeze();
-        return brush;
-    }
+    private ResultsSheetPaint Paint => _paint ??= ResultsSheetPaint.Capture();
 
-    private static Pen FreezePen(Brush brush, double thickness)
+    private void CopyHeat(IReadOnlyList<ResultsGridRow> rows)
     {
-        var pen = new Pen(brush, thickness);
-        pen.Freeze();
-        return pen;
-    }
-
-    private static LinearGradientBrush FreezeHeaderBrush()
-    {
-        var brush = new LinearGradientBrush(
-            Color.FromRgb(0xF6, 0xF6, 0xF6),
-            Color.FromRgb(0xE1, 0xE1, 0xE1),
-            new Point(0, 0),
-            new Point(0, 1));
-        brush.Freeze();
-        return brush;
+        int rowCount = Math.Min(rows.Count, _model.Rows.Count);
+        for (int row = 0; row < rowCount; row++)
+        {
+            IList<ResultsCell> source = rows[row].Cells;
+            IReadOnlyList<ResultsSheetCell> dest = _model.Rows[row].Cells;
+            int count = Math.Min(source.Count, dest.Count);
+            for (int column = 0; column < count; column++)
+            {
+                dest[column].Heat = source[column].Heat;
+            }
+        }
     }
 }

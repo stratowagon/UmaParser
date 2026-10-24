@@ -7,6 +7,7 @@ using UmaParser.Mvvm;
 using UmaParser.Presentation;
 using UmaParser.Services;
 using UmaParser.Settings;
+using UmaParser.Themes;
 
 namespace UmaParser.ViewModels;
 
@@ -31,7 +32,7 @@ public sealed class MainViewModel : ObservableObject
     internal MainViewModel(IShellServices shell)
     {
         _shell = shell;
-        Results = new ResultsViewModel();
+        Results = new ResultsViewModel(AppTheme.Current);
         Analysis = new AnalysisViewModel();
         Skills = new SkillsViewModel();
         Tracks = new TracksViewModel();
@@ -51,8 +52,12 @@ public sealed class MainViewModel : ObservableObject
         OpenMasterDataFolderCommand = new RelayCommand(OpenMasterDataFolder);
         Skills.PropertyChanged += OnUmaSelectionChanged;
         Tracks.PropertyChanged += OnUmaSelectionChanged;
+        AppTheme.Changed += (_, _) => Results.ApplyTheme(AppTheme.Current);
         _statusText = GameMasterService.Current.GetStatusLine();
     }
+
+    /// <summary>View menu. Saves System, Light, or Dark and swaps the WPF theme without a restart.</summary>
+    public void SetColorMode(ColorMode mode) => AppTheme.SetPreference(mode);
 
     public ResultsViewModel Results { get; }
     public AnalysisViewModel Analysis { get; }
@@ -134,7 +139,7 @@ public sealed class MainViewModel : ObservableObject
         double parseMs = ElapsedMs(started);
 
         started = Stopwatch.GetTimestamp();
-        Results.Apply(batch);
+        Results.Apply(batch, AppTheme.Current);
         double resultsMs = ElapsedMs(started);
 
         started = Stopwatch.GetTimestamp();

@@ -9,6 +9,8 @@
         Width="1100"
         MinHeight="480"
         MinWidth="640"
+        Background="{DynamicResource Window.Background}"
+        Foreground="{DynamicResource Window.Foreground}"
         behaviors:FileDropBehavior.Command="{Binding LoadFilesCommand}">
     <Window.Resources>
         <!--
@@ -36,6 +38,11 @@
             <MenuItem Header="Options">
                 <MenuItem Header="Preferences..." Command="{Binding OpenPreferencesCommand}"/>
             </MenuItem>
+            <MenuItem Header="View">
+                <MenuItem x:Name="SystemThemeItem" Header="System" IsCheckable="True" Click="SystemTheme_Click"/>
+                <MenuItem x:Name="LightThemeItem" Header="Light" IsCheckable="True" Click="LightTheme_Click"/>
+                <MenuItem x:Name="DarkThemeItem" Header="Dark" IsCheckable="True" Click="DarkTheme_Click"/>
+            </MenuItem>
             <MenuItem Header="Master Data">
                 <MenuItem Header="Status..." Command="{Binding ShowMasterDataStatusCommand}"/>
                 <MenuItem Header="Refresh" Command="{Binding RefreshMasterDataCommand}"/>
@@ -45,13 +52,13 @@
                 <MenuItem Header="Open Default Master Folder" Command="{Binding OpenMasterDataFolderCommand}"/>
             </MenuItem>
         </Menu>
-        <Border DockPanel.Dock="Bottom" Padding="8,6" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
-            <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap"/>
+        <Border DockPanel.Dock="Bottom" Padding="8,6" Background="{DynamicResource Status.Background}">
+            <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" Foreground="{DynamicResource Status.Foreground}"/>
         </Border>
         <views:CachingTabControl ItemsSource="{Binding Tabs}" SelectedIndex="{Binding SelectedTabIndex}">
             <TabControl.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding Title}" Margin="8,2"/>
+                    <TextBlock Text="{Binding Title}" Margin="8,2" Foreground="{DynamicResource Window.Foreground}"/>
                 </DataTemplate>
             </TabControl.ItemTemplate>
         </views:CachingTabControl>

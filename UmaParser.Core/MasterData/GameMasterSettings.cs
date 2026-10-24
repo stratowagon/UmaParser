@@ -16,7 +16,7 @@ internal sealed class GameMasterSettings
     /// <summary>Normal or Maximized. Both apps read and write this string.</summary>
     public string? WindowState { get; set; }
 
-    /// <summary>Appearance: Light or Dark. Null/empty/System = Light.</summary>
+    /// <summary>Appearance: System, Light, or Dark. Null, empty, or unknown = System.</summary>
     public string? ColorMode { get; set; }
 
     public GridColumnPreferencesStore? GridColumns { get; set; }

@@ -1,5 +1,6 @@
 using System.Windows;
 using UmaParser.MasterData;
+using UmaParser.Themes;
 
 namespace UmaParser;
 
@@ -12,7 +13,14 @@ public partial class App : Application
 {
     protected override void OnStartup(StartupEventArgs e)
     {
+        AppTheme.Initialize();
         GameMasterService.Current.Initialize();
         base.OnStartup(e);
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        AppTheme.Stop();
+        base.OnExit(e);
     }
 }

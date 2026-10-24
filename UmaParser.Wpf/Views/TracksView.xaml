@@ -1,22 +1,24 @@
 <UserControl x:Class="UmaParser.Views.TracksView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:converters="clr-namespace:UmaParser.Converters">
+             xmlns:converters="clr-namespace:UmaParser.Converters"
+             Background="{DynamicResource Window.Background}"
+             Foreground="{DynamicResource Window.Foreground}">
     <UserControl.Resources>
         <converters:CellBandBrushConverter x:Key="CellBandBackground"/>
         <converters:CellBandBrushConverter x:Key="CellBandForeground" Foreground="True"/>
 
         <!--
           The row is the cell's DataContext, so {Binding SpurtBand} reads TracksGridRow.
-          The total row uses the system control color, the same role as the WinForms column-header
+          The total row uses the header color, the same role as the WinForms column-header
           fill on that row. CellBand brushes are only for spurt rate and survival on data rows.
           A footer trigger wins over those setters, so the total row stays uncolored.
         -->
         <Style x:Key="TrackCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsFooter}" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                    <Setter Property="Background" Value="{DynamicResource Grid.HeaderBackground}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource Grid.HeaderForeground}"/>
                     <Setter Property="FontWeight" Value="SemiBold"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -26,8 +28,8 @@
             <Setter Property="Foreground" Value="{Binding SpurtBand, Converter={StaticResource CellBandForeground}}"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsFooter}" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                    <Setter Property="Background" Value="{DynamicResource Grid.HeaderBackground}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource Grid.HeaderForeground}"/>
                     <Setter Property="FontWeight" Value="SemiBold"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -37,8 +39,8 @@
             <Setter Property="Foreground" Value="{Binding SurvivalBand, Converter={StaticResource CellBandForeground}}"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsFooter}" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                    <Setter Property="Background" Value="{DynamicResource Grid.HeaderBackground}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource Grid.HeaderForeground}"/>
                     <Setter Property="FontWeight" Value="SemiBold"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -47,14 +49,27 @@
 
     <DockPanel Margin="8">
         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8" LastChildFill="True">
-            <TextBlock Text="Uma:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <TextBlock Text="Uma:"
+                       Foreground="{DynamicResource Window.Foreground}"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0"/>
+            <!--
+              DisplayMemberPath does not fill the closed box for a plain object.
+              The item template does, and TracksUmaOption.ToString is the same name.
+            -->
             <ComboBox ItemsSource="{Binding Umas}"
                       SelectedItem="{Binding SelectedUma}"
-                      DisplayMemberPath="Name"
-                      IsEditable="False"/>
+                      IsEditable="False">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
         </DockPanel>
         <TextBlock DockPanel.Dock="Top"
                    Text="{Binding Summary}"
+                   Foreground="{DynamicResource Window.Foreground}"
                    TextWrapping="Wrap"
                    Margin="0,0,0,8"/>
         <DataGrid x:Name="TracksGrid"
@@ -73,6 +88,7 @@
                   VirtualizingPanel.VirtualizationMode="Recycling"
                   VirtualizingPanel.ScrollUnit="Item"
                   ScrollViewer.CanContentScroll="True"
+                  AlternationCount="2"
                   Sorting="TracksGrid_Sorting"/>
     </DockPanel>
 </UserControl>

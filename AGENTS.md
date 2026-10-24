@@ -161,3 +161,14 @@ Open `master.mdb` read-only only at startup or on explicit refresh/browse, read 
 - One logical change per commit when possible.
 - If you regenerate `EmbeddedMasterFallback.cs`, mention the game/master version in the commit message.
 - Tag releases follow existing pattern (`V1.0`, `V1.1`, `V1.1.1`, etc.).
+
+## Cursor Cloud specific instructions
+
+The Cloud Agent VM is Ubuntu. `UmaParser` and `UmaParser.Wpf` still compile here; they target `Microsoft.WindowsDesktop.App` and do not launch (there is no Linux desktop runtime). `dotnet test` is the check that import and analysis work. It uses embedded master data only. With no `master.mdb`, startup reports built-in names. The corpus smoke test stays skipped unless `UMAPARSER_CORPUS` is set.
+
+Install the Microsoft .NET 8 SDK with `https://dot.net/v1/dotnet-install.sh --channel 8.0` and symlink `dotnet` into `/usr/local/bin`. Ubuntu’s `dotnet-sdk-8.0` package leaves out `Microsoft.NET.Sdk.WindowsDesktop`, and the WinForms and WPF projects then fail at `Microsoft.NET.Sdk.WindowsDesktop.targets`.
+
+```powershell
+dotnet build UmaParser.sln -c Release -p:EnableWindowsTargeting=true
+dotnet test UmaParser.sln -c Release -p:EnableWindowsTargeting=true
+```
