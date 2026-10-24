@@ -56,16 +56,8 @@ public sealed class MainViewModel : ObservableObject
         _statusText = GameMasterService.Current.GetStatusLine();
     }
 
-    /// <summary>View menu. Saves the shared ColorMode and swaps the WPF theme without a restart.</summary>
-    public void SetColorTheme(ColorTheme theme)
-    {
-        if (AppTheme.Current == theme)
-        {
-            return;
-        }
-
-        AppTheme.Apply(theme, persist: true);
-    }
+    /// <summary>View menu. Saves System, Light, or Dark and swaps the WPF theme without a restart.</summary>
+    public void SetColorMode(ColorMode mode) => AppTheme.SetPreference(mode);
 
     public ResultsViewModel Results { get; }
     public AnalysisViewModel Analysis { get; }

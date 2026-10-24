@@ -6,11 +6,18 @@ namespace UmaParser.Themes;
 
 /// <summary>
 /// Swaps the merged color dictionary and saves <c>ColorMode</c> in the shared settings file.
-/// WinForms reads that same value and still restarts to apply it.
+/// The saved value is the preference (System, Light, or Dark). <see cref="Current"/> is the
+/// light or dark appearance after System has been resolved. WinForms reads the same file
+/// and still restarts to apply it.
 /// </summary>
 internal static class AppTheme
 {
+    private static readonly IWindowsAppThemeReader WindowsTheme = new RegistryWindowsAppThemeReader();
+    private static bool _applied;
+
     public static event EventHandler? Changed;
+
+    public static ColorMode Preference { get; private set; } = ColorMode.System;
 
     public static ColorTheme Current { get; private set; } = ColorTheme.Light;
 
@@ -18,20 +25,51 @@ internal static class AppTheme
 
     public static void Initialize()
     {
-        Apply(ColorThemeSetting.Parse(GameMasterSettings.Load().ColorMode), persist: false);
+        Preference = ColorModeSetting.Parse(GameMasterSettings.Load().ColorMode);
+        ApplyResolved();
+        SystemThemeWatcher.Start();
     }
 
-    public static void Apply(ColorTheme theme, bool persist)
+    public static void Stop() => SystemThemeWatcher.Stop();
+
+    /// <summary>View menu. Saves the preference, including System, and repaints when the appearance changes.</summary>
+    public static void SetPreference(ColorMode mode)
     {
+        if (_applied && Preference == mode)
+        {
+            return;
+        }
+
+        Preference = mode;
+        GameMasterSettings settings = GameMasterSettings.Load();
+        settings.ColorMode = ColorModeSetting.Format(mode);
+        settings.Save();
+        ApplyResolved();
+    }
+
+    /// <summary>Re-read Windows when the preference is System. Light and Dark stay put.</summary>
+    public static void RefreshFromWindows()
+    {
+        if (Preference != ColorMode.System)
+        {
+            return;
+        }
+
+        ApplyResolved();
+    }
+
+    private static void ApplyResolved()
+    {
+        ColorTheme theme = SystemColorTheme.Resolve(Preference, WindowsTheme);
+        if (_applied && theme == Current)
+        {
+            return;
+        }
+
         Current = theme;
+        _applied = true;
         SwapColors(theme);
         CellBandBrushSource.Apply(theme);
-        if (persist)
-        {
-            GameMasterSettings settings = GameMasterSettings.Load();
-            settings.ColorMode = ColorThemeSetting.Format(theme);
-            settings.Save();
-        }
 
         if (Application.Current != null)
         {

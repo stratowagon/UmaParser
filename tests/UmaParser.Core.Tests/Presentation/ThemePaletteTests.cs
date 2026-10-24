@@ -7,24 +7,6 @@ namespace UmaParser.Core.Tests.Presentation;
 public sealed class ThemePaletteTests
 {
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("Light")]
-    [InlineData("System")]
-    public void Anything_but_dark_is_the_light_theme(string? saved)
-    {
-        Assert.Equal(ColorTheme.Light, ColorThemeSetting.Parse(saved));
-        Assert.Equal(ColorThemeSetting.Light, ColorThemeSetting.Format(ColorTheme.Light));
-    }
-
-    [Fact]
-    public void Dark_round_trips_the_settings_word()
-    {
-        Assert.Equal(ColorTheme.Dark, ColorThemeSetting.Parse("Dark"));
-        Assert.Equal("Dark", ColorThemeSetting.Format(ColorTheme.Dark));
-    }
-
-    [Theory]
     [InlineData(ColorTheme.Light)]
     [InlineData(ColorTheme.Dark)]
     public void Cell_bands_keep_text_contrast(ColorTheme theme)

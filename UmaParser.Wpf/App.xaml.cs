@@ -17,4 +17,10 @@ public partial class App : Application
         GameMasterService.Current.Initialize();
         base.OnStartup(e);
     }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        AppTheme.Stop();
+        base.OnExit(e);
+    }
 }

@@ -39,6 +39,7 @@
                 <MenuItem Header="Preferences..." Command="{Binding OpenPreferencesCommand}"/>
             </MenuItem>
             <MenuItem Header="View">
+                <MenuItem x:Name="SystemThemeItem" Header="System" IsCheckable="True" Click="SystemTheme_Click"/>
                 <MenuItem x:Name="LightThemeItem" Header="Light" IsCheckable="True" Click="LightTheme_Click"/>
                 <MenuItem x:Name="DarkThemeItem" Header="Dark" IsCheckable="True" Click="DarkTheme_Click"/>
             </MenuItem>

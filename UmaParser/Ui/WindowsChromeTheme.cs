@@ -6,6 +6,9 @@ namespace UmaParser.Ui;
 /// <summary>
 /// Applies OS-level dark/light chrome that WinForms cannot set via BackColor alone
 /// (title bar, scrollbars, combo dropdown button, etc.).
+/// Title-bar attribute 20 is Windows 10 20H1 and later. Earlier Win10 builds fail that
+/// call, and 19 is the attribute they accept (since 1809). When "Show accent color on
+/// title bars and window borders" is on, Windows paints the accent color instead.
 /// </summary>
 internal static class WindowsChromeTheme
 {
@@ -35,6 +38,7 @@ internal static class WindowsChromeTheme
             int useDark = dark ? 1 : 0;
             if (DwmSetWindowAttribute(form.Handle, DwmwaUseImmersiveDarkMode, ref useDark, sizeof(int)) != 0)
             {
+                useDark = dark ? 1 : 0;
                 DwmSetWindowAttribute(form.Handle, DwmwaUseImmersiveDarkModeBefore20h1, ref useDark, sizeof(int));
             }
         }

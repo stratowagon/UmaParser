@@ -35,24 +35,27 @@ public partial class MainWindow : Window
 
     private void OnThemeChanged(object? sender, EventArgs e) => SyncThemeChecks();
 
-    private void LightTheme_Click(object sender, RoutedEventArgs e) => SetTheme(ColorTheme.Light);
+    private void SystemTheme_Click(object sender, RoutedEventArgs e) => SetMode(ColorMode.System);
 
-    private void DarkTheme_Click(object sender, RoutedEventArgs e) => SetTheme(ColorTheme.Dark);
+    private void LightTheme_Click(object sender, RoutedEventArgs e) => SetMode(ColorMode.Light);
 
-    private void SetTheme(ColorTheme theme)
+    private void DarkTheme_Click(object sender, RoutedEventArgs e) => SetMode(ColorMode.Dark);
+
+    private void SetMode(ColorMode mode)
     {
         if (DataContext is MainViewModel viewModel)
         {
-            viewModel.SetColorTheme(theme);
+            viewModel.SetColorMode(mode);
         }
 
-        // MenuItem toggles IsChecked locally before Click. Put the checks back from the theme.
+        // MenuItem toggles IsChecked locally before Click. Put the checks back from the preference.
         SyncThemeChecks();
     }
 
     private void SyncThemeChecks()
     {
-        LightThemeItem.IsChecked = !AppTheme.IsDark;
-        DarkThemeItem.IsChecked = AppTheme.IsDark;
+        SystemThemeItem.IsChecked = AppTheme.Preference == ColorMode.System;
+        LightThemeItem.IsChecked = AppTheme.Preference == ColorMode.Light;
+        DarkThemeItem.IsChecked = AppTheme.Preference == ColorMode.Dark;
     }
 }

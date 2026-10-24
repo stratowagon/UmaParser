@@ -6,7 +6,10 @@ namespace UmaParser.Themes;
 
 /// <summary>
 /// Dark or light title bar via DWMWA_USE_IMMERSIVE_DARK_MODE. No extra packages.
-/// The call is skipped when the process is not on Windows.
+/// Attribute 20 is Windows 10 20H1 and later. Earlier Win10 builds fail that call,
+/// and 19 is the attribute they accept (since 1809). The call is skipped when the
+/// process is not on Windows. When "Show accent color on title bars and window borders"
+/// is on, Windows paints the accent color instead of this caption.
 /// </summary>
 internal static class WindowChromeTheme
 {
@@ -47,6 +50,7 @@ internal static class WindowChromeTheme
             int useDark = dark ? 1 : 0;
             if (DwmSetWindowAttribute(handle, DwmwaUseImmersiveDarkMode, ref useDark, sizeof(int)) != 0)
             {
+                useDark = dark ? 1 : 0;
                 DwmSetWindowAttribute(handle, DwmwaUseImmersiveDarkModeBefore20h1, ref useDark, sizeof(int));
             }
         }
