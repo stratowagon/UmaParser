@@ -339,9 +339,11 @@ public sealed class PerformanceChartView : FrameworkElement
             subtitleLeft = 20;
         }
 
-        string races = PerformanceChartEngine.FormatRaceCount(row.TrialCount);
+        // FormattedText.Width drops trailing spaces, so the gap before the race count
+        // has to lead that run. Both " · " separators then keep the same space.
+        string races = " " + PerformanceChartEngine.FormatRaceCount(row.TrialCount);
         FormattedText raceText = LabelText(races, 11, raceBrush);
-        FormattedText prefix = LabelText($"{row.Distance} · {row.Style} · ", 11, palette.Muted);
+        FormattedText prefix = LabelText($"{row.Distance} · {row.Style} ·", 11, palette.Muted);
         double subtitleRoom = Math.Max(24, LabelWidth - subtitleLeft - 8);
         prefix.MaxTextWidth = Math.Max(12, subtitleRoom - raceText.Width);
         prefix.Trimming = TextTrimming.CharacterEllipsis;
