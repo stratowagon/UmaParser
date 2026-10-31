@@ -8,16 +8,18 @@ Some of the features are also useful for CMs, Room matches, and Practice rooms.
 
 ## Prereqs
 You will need to have a tool to collect json API captures of races to use this.
-One example is [HorseACT](https://github.com/ayaliz/horseACT), but other tools may work as well
-as long as they preserve the same json structure.
+A non-invasive tool for this is Werseter's excellent [UmaDump](https://github.com/Werseter/umadump).
+You could also use something more technical like [HorseACT](https://github.com/ayaliz/horseACT).
+Any tool that can capture the standard TT race structure as json should work.
 
 If you have the global Steam client installed, this app will try to read up-to-date
 names and skill data from the master mdb at the default location or a custom location.
 Otherwise it will use the embedded fallback master data, which may not be up-to-date.
 
 ## Usage
-Drag and drop one or more .json files containing TT results onto the app.  Every time you drop
-it will reset everything, so the best use is to drop a stack of races at once.
+Drag and drop one or more .json files containing TT results onto the app.  If you drop files
+multiple times, it will add them to the current loaded data (ignoring duplicates).  You can
+reset the data using File -> Clear All Data.
 
 ### Team Trials
 For full analysis, drop multiple Team Trials files that all contain the same team members.
@@ -60,14 +62,14 @@ be better off swapping aces.  However this requires a decently large sample size
 so take the recommendations with a grain of salt.
 
 ### Performance Tab
-Stacked base-score bars for the same consistent 15-uma roster as Team Analysis. Each bar is
-that uma's average score with support, opponent, and ace bonuses removed, split into finish
-place and win margin, white / gold / unique skills, strong start, and style lead plus other
-extras. A dashed line marks the team average. Under each bar, a thin line shows the P25–P75
-range, with a median tick, min/max dots, and a P90 marker. Rows start weakest-first. The sort
-box can order by average, median, max, P75, or P90, ascending or descending, and that choice
-is remembered in settings.json. Hover a row for
-the average, median, P90, and the segment split. Skill proc rates stay on the Skills tab.
+Visualization ~~stolen from~~inspired by [Chernobyl Liquidator's work](https://uma.satki.org/team_trial).
+Stacked base-score bars for all loaded Team Trials umas, highlighting the current (latest) active team.
+Each bar shows categorized normalized (bonuses removed) averages as a stacked bar. Under each bar, a
+thin line shows the P25–P75 range, with a median tick, min/max dots, and a P90 marker. Rows can be
+sorted by various criteria.  Hover over a row for exact splits.
+
+The Performance tab is only valid for Team Trials races, but it does not require a consistent team
+across all files the way Team Analysis does.
 
 ### Skills Tab
 This tab provides detailed information for an uma's skill activations across multiple races.
