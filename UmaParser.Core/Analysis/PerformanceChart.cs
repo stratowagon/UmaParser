@@ -199,8 +199,7 @@ public static class PerformanceChartEngine
 
     public static string Describe(PerformanceChart chart) =>
         $"Base scores with support, opponent, and ace bonuses removed across {chart.TrialCount} trial(s). " +
-        $"Team average {chart.TeamAverage.ToString("N0", CultureInfo.CurrentCulture)}. " +
-        "Strong start is a gate within 0.02s. The dashed line is the team average; P90 marks the peak.";
+        $"Team average {chart.TeamAverage.ToString("N0", CultureInfo.CurrentCulture)}. ";
 
     private static PerformanceUmaRow BuildRow(
         TeamTrialResult layout,
