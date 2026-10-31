@@ -206,9 +206,9 @@ public sealed class PerformanceChartTests
         Assert.Equal(19_000, row.P90);
         Assert.Equal(10_000, row.Min);
         Assert.Equal(20_000, row.Max);
-        Assert.Contains("bonuses removed", PerformanceChartEngine.Describe(chart));
+        Assert.Contains("without bonuses", PerformanceChartEngine.Describe(chart));
         Assert.Contains("15,000", PerformanceChartEngine.Describe(chart));
-        Assert.Contains("current lineup", PerformanceChartEngine.Describe(chart));
+        Assert.Contains("Current lineup average", PerformanceChartEngine.Describe(chart));
     }
 
     [Fact]
