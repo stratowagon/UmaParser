@@ -8,7 +8,7 @@ Some of the features are also useful for CMs, Room matches, and Practice rooms.
 
 ## Prereqs
 You will need to have a tool to collect json API captures of races to use this.
-A non-invasive tool for this is Werseter's excellent [UmaDump](https://github.com/Werseter/umadump).
+A non-invasive tool for this is Werseter's excellent [UmaDump](https://werseter.github.io/umadump/).
 You could also use something more technical like [HorseACT](https://github.com/ayaliz/horseACT).
 Any tool that can capture the standard TT race structure as json should work.
 
