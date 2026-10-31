@@ -336,10 +336,8 @@ public static class PerformanceChartEngine
     {
         string average = chart.TeamAverage.ToString("N0", CultureInfo.CurrentCulture);
         return
-            $"Base scores with support, opponent, and ace bonuses removed across {chart.TrialCount} trial(s). " +
-            $"Dashed line {average}: mean of the current lineup's averages (the newest file). " +
-            "Each row counts only the trials that uma ran in that running style and distance. " +
-            "Yellow is a short sample; red is shorter still. Thresholds are in Options.";
+            $"Base scores without bonuses across {chart.TrialCount} total trials. " +
+            $"Current lineup average: {average}";
     }
 
     /// <summary>
