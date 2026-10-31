@@ -61,6 +61,24 @@
                    TextWrapping="Wrap"
                    Margin="0,0,0,8"/>
 
+        <views:PerformanceChartView x:Name="LegendView"
+                                    DockPanel.Dock="Top"
+                                    Margin="0,0,0,4"
+                                    LegendOnly="True"
+                                    IsHitTestVisible="False"
+                                    Chart="{Binding Chart}">
+            <views:PerformanceChartView.Style>
+                <Style TargetType="views:PerformanceChartView">
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ShowChart}" Value="False">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </views:PerformanceChartView.Style>
+        </views:PerformanceChartView>
+
         <Grid>
             <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                           VerticalScrollBarVisibility="Auto"

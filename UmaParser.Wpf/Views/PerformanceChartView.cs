@@ -42,6 +42,24 @@ public sealed class PerformanceChartView : FrameworkElement
     private double _legendHeight = LegendRowHeight;
     private int _hover = -1;
 
+    /// <summary>
+    /// When true, this element draws only the color and symbol key. The scrolling chart
+    /// leaves it false so the key can sit outside the scroll viewer and stay on screen.
+    /// </summary>
+    public static readonly DependencyProperty LegendOnlyProperty = DependencyProperty.Register(
+        nameof(LegendOnly),
+        typeof(bool),
+        typeof(PerformanceChartView),
+        new FrameworkPropertyMetadata(
+            false,
+            FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
+
+    public bool LegendOnly
+    {
+        get => (bool)GetValue(LegendOnlyProperty);
+        set => SetValue(LegendOnlyProperty, value);
+    }
+
     public PerformanceChartView()
     {
         SnapsToDevicePixels = true;
@@ -67,35 +85,50 @@ public sealed class PerformanceChartView : FrameworkElement
 
     protected override Size MeasureOverride(Size available)
     {
+        double width = double.IsInfinity(available.Width) ? 720 : Math.Max(360, available.Width);
+        if (LegendOnly)
+        {
+            _legendHeight = MeasureLegend(width);
+            return new Size(width, _legendHeight);
+        }
+
         PerformanceChart? chart = Chart;
         if (chart == null || !chart.Available || chart.Rows.Count == 0)
         {
             return new Size(0, 0);
         }
 
-        double width = double.IsInfinity(available.Width) ? 720 : Math.Max(360, available.Width);
-        _legendHeight = MeasureLegend(width);
-        return new Size(width, _legendHeight + AxisHeight + chart.Rows.Count * RowHeight + 8);
+        return new Size(width, AxisHeight + chart.Rows.Count * RowHeight + 8);
     }
 
     protected override void OnRender(DrawingContext dc)
     {
-        PerformanceChart? chart = Chart;
-        if (chart == null || !chart.Available || chart.Rows.Count == 0 || ActualWidth <= 1)
+        if (ActualWidth <= 1)
         {
             return;
         }
 
         Palette palette = Palette.Capture(this);
-        double legend = DrawLegend(dc, palette, ActualWidth);
-        if (Math.Abs(legend - _legendHeight) > 1)
+        if (LegendOnly)
         {
-            _legendHeight = legend;
-            Dispatcher.BeginInvoke(new Action(InvalidateMeasure));
+            double legend = DrawLegend(dc, palette, ActualWidth);
+            if (Math.Abs(legend - _legendHeight) > 1)
+            {
+                _legendHeight = legend;
+                Dispatcher.BeginInvoke(new Action(InvalidateMeasure));
+            }
+
+            return;
+        }
+
+        PerformanceChart? chart = Chart;
+        if (chart == null || !chart.Available || chart.Rows.Count == 0)
+        {
+            return;
         }
 
         (double axisMin, double axisMax, double step) = Axis(chart);
-        double plotTop = _legendHeight;
+        double plotTop = 0;
         double rowsTop = plotTop + AxisHeight;
         DrawAxis(dc, palette, axisMin, axisMax, step, plotTop);
         for (int i = 0; i < chart.Rows.Count; i++)
@@ -109,6 +142,11 @@ public sealed class PerformanceChartView : FrameworkElement
     protected override void OnMouseMove(MouseEventArgs e)
     {
         base.OnMouseMove(e);
+        if (LegendOnly)
+        {
+            return;
+        }
+
         int index = HitRow(e.GetPosition(this));
         if (index == _hover)
         {
@@ -149,7 +187,7 @@ public sealed class PerformanceChartView : FrameworkElement
             return -1;
         }
 
-        double top = _legendHeight + AxisHeight;
+        double top = AxisHeight;
         if (point.Y < top)
         {
             return -1;
