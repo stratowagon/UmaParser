@@ -362,11 +362,14 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-# Agent session artifacts (local only)
+# Agent session artifacts (local only).
+# Cloud Agent Builds read .cursor/environment.json, so that file and its install script stay tracked.
 agent-tools/
 mcps/
 terminals/
-.cursor/
+.cursor/*
+!.cursor/environment.json
+!.cursor/install.sh
 
 # Game DB extracts
 *.mdb

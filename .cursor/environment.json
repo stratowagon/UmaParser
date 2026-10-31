@@ -1,0 +1,4 @@
+{
+  "name": "UmaParser",
+  "install": "bash .cursor/install.sh"
+}

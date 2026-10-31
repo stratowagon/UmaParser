@@ -154,9 +154,9 @@ Open `master.mdb` read-only only at startup or on explicit refresh/browse, read 
 
 ## Cursor Cloud specific instructions
 
-The Cloud Agent VM is Ubuntu. `UmaParser.Wpf` still compiles here; it targets `Microsoft.WindowsDesktop.App` and does not launch (there is no Linux desktop runtime). `dotnet test` is the check that import and analysis work. It uses embedded master data only. With no `master.mdb`, startup reports built-in names. The corpus smoke test stays skipped unless `UMAPARSER_CORPUS` is set.
+Cloud Agent Builds preinstall the .NET 8 SDK and restore `UmaParser.sln` from `.cursor/environment.json` (`.cursor/install.sh`). Use the `dotnet` already on `PATH` from that Build. Install the SDK only when `dotnet` is missing or is not major version 8. Do not use Ubuntu’s `dotnet-sdk-8.0` apt package: it omits `Microsoft.NET.Sdk.WindowsDesktop`, and the WPF project then fails at `Microsoft.NET.Sdk.WindowsDesktop.targets`. When a reinstall is required, use Microsoft’s script (`https://dot.net/v1/dotnet-install.sh --channel 8.0`) into `/usr/share/dotnet` and symlink `dotnet` into `/usr/local/bin`, which is what the install script does. App hosts look for the runtime in that directory, so `dotnet test` does not need a shell profile.
 
-Install the Microsoft .NET 8 SDK with `https://dot.net/v1/dotnet-install.sh --channel 8.0` and symlink `dotnet` into `/usr/local/bin`. Ubuntu’s `dotnet-sdk-8.0` package leaves out `Microsoft.NET.Sdk.WindowsDesktop`, and the WPF project then fails at `Microsoft.NET.Sdk.WindowsDesktop.targets`.
+The Cloud Agent VM is Ubuntu. `UmaParser.Wpf` still compiles here; it targets `Microsoft.WindowsDesktop.App` and does not launch (there is no Linux desktop runtime). `dotnet test` is the check that import and analysis work. It uses embedded master data only. With no `master.mdb`, startup reports built-in names. The corpus smoke test stays skipped unless `UMAPARSER_CORPUS` is set.
 
 ```powershell
 dotnet build UmaParser.sln -c Release -p:EnableWindowsTargeting=true
