@@ -1,0 +1,91 @@
+<UserControl x:Class="UmaParser.Views.PerformanceView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="clr-namespace:UmaParser.Views"
+             Background="{DynamicResource Window.Background}"
+             Foreground="{DynamicResource Window.Foreground}">
+    <UserControl.Resources>
+        <Style x:Key="SortDirButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Margin" Value="8,0,0,0"/>
+            <Setter Property="Padding" Value="12,4"/>
+            <Setter Property="MinWidth" Value="104"/>
+        </Style>
+    </UserControl.Resources>
+
+    <DockPanel Margin="8">
+        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8" VerticalAlignment="Center">
+            <TextBlock Text="Sort"
+                       Foreground="{DynamicResource Window.Foreground}"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0"/>
+            <ComboBox Width="140"
+                      ItemsSource="{Binding SortChoices}"
+                      SelectedItem="{Binding SelectedSort}"
+                      IsEditable="False"
+                      VerticalAlignment="Center">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Label}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button Content="Ascending" Command="{Binding UseAscendingCommand}" VerticalAlignment="Center">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource SortDirButton}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Ascending}" Value="True">
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Background" Value="{DynamicResource Button.PressedBackground}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button Content="Descending" Command="{Binding UseDescendingCommand}" VerticalAlignment="Center">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource SortDirButton}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Descending}" Value="True">
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Background" Value="{DynamicResource Button.PressedBackground}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </WrapPanel>
+
+        <TextBlock DockPanel.Dock="Top"
+                   Text="{Binding Summary}"
+                   Foreground="{DynamicResource Window.Foreground}"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,8"/>
+
+        <Grid>
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto"
+                          Focusable="False"
+                          Background="Transparent">
+                <views:PerformanceChartView x:Name="ChartView" Chart="{Binding Chart}"/>
+            </ScrollViewer>
+            <TextBlock Text="{Binding EmptyMessage}"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"
+                       VerticalAlignment="Center"
+                       Padding="24"
+                       IsHitTestVisible="False"
+                       Foreground="{DynamicResource Muted.Foreground}">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ShowChart}" Value="False">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Grid>
+    </DockPanel>
+</UserControl>

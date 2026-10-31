@@ -19,6 +19,12 @@ internal sealed class GameMasterSettings
     /// <summary>Appearance: System, Light, or Dark. Null, empty, or unknown = System.</summary>
     public string? ColorMode { get; set; }
 
+    /// <summary>Performance tab sort: Average, Median, Max, P75, or P90. Null or unknown = Average.</summary>
+    public string? PerformanceSort { get; set; }
+
+    /// <summary>Performance tab direction. Null or true = ascending (weakest first). False = descending.</summary>
+    public bool? PerformanceSortAscending { get; set; }
+
     public GridColumnPreferencesStore? GridColumns { get; set; }
 
     public GridColumnGridPreferences GetGridColumnPreferences(string gridKey)
