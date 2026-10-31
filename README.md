@@ -74,10 +74,10 @@ median, max, P75, or P90, ascending or descending, and that choice is remembered
 settings.json. Hover a row for the average, median, P90, and the segment split. Skill proc
 rates stay on the Skills tab.
 
-The name includes the uma's rating when the capture has one, for example `Oguri Cap [18,317]`.
-That number is the rank score. HorseACT Team Trials files put it on each race horse as
-`trained_chara_data.rankScore`. A file can also carry `rank_score` on the race horse or on
-`user_trained_chara_array_copy`. The average itself stays off the row; hover still shows it.
+Team Trials captures do not include the portrait rating, so each row is labeled with the
+catalog short name. Champions Meet, Room Match, and Practice still tell veterans apart by
+rating on the Skills and Tracks lists. The average itself stays off the Performance row; hover
+still shows it.
 
 A row is one trained uma, one running style, and one distance. The same uma in two styles,
 or in two distances, is two rows. Each row's race count and stats use only the trials that

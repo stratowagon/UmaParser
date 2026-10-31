@@ -1,4 +1,3 @@
-using System.Text.Json;
 using UmaParser.Analysis;
 using UmaParser.Core.Tests.TestSupport;
 using UmaParser.DataModel.ResponseData;
@@ -398,154 +397,44 @@ public sealed class PerformanceChartTests
     }
 
     [Fact]
-    public void Rank_score_labels_the_row_and_trained_id_keeps_two_builds_apart()
+    public void Team_trials_rows_use_the_catalog_name_and_keep_two_builds_apart()
     {
-        TeamTrialResult older = Trial(
-            (1, 1001, 1, 1, [Bucket(60, 1_000)]),
-            (2, 1001, 2, 2, [Bucket(60, 2_000)]));
-        older.RaceRoster[1].RankScore = 18_317;
-        older.RaceRoster[2].RankScore = 12_000;
-        TeamTrialResult newer = Trial((1, 1001, 1, 1, [Bucket(60, 3_000)]));
-        newer.Data!.UserTrainedCharaArrayCopy.Add(new TrainedChara
-        {
-            TrainedCharaId = 1,
-            RankScore = 18_400,
-        });
-
-        PerformanceChart chart = PerformanceChartEngine.Build([older, newer]);
+        PerformanceChart chart = PerformanceChartEngine.Build(
+        [
+            Trial(
+                (1, 1001, 1, 1, [Bucket(60, 1_000)]),
+                (2, 1001, 2, 2, [Bucket(60, 2_000)])),
+            Trial((1, 1001, 1, 1, [Bucket(60, 3_000)])),
+        ]);
         PerformanceUmaRow first = chart.Rows.Single(row => row.TrainedCharaId == 1);
         PerformanceUmaRow second = chart.Rows.Single(row => row.TrainedCharaId == 2);
 
-        Assert.Equal("Special Week [18,400]", first.Name);
-        Assert.Equal(18_400, first.RankScore);
+        Assert.Equal("Special Week", first.Name);
+        Assert.Equal(0, first.RankScore);
+        Assert.DoesNotContain("[", first.Name);
         Assert.Equal(2_000, first.Average);
         Assert.True(first.InCurrentLineup);
-        Assert.Equal("Special Week [12,000]", second.Name);
-        Assert.Equal(12_000, second.RankScore);
+        Assert.Equal("Special Week", second.Name);
+        Assert.Equal(0, second.RankScore);
         Assert.Equal(2_000, second.Average);
         Assert.False(second.InCurrentLineup);
         Assert.Equal(2_000, chart.TeamAverage);
     }
 
     [Fact]
-    public void A_capture_rank_score_on_the_trained_chara_copy_beats_the_horse()
+    public void A_later_style_is_its_own_row_without_a_rating_suffix()
     {
-        const string json = """
-            {
-              "race_start_params_array": [
-                {
-                  "round": 1,
-                  "race_horse_data_array": [
-                    {
-                      "trained_chara_id": 7,
-                      "chara_id": 1001,
-                      "team_id": 1,
-                      "team_member_id": 1,
-                      "running_style": 1,
-                      "rank_score": 9000
-                    }
-                  ]
-                }
-              ],
-              "race_result_array": [
-                {
-                  "round": 1,
-                  "distance_type": 1,
-                  "race_scenario": "",
-                  "chara_result_array": [
-                    {
-                      "trained_chara_id": 7,
-                      "team_id": 1,
-                      "score_array": [
-                        { "raw_score_id": 60, "score": 1000, "bonus_array": [] }
-                      ]
-                    }
-                  ]
-                }
-              ],
-              "user_trained_chara_array_copy": [
-                { "trained_chara_id": 7, "rank_score": 18317 }
-              ]
-            }
-            """;
-
-        TeamRaceData data = JsonSerializer.Deserialize<TeamRaceData>(json, UmaCaptureJson.Options)!;
-        PerformanceChart chart = PerformanceChartEngine.Build([new TeamTrialResult(data)]);
-        PerformanceUmaRow row = Assert.Single(chart.Rows);
-
-        Assert.Equal(18_317, row.RankScore);
-        Assert.Equal("Special Week [18,317]", row.Name);
-        Assert.Equal(1_000, row.Average);
-        Assert.True(row.InCurrentLineup);
-    }
-
-    [Fact]
-    public void HorseACT_trained_chara_data_rankScore_labels_the_row()
-    {
-        const string json = """
-            {
-              "race_start_params_array": [
-                {
-                  "round": 1,
-                  "race_horse_data_array": [
-                    {
-                      "trained_chara_id": 7,
-                      "chara_id": 1001,
-                      "team_id": 1,
-                      "team_member_id": 1,
-                      "running_style": 3,
-                      "trained_chara_data": {
-                        "id": 7,
-                        "rankScore": 18317
-                      }
-                    }
-                  ]
-                }
-              ],
-              "race_result_array": [
-                {
-                  "round": 1,
-                  "distance_type": 1,
-                  "race_scenario": "",
-                  "chara_result_array": [
-                    {
-                      "trained_chara_id": 7,
-                      "team_id": 1,
-                      "score_array": [
-                        { "raw_score_id": 60, "score": 1000, "bonus_array": [] }
-                      ]
-                    }
-                  ]
-                }
-              ],
-              "user_trained_chara_array_copy": []
-            }
-            """;
-
-        TeamRaceData data = JsonSerializer.Deserialize<TeamRaceData>(json, UmaCaptureJson.Options)!;
-        PerformanceChart chart = PerformanceChartEngine.Build([new TeamTrialResult(data)]);
-        PerformanceUmaRow row = Assert.Single(chart.Rows);
-
-        Assert.Equal(0, data.RaceStartParamsArray[0].RaceHorseDataArray[0].RankScore);
-        Assert.Equal(18_317, row.RankScore);
-        Assert.Equal("Special Week [18,317]", row.Name);
-        Assert.Equal("Late", row.Style);
-    }
-
-    [Fact]
-    public void A_later_style_still_shares_the_rating_learned_for_that_trained_uma()
-    {
-        TeamTrialResult older = Trial((1, 1001, 1, 1, [Bucket(60, 4_000)]));
-        TeamTrialResult newer = Trial((1, 1001, 1, 4, [Bucket(60, 8_000)]));
-        newer.Data!.UserTrainedCharaArrayCopy.Add(new TrainedChara
-        {
-            TrainedCharaId = 1,
-            RankScoreCamel = 18_317,
-        });
-
-        PerformanceChart chart = PerformanceChartEngine.Build([older, newer]);
+        PerformanceChart chart = PerformanceChartEngine.Build(
+        [
+            Trial((1, 1001, 1, 1, [Bucket(60, 4_000)])),
+            Trial((1, 1001, 1, 4, [Bucket(60, 8_000)])),
+        ]);
         Assert.Equal(2, chart.Rows.Count);
-        Assert.All(chart.Rows, row => Assert.Equal("Special Week [18,317]", row.Name));
+        Assert.All(chart.Rows, row =>
+        {
+            Assert.Equal("Special Week", row.Name);
+            Assert.Equal(0, row.RankScore);
+        });
         Assert.Equal(["End", "Front"], chart.Rows.Select(row => row.Style));
         Assert.True(chart.Rows[0].InCurrentLineup);
         Assert.False(chart.Rows[1].InCurrentLineup);

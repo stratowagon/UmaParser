@@ -93,10 +93,13 @@ public sealed class PerformanceUmaRow
     /// <summary>Catalog short name, without the rank-score suffix.</summary>
     public required string ShortName { get; init; }
 
-    /// <summary>Short name plus the rank score when the capture has one, for example "Oguri Cap [18,317]".</summary>
+    /// <summary>
+    /// Catalog short name. Team Trials captures do not include a portrait rating, so this stays the short name.
+    /// A positive <see cref="RankScore"/> is appended as <c>[18,317]</c> when some other capture type supplies one.
+    /// </summary>
     public required string Name { get; init; }
 
-    /// <summary>Rank score from the capture. 0 when the file did not include a rating.</summary>
+    /// <summary>Portrait rating when the capture has one. Team Trials rows leave this at 0.</summary>
     public required int RankScore { get; init; }
     public required string Distance { get; init; }
     public required string Style { get; init; }
@@ -241,7 +244,6 @@ public static class PerformanceChartEngine
         GameMasterCatalog catalog = GameMasterService.Current.Catalog;
         var byKey = new Dictionary<UmaRowKey, UmaAccumulator>();
         var seen = new List<UmaRowKey>();
-        var rankByTrainedId = new Dictionary<int, int>();
         foreach (TeamTrialResult trial in trials)
         {
             int rosterIndex = 0;
@@ -253,29 +255,11 @@ public static class PerformanceChartEngine
                 if (!byKey.TryGetValue(key, out UmaAccumulator? acc))
                 {
                     acc = new UmaAccumulator(trainedCharaId);
-                    if (rankByTrainedId.TryGetValue(trainedCharaId, out int known))
-                    {
-                        acc.RankScore = known;
-                    }
-
                     byKey[key] = acc;
                     seen.Add(key);
                 }
 
                 acc.CharaId = horse.CharaId;
-                int rankScore = RankScoreOf(trial, trainedCharaId);
-                if (rankScore > 0)
-                {
-                    rankByTrainedId[trainedCharaId] = rankScore;
-                    foreach (UmaAccumulator other in byKey.Values)
-                    {
-                        if (other.TrainedCharaId == trainedCharaId)
-                        {
-                            other.RankScore = rankScore;
-                        }
-                    }
-                }
-
                 (acc.Distance, acc.Style) = LayoutOf(trial, horse, rosterIndex);
                 acc.Add(trial, catalog);
                 rosterIndex++;
@@ -364,31 +348,6 @@ public static class PerformanceChartEngine
     /// from the base score.
     /// </summary>
     private readonly record struct UmaRowKey(int TrainedCharaId, int RunningStyle, int DistanceType);
-
-    private static int RankScoreOf(TeamTrialResult trial, int trainedCharaId)
-    {
-        if (trial.Data?.UserTrainedCharaArrayCopy != null)
-        {
-            foreach (TrainedChara trained in trial.Data.UserTrainedCharaArrayCopy)
-            {
-                if (trained.TrainedCharaId == trainedCharaId && trained.ResolvedRankScore > 0)
-                {
-                    return trained.ResolvedRankScore;
-                }
-            }
-        }
-
-        if (trial.RaceRoster.TryGetValue(trainedCharaId, out RaceHorseData? horse))
-        {
-            int score = horse.ResolveRankScore();
-            if (score > 0)
-            {
-                return score;
-            }
-        }
-
-        return 0;
-    }
 
     private sealed class UmaAccumulator
     {

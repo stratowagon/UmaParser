@@ -124,16 +124,6 @@ namespace UmaParser.DataModel.ResponseData
         public int RankScore { get; set; }
 
         /// <summary>
-        /// Same rating when a dump uses camelCase (<c>trained_chara_data.rankScore</c> is the usual HorseACT shape;
-        /// a trained-chara array can use this spelling too).
-        /// </summary>
-        [JsonPropertyName("rankScore")]
-        public int RankScoreCamel { get; set; }
-
-        /// <summary>Whichever spelling of the portrait rating this object actually carried.</summary>
-        public int ResolvedRankScore => RankScore > 0 ? RankScore : RankScoreCamel;
-
-        /// <summary>
         /// (probably) the enumerated rank tier of the uma (S, S+, SS, UG and so on)
         /// </summary>
         [JsonPropertyName("rank")]
