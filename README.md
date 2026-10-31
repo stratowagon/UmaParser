@@ -65,7 +65,8 @@ that uma's average score with support, opponent, and ace bonuses removed, split 
 place and win margin, white / gold / unique skills, strong start, and style lead plus other
 extras. A dashed line marks the team average. Under each bar, a thin line shows the P25–P75
 range, with a median tick, min/max dots, and a P90 marker. Rows start weakest-first. The sort
-box can order by average, median, max, P75, or P90, ascending or descending. Hover a row for
+box can order by average, median, max, P75, or P90, ascending or descending, and that choice
+is remembered in settings.json. Hover a row for
 the average, median, P90, and the segment split. Skill proc rates stay on the Skills tab.
 
 ### Skills Tab

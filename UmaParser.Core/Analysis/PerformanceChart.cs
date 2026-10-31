@@ -17,6 +17,65 @@ public enum PerformanceSortKey
     P90,
 }
 
+/// <summary>
+/// The <c>PerformanceSort</c> and <c>PerformanceSortAscending</c> values in settings.json.
+/// A missing or unknown sort is <see cref="PerformanceSortKey.Average"/>. A missing direction is ascending.
+/// </summary>
+public static class PerformanceSortSetting
+{
+    public static PerformanceSortKey Parse(string? saved)
+    {
+        if (string.IsNullOrWhiteSpace(saved))
+        {
+            return PerformanceSortKey.Average;
+        }
+
+        string text = saved.Trim();
+        foreach (PerformanceSortKey key in Enum.GetValues<PerformanceSortKey>())
+        {
+            if (string.Equals(Format(key), text, StringComparison.OrdinalIgnoreCase))
+            {
+                return key;
+            }
+        }
+
+        return PerformanceSortKey.Average;
+    }
+
+    public static string Format(PerformanceSortKey key) => key switch
+    {
+        PerformanceSortKey.Median => "Median",
+        PerformanceSortKey.Max => "Max",
+        PerformanceSortKey.P75 => "P75",
+        PerformanceSortKey.P90 => "P90",
+        _ => "Average",
+    };
+
+    /// <summary>Null direction is ascending, the tab's default.</summary>
+    public static bool AscendingOrDefault(bool? saved) => saved ?? true;
+}
+
+/// <summary>
+/// Reads and writes the Performance sort in the shared settings file.
+/// Other keys in that file are left as they were.
+/// </summary>
+internal static class PerformanceSortPreferences
+{
+    public static (PerformanceSortKey Key, bool Ascending) Load(string? path)
+    {
+        GameMasterSettings settings = GameMasterSettings.Load(path);
+        return (PerformanceSortSetting.Parse(settings.PerformanceSort), PerformanceSortSetting.AscendingOrDefault(settings.PerformanceSortAscending));
+    }
+
+    public static void Save(string? path, PerformanceSortKey key, bool ascending)
+    {
+        GameMasterSettings settings = GameMasterSettings.Load(path);
+        settings.PerformanceSort = PerformanceSortSetting.Format(key);
+        settings.PerformanceSortAscending = ascending;
+        settings.Save(path);
+    }
+}
+
 /// <summary>Mean base points for one source, already averaged across the loaded trials.</summary>
 public sealed class PerformanceSegment
 {
