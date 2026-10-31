@@ -23,6 +23,9 @@ public static class DropStatusText
         };
     }
 
+    /// <summary>Status bar after File → Clear All Data.</summary>
+    public const string Cleared = "Cleared loaded files.";
+
     public static string NoneLoaded(int skippedFileCount) =>
         skippedFileCount > 0
             ? $"No supported race files loaded ({skippedFileCount} file(s) skipped)."

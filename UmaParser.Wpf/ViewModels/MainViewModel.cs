@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Windows.Input;
 using UmaParser.Import;
 using UmaParser.MasterData;
 using UmaParser.Mvvm;
@@ -13,9 +14,9 @@ namespace UmaParser.ViewModels;
 
 /// <summary>
 /// The window. <see cref="Tabs"/> is the list of screens, in tab order.
-/// A file drop calls <see cref="LoadFiles"/>, which uses the same import path as WinForms:
-/// <see cref="CaptureImportService.TryImportPath"/> then <see cref="TeamTrialBatchBuilder.Build"/>.
-/// That one batch is handed to every screen.
+/// A file drop calls <see cref="LoadFiles"/>, which adds those paths to the set already loaded
+/// and rebuilds one <see cref="TeamTrialBatch"/> from the whole set. The same path is kept once.
+/// That batch is handed to every screen. File → Clear All Data empties the set.
 /// </summary>
 public sealed class MainViewModel : ObservableObject
 {
@@ -26,6 +27,7 @@ public sealed class MainViewModel : ObservableObject
     public const int TracksTabIndex = 4;
 
     private readonly IShellServices _shell;
+    private readonly LoadedCaptureSet _captures = new();
     private OptionsViewModel? _options;
     private string _statusText;
     private int _selectedTabIndex;
@@ -47,6 +49,7 @@ public sealed class MainViewModel : ObservableObject
             new ScreenTab { Title = "Tracks", Content = Tracks },
         ];
         LoadFilesCommand = new RelayCommand(LoadFiles);
+        ClearFilesCommand = new RelayCommand(ClearFiles, _ => _captures.Count > 0);
         OpenPreferencesCommand = new RelayCommand(OpenPreferences);
         ShowMasterDataStatusCommand = new RelayCommand(ShowMasterDataStatus);
         RefreshMasterDataCommand = new RelayCommand(RefreshMasterData);
@@ -72,6 +75,8 @@ public sealed class MainViewModel : ObservableObject
     public IReadOnlyList<ScreenTab> Tabs { get; }
 
     public RelayCommand LoadFilesCommand { get; }
+
+    public RelayCommand ClearFilesCommand { get; }
 
     public RelayCommand OpenPreferencesCommand { get; }
 
@@ -108,29 +113,23 @@ public sealed class MainViewModel : ObservableObject
             return;
         }
 
-        var paths = new List<string>();
-        foreach (string path in dropped)
-        {
-            if (!string.IsNullOrWhiteSpace(path))
-            {
-                paths.Add(path);
-            }
-        }
-
-        if (paths.Count == 0)
+        // Already-loaded paths are ignored, including a second drop of a file that failed to import.
+        int added = _captures.Add(dropped);
+        CommandManager.InvalidateRequerySuggested();
+        if (added == 0)
         {
             return;
         }
 
-        // Each dropped path is imported on its own. A folder is not walked: WinForms does not
-        // walk folders either, and Core reports a path that is not a .json file as skipped.
+        // The whole set is imported again. A folder is not walked: a path that is not a .json
+        // file is skipped, and one bad file does not drop the captures already loaded.
         long started = Stopwatch.GetTimestamp();
-        TeamTrialBatch batch = TeamTrialBatchBuilder.Build(paths.Select(CaptureImportService.TryImportPath));
+        TeamTrialBatch batch = TeamTrialBatchBuilder.Build(_captures.Paths.Select(CaptureImportService.TryImportPath));
         double importMs = ElapsedMs(started);
         if (!batch.HasAnyData)
         {
             StatusText = DropStatusText.NoneLoaded(batch.SkippedFileCount);
-            Trace.WriteLine($"UmaParser load: files={paths.Count} import={importMs:0.0} ms, no data");
+            Trace.WriteLine($"UmaParser load: files={_captures.Count} import={importMs:0.0} ms, no data");
             return;
         }
 
@@ -165,7 +164,7 @@ public sealed class MainViewModel : ObservableObject
         // Results/Analysis include the grid rebuild when that tab's view is already loaded.
         // Import and the single-race parse are the part a tab switch does not repeat.
         Trace.WriteLine(
-            $"UmaParser load: files={paths.Count} kind={batch.Kind} import={importMs:0.0} ms, parse={parseMs:0.0} ms, results={resultsMs:0.0} ms, analysis={analysisMs:0.0} ms, performance={performanceMs:0.0} ms, skills={skillsMs:0.0} ms, tracks={tracksMs:0.0} ms");
+            $"UmaParser load: files={_captures.Count} added={added} kind={batch.Kind} import={importMs:0.0} ms, parse={parseMs:0.0} ms, results={resultsMs:0.0} ms, analysis={analysisMs:0.0} ms, performance={performanceMs:0.0} ms, skills={skillsMs:0.0} ms, tracks={tracksMs:0.0} ms");
         StatusText = batch.Kind == TeamTrialBatchKind.RosterStats && Analysis.Summary.Length > 0
             ? Analysis.Summary
             : DropStatusText.For(batch, singleRaceLoad);
@@ -176,6 +175,20 @@ public sealed class MainViewModel : ObservableObject
             TeamTrialBatchKind.MixedOrNonTT => SkillsTabIndex,
             _ => SelectedTabIndex,
         };
+        _options?.RefreshAvailability();
+    }
+
+    private void ClearFiles(object? parameter)
+    {
+        _captures.Clear();
+        CommandManager.InvalidateRequerySuggested();
+        var empty = new TeamTrialBatch { Kind = TeamTrialBatchKind.Empty };
+        Results.Apply(empty, AppTheme.Current);
+        Analysis.Apply(empty);
+        Performance.Apply(empty);
+        Skills.Apply(empty);
+        Tracks.Apply(empty);
+        StatusText = DropStatusText.Cleared;
         _options?.RefreshAvailability();
     }
 

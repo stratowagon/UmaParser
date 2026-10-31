@@ -16,8 +16,9 @@ names and skill data from the master mdb at the default location or a custom loc
 Otherwise it will use the embedded fallback master data, which may not be up-to-date.
 
 ## Usage
-Drag and drop one or more .json files containing TT results onto the app.  Every time you drop
-it will reset everything, so the best use is to drop a stack of races at once.
+Drag and drop one or more .json files containing TT results onto the app. Another drop adds
+those files to the ones already loaded. Dropping a file that is already loaded does not count
+it twice. File → Clear All Data empties the set and every tab.
 
 ### Team Trials
 For full analysis, drop multiple Team Trials files that all contain the same team members.
