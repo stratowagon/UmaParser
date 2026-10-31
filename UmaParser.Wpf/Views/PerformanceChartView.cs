@@ -33,8 +33,7 @@ public sealed class PerformanceChartView : FrameworkElement
 
     private readonly TextBlock _tipText = new()
     {
-        TextWrapping = TextWrapping.Wrap,
-        MaxWidth = 440,
+        TextWrapping = TextWrapping.NoWrap,
     };
 
     private double _legendHeight = LegendRowHeight;
@@ -45,14 +44,7 @@ public sealed class PerformanceChartView : FrameworkElement
         SnapsToDevicePixels = true;
         UseLayoutRounding = true;
         TextOptions.SetTextFormattingMode(this, TextFormattingMode.Display);
-        var scroll = new ScrollViewer
-        {
-            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
-            MaxHeight = 380,
-            Content = _tipText,
-        };
-        _tip.Content = scroll;
+        _tip.Content = _tipText;
     }
 
     public static readonly DependencyProperty ChartProperty = DependencyProperty.Register(
@@ -265,7 +257,7 @@ public sealed class PerformanceChartView : FrameworkElement
             dc.DrawRectangle(palette.AltRow, null, new Rect(0, top, ActualWidth, RowHeight));
         }
 
-        FormattedText name = LabelText(row.Name, 13, palette.Text, row.IsAce ? FontWeights.SemiBold : FontWeights.Normal);
+        FormattedText name = LabelText(row.Name, 13, palette.Text);
         FormattedText average = LabelText(row.Average.ToString("N0", CultureInfo.CurrentCulture), 13, palette.Text, FontWeights.SemiBold);
         FormattedText subtitle = LabelText(row.Subtitle, 11, palette.Muted);
         double nameWidth = LabelWidth - average.Width - 20;

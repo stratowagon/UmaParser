@@ -25,18 +25,6 @@ public sealed class PerformanceSegment
     public required double Average { get; init; }
 }
 
-/// <summary>
-/// One skill on the hover card. Rates come from <see cref="SkillActivationAnalyzer"/>
-/// (per-race activation, 0–100). Points per race are that report's attributed skill points.
-/// </summary>
-public sealed class PerformanceSkillLine
-{
-    public required int SkillId { get; init; }
-    public required string Name { get; init; }
-    public required double PerRaceRatePercent { get; init; }
-    public required double PointsPerRace { get; init; }
-}
-
 /// <summary>One roster uma, ready for a stacked bar and the spread drawn under it.</summary>
 public sealed class PerformanceUmaRow
 {
@@ -45,8 +33,8 @@ public sealed class PerformanceUmaRow
     public required string Name { get; init; }
     public required string Distance { get; init; }
     public required string Style { get; init; }
-    public required string Role { get; init; }
-    public required bool IsAce { get; init; }
+
+    /// <summary>Distance and running style. Ace and support are not shown; those bonuses are already stripped.</summary>
     public required string Subtitle { get; init; }
     public required int TrialCount { get; init; }
     public required IReadOnlyList<PerformanceSegment> Segments { get; init; }
@@ -57,8 +45,9 @@ public sealed class PerformanceUmaRow
     public required double P25 { get; init; }
     public required double P75 { get; init; }
     public required double P90 { get; init; }
+
+    /// <summary>Sum of the white, gold, and unique segment averages. Not drawn on the tab.</summary>
     public required double SkillAverage { get; init; }
-    public required IReadOnlyList<PerformanceSkillLine> Skills { get; init; }
     public required string Tooltip { get; init; }
 
     public double Value(PerformanceSortKey key) => key switch
@@ -188,7 +177,6 @@ public static class PerformanceChartEngine
         for (int umaIndex = 0; umaIndex < ids.Count; umaIndex++)
         {
             rows.Add(BuildRow(
-                trials,
                 layout,
                 ids[umaIndex],
                 names[umaIndex],
@@ -215,7 +203,6 @@ public static class PerformanceChartEngine
         "Strong start is a gate within 0.02s. The dashed line is the team average; P90 marks the peak.";
 
     private static PerformanceUmaRow BuildRow(
-        IReadOnlyList<TeamTrialResult> trials,
         TeamTrialResult layout,
         int trainedCharaId,
         string name,
@@ -237,9 +224,10 @@ public static class PerformanceChartEngine
 
         double average = scores.Average();
         double skillAverage = segments.Where(segment => PerformanceScoreSources.IsSkill(segment.Source)).Sum(segment => segment.Average);
-        (string distance, string role, string style, bool isAce) = LayoutOf(layout, rosterIndex);
-        string subtitle = $"{distance} · {role} · {style}";
-        IReadOnlyList<PerformanceSkillLine> skills = SkillLines(trials, trainedCharaId, name);
+        (string distance, string style) = LayoutOf(layout, rosterIndex);
+        string subtitle = $"{distance} · {style}";
+        double median = ScorePercentile.Linear(scores, 0.5);
+        double p90 = ScorePercentile.Linear(scores, 0.9);
 
         var row = new PerformanceUmaRow
         {
@@ -248,20 +236,17 @@ public static class PerformanceChartEngine
             Name = name,
             Distance = distance,
             Style = style,
-            Role = role,
-            IsAce = isAce,
             Subtitle = subtitle,
             TrialCount = trialCount,
             Segments = segments,
             Average = average,
-            Median = ScorePercentile.Linear(scores, 0.5),
+            Median = median,
             Min = scores.Min(),
             Max = scores.Max(),
             P25 = ScorePercentile.Linear(scores, 0.25),
             P75 = ScorePercentile.Linear(scores, 0.75),
-            P90 = ScorePercentile.Linear(scores, 0.9),
+            P90 = p90,
             SkillAverage = skillAverage,
-            Skills = skills,
             Tooltip = "",
         };
 
@@ -272,8 +257,6 @@ public static class PerformanceChartEngine
             Name = row.Name,
             Distance = row.Distance,
             Style = row.Style,
-            Role = row.Role,
-            IsAce = row.IsAce,
             Subtitle = row.Subtitle,
             TrialCount = row.TrialCount,
             Segments = row.Segments,
@@ -285,30 +268,8 @@ public static class PerformanceChartEngine
             P75 = row.P75,
             P90 = row.P90,
             SkillAverage = row.SkillAverage,
-            Skills = row.Skills,
             Tooltip = FormatTooltip(row),
         };
-    }
-
-    private static IReadOnlyList<PerformanceSkillLine> SkillLines(
-        IReadOnlyList<TeamTrialResult> trials,
-        int trainedCharaId,
-        string name)
-    {
-        SkillActivationReport report = SkillActivationAnalyzer.Analyze(trials, trainedCharaId, name);
-        var lines = new List<PerformanceSkillLine>(report.Rows.Count);
-        foreach (SkillActivationRow skill in report.Rows)
-        {
-            lines.Add(new PerformanceSkillLine
-            {
-                SkillId = skill.SkillId,
-                Name = skill.SkillName,
-                PerRaceRatePercent = skill.PerRaceActivationRatePercent,
-                PointsPerRace = skill.PointsPerRace,
-            });
-        }
-
-        return lines;
     }
 
     internal static string FormatTooltip(PerformanceUmaRow row)
@@ -317,41 +278,17 @@ public static class PerformanceChartEngine
         text.Append(row.Name);
         text.Append(" · ");
         text.Append(row.Subtitle);
-        text.Append(" · ");
-        text.Append(row.TrialCount);
-        text.Append(row.TrialCount == 1 ? " trial" : " trials");
         text.AppendLine();
         text.Append("Average ").Append(Points(row.Average));
         text.Append("    Median ").Append(Points(row.Median));
-        text.Append("    P25 ").Append(Points(row.P25));
-        text.Append("    P75 ").Append(Points(row.P75));
         text.Append("    P90 ").Append(Points(row.P90));
-        text.AppendLine();
-        text.Append("Min ").Append(Points(row.Min));
-        text.Append("    Max ").Append(Points(row.Max));
-        text.AppendLine();
         foreach (PerformanceSegment segment in row.Segments)
         {
-            text.Append(segment.Label).Append("    ").Append(Points(segment.Average)).AppendLine();
-        }
-
-        text.Append("Skill total    ").Append(Points(row.SkillAverage));
-        if (row.Skills.Count > 0)
-        {
             text.AppendLine();
-            text.AppendLine("Skills (proc rate, pts/race)");
-            foreach (PerformanceSkillLine skill in row.Skills)
-            {
-                text.Append(skill.Name);
-                text.Append("    ");
-                text.Append(skill.PerRaceRatePercent.ToString("0.#", CultureInfo.CurrentCulture));
-                text.Append("%    ");
-                text.Append(skill.PointsPerRace.ToString("0", CultureInfo.CurrentCulture));
-                text.AppendLine();
-            }
+            text.Append(segment.Label).Append("    ").Append(Points(segment.Average));
         }
 
-        return text.ToString().TrimEnd();
+        return text.ToString();
     }
 
     private static string Points(double value) => value.ToString("N0", CultureInfo.CurrentCulture);
@@ -370,23 +307,19 @@ public static class PerformanceChartEngine
         return order.Count - 1;
     }
 
-    private static (string Distance, string Role, string Style, bool IsAce) LayoutOf(TeamTrialResult layout, int rosterIndex)
+    private static (string Distance, string Style) LayoutOf(TeamTrialResult layout, int rosterIndex)
     {
         int teamIndex = rosterIndex / 3;
         if (layout.RaceRoster.Count > rosterIndex)
         {
             var uma = layout.RaceRoster.ElementAt(rosterIndex).Value;
-            bool isAce = uma.TeamMemberId == 1;
             int distanceType = layout.FindRaceResultByUma(uma)?.DistanceType ?? (teamIndex + 1);
             return (
                 DistanceTypeNames.FormatAnalysis(distanceType),
-                isAce ? "Ace" : "Support",
-                RunningStyleNames.FormatAnalysis(uma.RunningStyle),
-                isAce);
+                RunningStyleNames.FormatAnalysis(uma.RunningStyle));
         }
 
-        bool fallbackAce = rosterIndex % 3 == 0;
-        return (DistanceTypeNames.FormatTeamSlot(teamIndex), fallbackAce ? "Ace" : "Support", "—", fallbackAce);
+        return (DistanceTypeNames.FormatTeamSlot(teamIndex), "—");
     }
 
     private static PerformanceChart Unavailable(string message) => new()

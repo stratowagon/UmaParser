@@ -103,8 +103,9 @@ public sealed class PerformanceChartTests
         Assert.True(chart.Available);
         Assert.Equal(1, chart.TrialCount);
         Assert.Equal("Special Week", row.Name);
-        Assert.Equal("Sprint · Ace · Front", row.Subtitle);
-        Assert.True(row.IsAce);
+        Assert.Equal("Sprint · Front", row.Subtitle);
+        Assert.DoesNotContain("Ace", row.Subtitle);
+        Assert.DoesNotContain("Support", row.Subtitle);
         Assert.Equal(19_700, row.Average);
         Assert.Equal(15_000, Segment(row, PerformanceScoreSource.FinishAndMargin));
         Assert.Equal(500, Segment(row, PerformanceScoreSource.SkillWhite));
@@ -118,8 +119,14 @@ public sealed class PerformanceChartTests
         Assert.Equal(19_700, row.Max);
         Assert.Equal(19_700, row.Median);
         Assert.Equal(19_700, row.P90);
+        Assert.Contains("Special Week · Sprint · Front", row.Tooltip);
+        Assert.Contains("Average 19,700    Median 19,700    P90 19,700", row.Tooltip);
         Assert.Contains("Finish + margin    15,000", row.Tooltip);
-        Assert.Contains("Skill total    3,200", row.Tooltip);
+        Assert.Contains("White skills    500", row.Tooltip);
+        Assert.Equal(8, row.Tooltip.Split('\n').Length);
+        Assert.DoesNotContain("Ace", row.Tooltip);
+        Assert.DoesNotContain("Support", row.Tooltip);
+        Assert.DoesNotContain("%", row.Tooltip);
         Assert.DoesNotContain("20,200", row.Tooltip);
         Assert.Equal(19_700, chart.TeamAverage);
     }
@@ -155,7 +162,8 @@ public sealed class PerformanceChartTests
         Assert.Equal(3_000, flat.P75);
         Assert.Equal(3_000, flat.P90);
         Assert.Equal("End", flat.Style);
-        Assert.False(flat.IsAce);
+        Assert.Equal("Sprint · End", flat.Subtitle);
+        Assert.DoesNotContain("Support", flat.Tooltip);
 
         Assert.Equal([1, 2], Ids(chart, PerformanceSortKey.Average, ascending: true));
         Assert.Equal([2, 1], Ids(chart, PerformanceSortKey.Average, ascending: false));
@@ -226,19 +234,14 @@ public sealed class PerformanceChartTests
             Assert.Equal(bases.Min(), row.Min);
             Assert.Equal(bases.Max(), row.Max);
             Assert.Contains(row.Name, row.Tooltip);
-            Assert.Contains("Skill total", row.Tooltip);
-
-            SkillActivationReport report = SkillActivationAnalyzer.Analyze(trials, row.TrainedCharaId, row.Name);
-            Assert.Equal(report.Rows.Select(skill => skill.SkillId), row.Skills.Select(skill => skill.SkillId));
-            // Scenario score events and the score-array buckets are the same skill points,
-            // aside from a point or two of 1:1 pairing at a shared frame.
-            double attributed = report.Rows.Sum(skill => skill.PointsPerRace);
-            Assert.InRange(Math.Abs(attributed - row.SkillAverage), 0, Math.Max(50, row.SkillAverage * 0.05));
-            if (report.Rows.Count > 0)
-            {
-                Assert.Contains(report.Rows[0].SkillName, row.Tooltip);
-                Assert.Contains("%", row.Tooltip);
-            }
+            Assert.Contains("Average ", row.Tooltip);
+            Assert.Contains("Median ", row.Tooltip);
+            Assert.Contains("P90 ", row.Tooltip);
+            Assert.Contains(row.Subtitle, row.Tooltip);
+            Assert.DoesNotContain("Ace", row.Subtitle);
+            Assert.DoesNotContain("Support", row.Subtitle);
+            Assert.DoesNotContain("%", row.Tooltip);
+            Assert.True(row.Tooltip.Split('\n').Length <= 8, row.Tooltip);
 
             foreach (TeamTrialResult trial in trials)
             {
