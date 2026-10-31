@@ -8,17 +8,18 @@ Some of the features are also useful for CMs, Room matches, and Practice rooms.
 
 ## Prereqs
 You will need to have a tool to collect json API captures of races to use this.
-One example is [HorseACT](https://github.com/ayaliz/horseACT), but other tools may work as well
-as long as they preserve the same json structure.
+A non-invasive tool for this is Werseter's excellent [UmaDump](https://werseter.github.io/umadump/).
+You could also use something more technical like [HorseACT](https://github.com/ayaliz/horseACT).
+Any tool that can capture the standard TT race structure as json should work.
 
 If you have the global Steam client installed, this app will try to read up-to-date
 names and skill data from the master mdb at the default location or a custom location.
 Otherwise it will use the embedded fallback master data, which may not be up-to-date.
 
 ## Usage
-Drag and drop one or more .json files containing TT results onto the app. Another drop adds
-those files to the ones already loaded. Dropping a file that is already loaded does not count
-it twice. File → Clear All Data empties the set and every tab.
+Drag and drop one or more .json files containing TT results onto the app.  If you drop files
+multiple times, it will add them to the current loaded data (ignoring duplicates).  You can
+reset the data using File -> Clear All Data.
 
 ### Team Trials
 For full analysis, drop multiple Team Trials files that all contain the same team members.
@@ -61,10 +62,11 @@ be better off swapping aces.  However this requires a decently large sample size
 so take the recommendations with a grain of salt.
 
 ### Performance Tab
-Stacked base-score bars for the Team Trials umas in the drop. A consistent 15-uma roster
-still works. A mixed set works too: every trained uma who appears in any loaded file gets a
-row, and that row's average uses only the trials that uma actually ran. Replacing one or two
-umas leaves the new and the old ones on the same list.
+Visualization ~~stolen from~~inspired by [Chernobyl Liquidator's work](https://uma.satki.org/team_trial).
+Stacked base-score bars for the Team Trials umas in the loaded set. A consistent roster still
+works. A mixed set works too: every trained uma who appears in any loaded file gets a row, and
+that row's average uses only the trials that uma actually ran. This tab is only for Team Trials,
+and it does not require the same team in every file the way Team Analysis does.
 
 Each bar is that uma's average score with support, opponent, and ace bonuses removed, split
 into finish place and win margin, white / gold / unique skills, strong start, and style lead
@@ -72,7 +74,7 @@ plus other extras. Under each bar, a thin line shows the P25–P75 range, with a
 min/max dots, and a P90 marker. Rows start weakest-first. The sort box can order by average,
 median, max, P75, or P90, ascending or descending, and that choice is remembered in
 settings.json. Hover a row for the average, median, P90, and the segment split. Skill proc
-rates stay on the Skills tab.
+rates stay on the Skills tab. The color legend stays above the scrolling bars.
 
 Team Trials captures do not include the portrait rating, so each row is labeled with the
 catalog short name. Champions Meet, Room Match, and Practice still tell veterans apart by
@@ -82,10 +84,8 @@ still shows it.
 A row is one trained uma, one running style, and one distance. The same uma in two styles,
 or in two distances, is two rows. Each row's race count and stats use only the trials that
 match that style and distance. Moving between ace and support does not split the row when
-the id, style, and distance stay the same; the ace bonus is already removed from the base
-score. The line under the name ends with how many of those trials there were
-(`Sprint · Late · 12 races`). Two different builds of the same character stay separate as
-well.
+the id, style, and distance stay the same. The line under the name ends with how many of
+those trials there were (`Sprint · Late · 12 races`).
 
 A short sample is marked on that race count. With the defaults, fewer than 10 races is red,
 10 through 19 are yellow, and 20 or more has no mark. Both cutoffs are editable under
@@ -94,8 +94,8 @@ Options → Performance and are stored in settings.json. A missing setting uses 
 A bar at the left of the row means that uma, in that running style and distance, is on the
 current lineup: the roster in the newest file. Replaced umas, and the same uma's other styles
 or distances, stay visible without the bar. The dashed line is the mean of those current
-rows' average base scores, so a tryout is compared with the team in the newest file. When
-every file has the same roster, styles, and distances, that line is the average of all 15.
+rows' average base scores. When every file has the same roster, styles, and distances, that
+line is the average of all 15.
 
 ### Skills Tab
 This tab provides detailed information for an uma's skill activations across multiple races.
