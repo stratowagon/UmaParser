@@ -17,7 +17,7 @@ The solution is the WPF app, Core, and Core tests, plus a few dev-only console t
 UmaParser.sln
 ├── UmaParser.Wpf/          WPF UI (MVVM by hand)
 │   ├── Mvvm/               ObservableObject and RelayCommand
-│   ├── ViewModels/         MainViewModel, tab list, Results, Team Analysis, Skills, Tracks, Options
+│   ├── ViewModels/         MainViewModel, tab list, Results, Team Analysis, Performance, Skills, Tracks, Options
 │   ├── Views/              MainWindow, Options, and one view per tab
 │   ├── Behaviors/          File drop forwarded to a command
 │   ├── Converters/         CellBand to brush
@@ -85,13 +85,13 @@ The window is MVVM by hand. Follow the existing folders:
 | Area | Responsibility |
 |------|----------------|
 | `Views/MainWindow` | Shell, menus, tabs, drag-drop, window placement |
-| `Views/` | One view per tab (Results, Team Analysis, Skills, Tracks) plus Options |
+| `Views/` | One view per tab (Results, Team Analysis, Performance, Skills, Tracks) plus Options |
 | `ViewModels/` | `MainViewModel`, one view model per tab, and Options |
 | `Themes/` | Light, dark, and System appearance |
 | `Services/` | File dialogs and monitor rectangles |
 | `Mvvm/` | `ObservableObject` and `RelayCommand` |
 
-Tab order is Results, Team Analysis, Skills, Tracks. A new screen is a view plus a view model that calls Core.
+Tab order is Results, Team Analysis, Performance, Skills, Tracks. A new screen is a view plus a view model that calls Core.
 
 ### Namespace
 

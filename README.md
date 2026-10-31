@@ -59,6 +59,15 @@ The "Ace Delta" column is comparing the umas within one team to their ace to see
 be better off swapping aces.  However this requires a decently large sample size to be meaningful,
 so take the recommendations with a grain of salt.
 
+### Performance Tab
+Stacked base-score bars for the same consistent 15-uma roster as Team Analysis. Each bar is
+that uma's average score with support, opponent, and ace bonuses removed, split into finish
+place and win margin, white / gold / unique skills, strong start, and style lead plus other
+extras. A dashed line marks the team average. Under each bar, a thin line shows the P25–P75
+range, with a median tick, min/max dots, and a P90 marker. Rows start weakest-first. The sort
+box can order by average, median, max, P75, or P90, ascending or descending. Hover a row for
+the split and each skill's proc rate.
+
 ### Skills Tab
 This tab provides detailed information for an uma's skill activations across multiple races.
 This can be used to identify skills that are not proccing frequently enough, which can be useful

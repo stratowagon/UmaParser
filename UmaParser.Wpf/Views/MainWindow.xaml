@@ -26,6 +26,9 @@
         <DataTemplate DataType="{x:Type vm:AnalysisViewModel}">
             <views:AnalysisView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:PerformanceViewModel}">
+            <views:PerformanceView/>
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:SkillsViewModel}">
             <views:SkillsView/>
         </DataTemplate>

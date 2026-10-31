@@ -21,8 +21,9 @@ public sealed class MainViewModel : ObservableObject
 {
     public const int ResultsTabIndex = 0;
     public const int AnalysisTabIndex = 1;
-    public const int SkillsTabIndex = 2;
-    public const int TracksTabIndex = 3;
+    public const int PerformanceTabIndex = 2;
+    public const int SkillsTabIndex = 3;
+    public const int TracksTabIndex = 4;
 
     private readonly IShellServices _shell;
     private OptionsViewModel? _options;
@@ -34,12 +35,14 @@ public sealed class MainViewModel : ObservableObject
         _shell = shell;
         Results = new ResultsViewModel(AppTheme.Current);
         Analysis = new AnalysisViewModel();
+        Performance = new PerformanceViewModel();
         Skills = new SkillsViewModel();
         Tracks = new TracksViewModel();
         Tabs =
         [
             new ScreenTab { Title = "Results", Content = Results },
             new ScreenTab { Title = "Team Analysis", Content = Analysis },
+            new ScreenTab { Title = "Performance", Content = Performance },
             new ScreenTab { Title = "Skills", Content = Skills },
             new ScreenTab { Title = "Tracks", Content = Tracks },
         ];
@@ -61,10 +64,11 @@ public sealed class MainViewModel : ObservableObject
 
     public ResultsViewModel Results { get; }
     public AnalysisViewModel Analysis { get; }
+    public PerformanceViewModel Performance { get; }
     public SkillsViewModel Skills { get; }
     public TracksViewModel Tracks { get; }
 
-    /// <summary>Bound to the window's tab control. Order matches WinForms: Results, Team Analysis, Skills, Tracks.</summary>
+    /// <summary>Bound to the window's tab control. Order: Results, Team Analysis, Performance, Skills, Tracks.</summary>
     public IReadOnlyList<ScreenTab> Tabs { get; }
 
     public RelayCommand LoadFilesCommand { get; }
@@ -147,6 +151,10 @@ public sealed class MainViewModel : ObservableObject
         double analysisMs = ElapsedMs(started);
 
         started = Stopwatch.GetTimestamp();
+        Performance.Apply(batch);
+        double performanceMs = ElapsedMs(started);
+
+        started = Stopwatch.GetTimestamp();
         Skills.Apply(batch, singleRaceLoad: singleRaceLoad);
         double skillsMs = ElapsedMs(started);
 
@@ -157,7 +165,7 @@ public sealed class MainViewModel : ObservableObject
         // Results/Analysis include the grid rebuild when that tab's view is already loaded.
         // Import and the single-race parse are the part a tab switch does not repeat.
         Trace.WriteLine(
-            $"UmaParser load: files={paths.Count} kind={batch.Kind} import={importMs:0.0} ms, parse={parseMs:0.0} ms, results={resultsMs:0.0} ms, analysis={analysisMs:0.0} ms, skills={skillsMs:0.0} ms, tracks={tracksMs:0.0} ms");
+            $"UmaParser load: files={paths.Count} kind={batch.Kind} import={importMs:0.0} ms, parse={parseMs:0.0} ms, results={resultsMs:0.0} ms, analysis={analysisMs:0.0} ms, performance={performanceMs:0.0} ms, skills={skillsMs:0.0} ms, tracks={tracksMs:0.0} ms");
         StatusText = batch.Kind == TeamTrialBatchKind.RosterStats && Analysis.Summary.Length > 0
             ? Analysis.Summary
             : DropStatusText.For(batch, singleRaceLoad);

@@ -65,4 +65,18 @@
     <SolidColorBrush x:Key="{x:Static SystemColors.HotTrackBrushKey}" Color="#FF3A9BFF"/>
     <SolidColorBrush x:Key="{x:Static SystemColors.ScrollBarBrushKey}" Color="#FF2A2A2D"/>
 
+    <!-- Performance chart. White skills stay the lightest gold, unique skills the darkest. -->
+    <SolidColorBrush x:Key="Performance.Finish" Color="#FF6BA6DE"/>
+    <SolidColorBrush x:Key="Performance.SkillWhite" Color="#FFF0D78A"/>
+    <SolidColorBrush x:Key="Performance.SkillGold" Color="#FFE8B23A"/>
+    <SolidColorBrush x:Key="Performance.SkillUnique" Color="#FFC48A3A"/>
+    <SolidColorBrush x:Key="Performance.StrongStart" Color="#FF5CBF8A"/>
+    <SolidColorBrush x:Key="Performance.StyleExtras" Color="#FFB0A0E0"/>
+    <SolidColorBrush x:Key="Performance.Deduction" Color="#FFE07070"/>
+    <SolidColorBrush x:Key="Performance.Spread" Color="#FFD0D0D0"/>
+    <SolidColorBrush x:Key="Performance.Median" Color="#FFF5F5F5"/>
+    <SolidColorBrush x:Key="Performance.P90" Color="#FFFF8A78"/>
+    <SolidColorBrush x:Key="Performance.TeamAverage" Color="#FFE8E8E8"/>
+    <SolidColorBrush x:Key="Performance.Hover" Color="#33264F78"/>
+
 </ResourceDictionary>
