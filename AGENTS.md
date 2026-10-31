@@ -9,29 +9,28 @@ UmaParser is a Windows desktop app for analyzing **Uma Musume: Pretty Derby** ra
 - **README.md** — user-facing usage and feature descriptions.
 - **This file** — build steps, architecture, and conventions for agents.
 
-The solution is the WinForms app, a WPF app that is replacing it one screen at a time, Core, and Core tests, plus a few dev-only console tools under `Tools/`. WinForms stays until WPF covers the same tabs. New UI work goes in the WPF project.
+The solution is the WPF app, Core, and Core tests, plus a few dev-only console tools under `Tools/`. `UmaParser.Wpf` is the UI. `UmaParser.Core` owns parsing, analysis, shared settings, and the screen models the UI displays.
 
 ## Repository layout
 
 ```
 UmaParser.sln
-├── UmaParser/              WinForms UI (kept until WPF reaches parity)
-│   ├── Form1*.cs           Main window split into partial classes by tab/concern
-│   └── Ui/                 Theming and shared UI helpers
-├── UmaParser.Wpf/          WPF UI (MVVM by hand). New UI work goes here.
+├── UmaParser.Wpf/          WPF UI (MVVM by hand)
 │   ├── Mvvm/               ObservableObject and RelayCommand
-│   ├── ViewModels/         MainViewModel, tab list, Results, Team Analysis, Skills, Tracks
-│   ├── Views/              MainWindow plus one view per tab
+│   ├── ViewModels/         MainViewModel, tab list, Results, Team Analysis, Skills, Tracks, Options
+│   ├── Views/              MainWindow, Options, and one view per tab
 │   ├── Behaviors/          File drop forwarded to a command
 │   ├── Converters/         CellBand to brush
-│   └── Themes/             Cell band colors, same values as AppColors
+│   ├── Services/           Shell dialogs and window monitors
+│   └── Themes/             Light, dark, and System chrome; cell-band brushes
 ├── UmaParser.Core/         All non-UI logic
 │   ├── Import/             JSON capture decoding and batch loading
 │   ├── Analysis/           Score/skill/track analysis engines
 │   ├── Presentation/       Shared column lists and the Results, Team Analysis, Skills, and Tracks screens
 │   ├── MasterData/         Game master DB (master.mdb) + embedded fallback
 │   ├── DataModel/          Deserialized API/capture shapes
-│   └── ObjectModel/        App-level domain types (e.g. TeamTrialResult)
+│   ├── ObjectModel/        App-level domain types (e.g. TeamTrialResult)
+│   └── Settings/           Column preferences and window placement (shared settings.json)
 ├── tests/
 │   └── UmaParser.Core.Tests/  xUnit tests, scrubbed fixtures, and golden snapshots
 └── Tools/                  Dev utilities (not shipped with the app)
@@ -43,7 +42,7 @@ UmaParser.sln
 
 ## Build and run
 
-Requires **.NET 8 SDK** on Windows (WinForms and WPF).
+Requires **.NET 8 SDK** on Windows (WPF).
 
 ```powershell
 # Build the solution
@@ -52,14 +51,11 @@ dotnet build UmaParser.sln -c Release
 # Run the tests (after the build)
 dotnet test UmaParser.sln -c Release
 
-# Run the WinForms app (from repo root). This is still the default startup project.
-dotnet run --project UmaParser/UmaParser.csproj -c Release
-
-# Run the WPF app. In Visual Studio: right-click UmaParser.Wpf, then "Set as Startup Project".
+# Run the WPF app (from repo root). This is the startup project.
 dotnet run --project UmaParser.Wpf/UmaParser.Wpf.csproj -c Release
 ```
 
-A non-Windows build of the desktop projects needs `-p:EnableWindowsTargeting=true`. `UmaParser.Wpf` sets that property itself. The WinForms project still needs it passed in on Linux.
+`UmaParser.Wpf` sets `EnableWindowsTargeting` itself, so a non-Windows build of the desktop project does not need an extra property. The Cloud Agent commands below still pass `-p:EnableWindowsTargeting=true`.
 
 `tests/UmaParser.Core.Tests` is an xUnit project. It runs from Visual Studio Test Explorer and from `dotnet test`. Tests call `GameMasterService.InitializeEmbeddedOnly()` and use **EmbeddedMasterFallback** only — they must not read AppData or a live `master.mdb`.
 
@@ -79,32 +75,27 @@ Published executables land in `publish/`, `release/`, or `_publish-sc/` (all git
 
 ### Keep logic out of the UI
 
-- **UmaParser.Core** owns parsing, analysis, master-data access, domain types, and the shared screen models (`UmaParser.Presentation`).
+- **UmaParser.Core** owns parsing, analysis, master-data access, domain types, shared settings, and the shared screen models (`UmaParser.Presentation`).
 - **UmaParser.Wpf** owns the WPF shell. New screens go here and call Core. Do not reimplement a calculation in the view model.
-- **UmaParser** owns the existing WinForms wiring. Leave it in place until WPF covers that tab. Do not add new tabs there.
 
-### Partial-class organization
+### WPF organization
 
-`Form1` is split by concern — follow the existing pattern:
+The window is MVVM by hand. Follow the existing folders:
 
-| File | Responsibility |
+| Area | Responsibility |
 |------|----------------|
-| `Form1.cs` | Constructor, drag-drop, shared grid helpers |
-| `Form1.TeamTrials.cs` | Results tab, roster grid |
-| `Form1.Analysis.cs` | Team Analysis tab |
-| `Form1.Skills.cs` | Skills tab |
-| `Form1.Tracks.cs` | Tracks tab |
-| `Form1.MasterData.cs` | Master DB menu / settings |
-| `Form1.View.cs` | Tab visibility and empty states |
-| `Form1.Status.cs` | Status bar |
-| `Form1.WindowLayout.cs` | Window size/position persistence |
-| `Form1.Designer.cs` | Designer-generated controls only |
+| `Views/MainWindow` | Shell, menus, tabs, drag-drop, window placement |
+| `Views/` | One view per tab (Results, Team Analysis, Skills, Tracks) plus Options |
+| `ViewModels/` | `MainViewModel`, one view model per tab, and Options |
+| `Themes/` | Light, dark, and System appearance |
+| `Services/` | File dialogs and monitor rectangles |
+| `Mvvm/` | `ObservableObject` and `RelayCommand` |
 
-Do **not** grow `Form1.cs` with tab-specific logic; add or extend the matching partial.
+Tab order is Results, Team Analysis, Skills, Tracks. A new screen is a view plus a view model that calls Core.
 
 ### Namespace
 
-Projects use **`UmaParser`** as the root namespace (e.g. `UmaParser.Analysis`, `UmaParser.Import`, `UmaParser.Ui`, `UmaParser.ViewModels`). Assembly names are `UmaParser`, `UmaParser.Wpf`, and `UmaParser.Core`. `GameMasterService` stays `internal`; `UmaParser.Wpf` is on the `InternalsVisibleTo` list, same as WinForms.
+Projects use **`UmaParser`** as the root namespace (e.g. `UmaParser.Analysis`, `UmaParser.Import`, `UmaParser.Presentation`, `UmaParser.ViewModels`). Assembly names are `UmaParser.Wpf` and `UmaParser.Core`. `GameMasterService` stays `internal`; `UmaParser.Wpf`, `SkillProbe`, and `UmaParser.Core.Tests` are on the `InternalsVisibleTo` list.
 
 ## Domain concepts agents should know
 
@@ -144,7 +135,7 @@ Open `master.mdb` read-only only at startup or on explicit refresh/browse, read 
 - Prefer `sealed` classes and `internal` visibility in Core unless the type is part of a public surface.
 - Use `file-scoped namespaces` where surrounding files already do.
 - Match naming in the folder you are editing (`GameMasterService`, `CaptureImportService`, etc.).
-- WinForms colors go through `UmaParser/Ui/AppColors.cs` and `AppThemeApplier`. WPF maps `CellBand` through `UmaParser.Wpf/Themes/CellBandBrushes.xaml`. Do not add a third copy of those colors.
+- Cell-band colors live in `UmaParser.Core/Presentation/CellBandPalette.cs`. WPF maps `CellBand` through `UmaParser.Wpf/Themes/CellBandBrushSource.cs`. Window chrome colors live in `UmaParser.Wpf/Themes/Light.xaml` and `Dark.xaml`. Do not add another copy of those colors.
 - Keep changes focused; no drive-by refactors or unrelated warning fixes.
 
 ## What to avoid
@@ -153,7 +144,6 @@ Open `master.mdb` read-only only at startup or on explicit refresh/browse, read 
 - Do not add NuGet packages without a clear need.
 - Do not move `Tools/` projects into the solution unless asked — they are run ad hoc.
 - Do not commit unscrubbed race captures. Fixtures under `tests/UmaParser.Core.Tests/Fixtures/` are already scrubbed; add new ones with `Tools/FixtureScrubber`.
-- Do not edit `Form1.Designer.cs` by hand except through the WinForms designer pattern already in use.
 - Do not hold `master.mdb` open or write to it or its folder. Open it read-only only at startup or on explicit refresh/browse, read once, and close it immediately. The game writes to it during updates.
 
 ## Commit guidance
@@ -164,9 +154,9 @@ Open `master.mdb` read-only only at startup or on explicit refresh/browse, read 
 
 ## Cursor Cloud specific instructions
 
-The Cloud Agent VM is Ubuntu. `UmaParser` and `UmaParser.Wpf` still compile here; they target `Microsoft.WindowsDesktop.App` and do not launch (there is no Linux desktop runtime). `dotnet test` is the check that import and analysis work. It uses embedded master data only. With no `master.mdb`, startup reports built-in names. The corpus smoke test stays skipped unless `UMAPARSER_CORPUS` is set.
+The Cloud Agent VM is Ubuntu. `UmaParser.Wpf` still compiles here; it targets `Microsoft.WindowsDesktop.App` and does not launch (there is no Linux desktop runtime). `dotnet test` is the check that import and analysis work. It uses embedded master data only. With no `master.mdb`, startup reports built-in names. The corpus smoke test stays skipped unless `UMAPARSER_CORPUS` is set.
 
-Install the Microsoft .NET 8 SDK with `https://dot.net/v1/dotnet-install.sh --channel 8.0` and symlink `dotnet` into `/usr/local/bin`. Ubuntu’s `dotnet-sdk-8.0` package leaves out `Microsoft.NET.Sdk.WindowsDesktop`, and the WinForms and WPF projects then fail at `Microsoft.NET.Sdk.WindowsDesktop.targets`.
+Install the Microsoft .NET 8 SDK with `https://dot.net/v1/dotnet-install.sh --channel 8.0` and symlink `dotnet` into `/usr/local/bin`. Ubuntu’s `dotnet-sdk-8.0` package leaves out `Microsoft.NET.Sdk.WindowsDesktop`, and the WPF project then fails at `Microsoft.NET.Sdk.WindowsDesktop.targets`.
 
 ```powershell
 dotnet build UmaParser.sln -c Release -p:EnableWindowsTargeting=true

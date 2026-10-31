@@ -13,7 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="UmaParser" />
     <InternalsVisibleTo Include="UmaParser.Wpf" />
     <InternalsVisibleTo Include="SkillProbe" />
     <InternalsVisibleTo Include="UmaParser.Core.Tests" />
