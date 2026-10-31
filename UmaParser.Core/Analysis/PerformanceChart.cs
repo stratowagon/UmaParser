@@ -140,7 +140,8 @@ public sealed class PerformanceUmaRow
 }
 
 /// <summary>
-/// Chart for every trained uma and running style in the loaded Team Trials files. <see cref="Rows"/> start in
+/// Chart for every trained uma, running style, and distance in the loaded Team Trials files.
+/// <see cref="Rows"/> start in
 /// current-lineup order (newest file), with umas who are not on that roster after them,
 /// until <see cref="Sorted"/> is called. <see cref="TeamAverage"/> is the mean of the
 /// current lineup's average base scores. On a consistent roster that lineup is every row,
@@ -194,10 +195,11 @@ public sealed class PerformanceChart
 /// <summary>
 /// Builds the Performance chart from the same normalized base scores Team Analysis uses.
 /// Each loaded file contributes one race (one base total) for each uma who was on that file's roster.
-/// Identity is trained character id plus running style, so the same uma in two strategies is two rows.
-/// Distance may still change inside one style. The last trial is the current lineup, matching
-/// <see cref="TeamTrialBatch.MostRecentTrial"/> (files are oldest first). A current row is the
-/// style that uma uses on that newest roster.
+/// Identity is trained character id, running style, and distance type. The same uma in two
+/// styles or two distances is two rows. Team slot is not part of the key, so ace and support
+/// stay one row when id, style, and distance match. The last trial is the current lineup,
+/// matching <see cref="TeamTrialBatch.MostRecentTrial"/> (files are oldest first). A current
+/// row is the style and distance that uma uses on that newest roster.
 /// </summary>
 public static class PerformanceChartEngine
 {
@@ -237,8 +239,8 @@ public static class PerformanceChartEngine
         }
 
         GameMasterCatalog catalog = GameMasterService.Current.Catalog;
-        var byKey = new Dictionary<UmaStyleKey, UmaAccumulator>();
-        var seen = new List<UmaStyleKey>();
+        var byKey = new Dictionary<UmaRowKey, UmaAccumulator>();
+        var seen = new List<UmaRowKey>();
         var rankByTrainedId = new Dictionary<int, int>();
         foreach (TeamTrialResult trial in trials)
         {
@@ -247,7 +249,7 @@ public static class PerformanceChartEngine
             {
                 int trainedCharaId = entry.Key;
                 RaceHorseData horse = entry.Value;
-                var key = new UmaStyleKey(trainedCharaId, horse.RunningStyle);
+                var key = new UmaRowKey(trainedCharaId, horse.RunningStyle, DistanceTypeOf(trial, horse, rosterIndex));
                 if (!byKey.TryGetValue(key, out UmaAccumulator? acc))
                 {
                     acc = new UmaAccumulator(trainedCharaId);
@@ -286,15 +288,20 @@ public static class PerformanceChartEngine
         }
 
         TeamTrialResult newest = trials[^1];
-        var current = new List<UmaStyleKey>();
+        var current = new List<UmaRowKey>();
+        int currentIndex = 0;
         foreach (KeyValuePair<int, RaceHorseData> entry in newest.RaceRoster)
         {
-            current.Add(new UmaStyleKey(entry.Key, entry.Value.RunningStyle));
+            current.Add(new UmaRowKey(
+                entry.Key,
+                entry.Value.RunningStyle,
+                DistanceTypeOf(newest, entry.Value, currentIndex)));
+            currentIndex++;
         }
 
-        var currentSet = new HashSet<UmaStyleKey>(current);
-        var order = new List<UmaStyleKey>(current);
-        foreach (UmaStyleKey key in seen)
+        var currentSet = new HashSet<UmaRowKey>(current);
+        var order = new List<UmaRowKey>(current);
+        foreach (UmaRowKey key in seen)
         {
             if (!currentSet.Contains(key))
             {
@@ -347,11 +354,16 @@ public static class PerformanceChartEngine
         return
             $"Base scores with support, opponent, and ace bonuses removed across {chart.TrialCount} trial(s). " +
             $"Dashed line {average}: mean of the current lineup's averages (the newest file). " +
-            "Each row counts only the trials that uma ran in that running style. " +
+            "Each row counts only the trials that uma ran in that running style and distance. " +
             "Yellow is a short sample; red is shorter still. Thresholds are in Options.";
     }
 
-    private readonly record struct UmaStyleKey(int TrainedCharaId, int RunningStyle);
+    /// <summary>
+    /// One chart row. Team member slot is intentionally absent: ace and support share a row
+    /// when the trained uma, running style, and distance match. Ace bonus is already removed
+    /// from the base score.
+    /// </summary>
+    private readonly record struct UmaRowKey(int TrainedCharaId, int RunningStyle, int DistanceType);
 
     private static int RankScoreOf(TeamTrialResult trial, int trainedCharaId)
     {
@@ -522,14 +534,16 @@ public static class PerformanceChartEngine
         return order.Count - 1;
     }
 
-    private static (string Distance, string Style) LayoutOf(TeamTrialResult trial, RaceHorseData uma, int rosterIndex)
+    private static int DistanceTypeOf(TeamTrialResult trial, RaceHorseData uma, int rosterIndex)
     {
         int teamIndex = rosterIndex / 3;
-        int distanceType = trial.FindRaceResultByUma(uma)?.DistanceType ?? (teamIndex + 1);
-        return (
-            DistanceTypeNames.FormatAnalysis(distanceType),
-            RunningStyleNames.FormatAnalysis(uma.RunningStyle));
+        return trial.FindRaceResultByUma(uma)?.DistanceType ?? (teamIndex + 1);
     }
+
+    private static (string Distance, string Style) LayoutOf(TeamTrialResult trial, RaceHorseData uma, int rosterIndex) =>
+        (
+            DistanceTypeNames.FormatAnalysis(DistanceTypeOf(trial, uma, rosterIndex)),
+            RunningStyleNames.FormatAnalysis(uma.RunningStyle));
 
     private static PerformanceChart Unavailable(string message) => new()
     {

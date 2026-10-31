@@ -291,8 +291,7 @@ public sealed class PerformanceChartTests
         foreach (PerformanceUmaRow row in chart.Rows)
         {
             List<TeamTrialResult> appearances = mismatch.Trials.Values
-                .Where(trial => trial.RaceRoster.TryGetValue(row.TrainedCharaId, out RaceHorseData? horse)
-                    && RunningStyleNames.FormatAnalysis(horse.RunningStyle) == row.Style)
+                .Where(trial => SameRow(trial, row))
                 .ToList();
             Assert.Equal(appearances.Count, row.TrialCount);
             Assert.True(row.TrialCount < mismatch.Trials.Count || row.InCurrentLineup);
@@ -314,27 +313,36 @@ public sealed class PerformanceChartTests
         List<PerformanceUmaRow> changedRows = styles.Rows.Where(row => row.TrainedCharaId == changedId).ToList();
         TeamTrialResult newestStyle = styleChange.MostRecentTrial!;
         int changedSlot = newestStyle.RosterTrainedCharaIds.ToList().IndexOf(changedId);
+        RaceHorseData newestHorse = newestStyle.RaceRoster[changedId];
+        int expectedRows = styleChange.Trials.Values
+            .Select(trial => (
+                trial.RaceRoster[changedId].RunningStyle,
+                trial.FindRaceResultByUma(trial.RaceRoster[changedId])?.DistanceType))
+            .Distinct()
+            .Count();
 
         Assert.True(styles.Available);
+        Assert.Equal(expectedRows, changedRows.Count);
         Assert.True(styles.Rows.Count > 15);
-        Assert.Equal(2, changedRows.Count);
         Assert.Equal(2, changedRows.Select(row => row.Style).Distinct().Count());
         Assert.Equal(styleChange.Trials.Count, changedRows.Sum(row => row.TrialCount));
         Assert.Equal(
             newestStyle.RosterTrainedCharaIds,
             styles.Rows.Where(row => row.InCurrentLineup).Select(row => row.TrainedCharaId));
         PerformanceUmaRow currentStyle = Assert.Single(changedRows, row => row.InCurrentLineup);
-        Assert.Equal(RunningStyleNames.FormatAnalysis(newestStyle.RosterRunningStyles[changedSlot]), currentStyle.Style);
+        Assert.Equal(RunningStyleNames.FormatAnalysis(newestHorse.RunningStyle), currentStyle.Style);
+        Assert.Equal(DistanceLabel(newestStyle, newestHorse, changedSlot), currentStyle.Distance);
         foreach (PerformanceUmaRow row in changedRows)
         {
             double[] bases = styleChange.Trials.Values
-                .Where(trial => trial.RaceRoster.TryGetValue(changedId, out RaceHorseData? horse)
-                    && RunningStyleNames.FormatAnalysis(horse.RunningStyle) == row.Style)
+                .Where(trial => SameRow(trial, row))
                 .Select(trial => (double)trial.UmaBaseScore(changedId))
                 .ToArray();
             Assert.Equal(bases.Length, row.TrialCount);
             Assert.Equal(bases.Average(), row.Average, 6);
         }
+
+        _ = expectedRows;
 
         PerformanceChart empty = PerformanceChartEngine.Build(Array.Empty<TeamTrialResult>());
         PerformanceChart otherModes = PerformanceChartEngine.Build(TrialSets.Build("Single-CM12"));
@@ -580,6 +588,67 @@ public sealed class PerformanceChartTests
         Assert.Equal(PerformanceSampleWarning.Soft, custom.Classify(2));
         Assert.Equal(PerformanceSampleWarning.Soft, custom.Classify(4));
         Assert.Equal(PerformanceSampleWarning.None, custom.Classify(5));
+    }
+
+    [Fact]
+    public void Distance_splits_a_row_and_ace_versus_support_does_not()
+    {
+        TeamTrialResult sprintAce = Trial((1, 1001, 1, 3, [Bucket(60, 10_000, bonus: 1_000)]));
+        TeamTrialResult mileAce = Trial((1, 1001, 1, 3, [Bucket(60, 30_000)]));
+        mileAce.Data!.RaceResultArray[0].DistanceType = 2;
+
+        PerformanceChart distances = PerformanceChartEngine.Build([sprintAce, mileAce]);
+        Assert.Equal(2, distances.Rows.Count);
+        Assert.Equal(["Mile", "Sprint"], distances.Rows.Select(row => row.Distance));
+        Assert.All(distances.Rows, row => Assert.Equal("Late", row.Style));
+        Assert.Equal(30_000, distances.Rows[0].Average);
+        Assert.Equal(1, distances.Rows[0].TrialCount);
+        Assert.True(distances.Rows[0].InCurrentLineup);
+        Assert.Equal("Mile · Late · 1 race", distances.Rows[0].Subtitle);
+        Assert.Equal(10_000, distances.Rows[1].Average);
+        Assert.False(distances.Rows[1].InCurrentLineup);
+        Assert.Equal(30_000, distances.TeamAverage);
+
+        TeamTrialResult asAce = Trial((1, 1001, 1, 3, [Bucket(60, 10_000, bonus: 2_000)]));
+        TeamTrialResult asSupport = Trial((1, 1001, 3, 3, [Bucket(60, 20_000)]));
+        PerformanceChart slot = PerformanceChartEngine.Build([asAce, asSupport]);
+        PerformanceUmaRow row = Assert.Single(slot.Rows);
+
+        Assert.Equal(15_000, row.Average);
+        Assert.Equal(2, row.TrialCount);
+        Assert.Equal("Sprint · Late · 2 races", row.Subtitle);
+        Assert.True(row.InCurrentLineup);
+        Assert.Equal(15_000, slot.TeamAverage);
+        Assert.DoesNotContain("Ace", row.Subtitle);
+        Assert.DoesNotContain("Support", row.Subtitle);
+    }
+
+    private static bool SameRow(TeamTrialResult trial, PerformanceUmaRow row)
+    {
+        if (!trial.RaceRoster.TryGetValue(row.TrainedCharaId, out RaceHorseData? horse))
+        {
+            return false;
+        }
+
+        int rosterIndex = 0;
+        foreach (int id in trial.RosterTrainedCharaIds)
+        {
+            if (id == row.TrainedCharaId)
+            {
+                break;
+            }
+
+            rosterIndex++;
+        }
+
+        return RunningStyleNames.FormatAnalysis(horse.RunningStyle) == row.Style
+            && DistanceLabel(trial, horse, rosterIndex) == row.Distance;
+    }
+
+    private static string DistanceLabel(TeamTrialResult trial, RaceHorseData horse, int rosterIndex)
+    {
+        int distanceType = trial.FindRaceResultByUma(horse)?.DistanceType ?? (rosterIndex / 3 + 1);
+        return DistanceTypeNames.FormatAnalysis(distanceType);
     }
 
     private static PerformanceScoreSource Source(GameMasterCatalog catalog, string name) =>
