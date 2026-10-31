@@ -22,9 +22,12 @@ public sealed class PerformanceSortChoice
 /// <summary>
 /// Performance tab state. A consistent roster fills <see cref="Chart"/> once per drop.
 /// Changing the sort key reorders those rows and does not read the capture files again.
+/// The sort metric and direction are stored in settings.json, the same file as ColorMode,
+/// and written when they change.
 /// </summary>
 public sealed class PerformanceViewModel : ObservableObject
 {
+    private readonly string? _settingsPath;
     private PerformanceChart? _base;
     private PerformanceChart? _chart;
     private PerformanceSortChoice _selectedSort;
@@ -34,7 +37,14 @@ public sealed class PerformanceViewModel : ObservableObject
     private string _emptyMessage = PerformanceChartEngine.DropMessage;
 
     public PerformanceViewModel()
+        : this(settingsPath: null)
     {
+    }
+
+    /// <param name="settingsPath">Null uses the shared settings.json. Tests pass a temporary file.</param>
+    internal PerformanceViewModel(string? settingsPath)
+    {
+        _settingsPath = settingsPath;
         SortChoices =
         [
             new PerformanceSortChoice(PerformanceSortKey.Average, "Average"),
@@ -43,7 +53,9 @@ public sealed class PerformanceViewModel : ObservableObject
             new PerformanceSortChoice(PerformanceSortKey.P75, "P75"),
             new PerformanceSortChoice(PerformanceSortKey.P90, "P90"),
         ];
-        _selectedSort = SortChoices[0];
+        (PerformanceSortKey key, bool ascending) = PerformanceSortPreferences.Load(settingsPath);
+        _selectedSort = Choice(key);
+        _ascending = ascending;
         UseAscendingCommand = new RelayCommand(_ => SetAscending(true));
         UseDescendingCommand = new RelayCommand(_ => SetAscending(false));
     }
@@ -63,6 +75,7 @@ public sealed class PerformanceViewModel : ObservableObject
                 return;
             }
 
+            Persist();
             Publish();
         }
     }
@@ -119,8 +132,25 @@ public sealed class PerformanceViewModel : ObservableObject
         }
 
         Ascending = ascending;
+        Persist();
         Publish();
     }
+
+    private PerformanceSortChoice Choice(PerformanceSortKey key)
+    {
+        foreach (PerformanceSortChoice choice in SortChoices)
+        {
+            if (choice.Key == key)
+            {
+                return choice;
+            }
+        }
+
+        return SortChoices[0];
+    }
+
+    private void Persist() =>
+        PerformanceSortPreferences.Save(_settingsPath, _selectedSort.Key, _ascending);
 
     private void Publish()
     {
