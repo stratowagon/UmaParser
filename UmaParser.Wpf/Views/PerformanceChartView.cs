@@ -17,12 +17,13 @@ namespace UmaParser.Views;
 /// </summary>
 public sealed class PerformanceChartView : FrameworkElement
 {
-    private const double LabelWidth = 268;
-    private const double RowHeight = 56;
+    private const double LabelWidth = 232;
+    private const double RowHeight = 44;
     private const double AxisHeight = 28;
     private const double RightPad = 18;
-    private const double BarTop = 10;
+    private const double BarTop = 4;
     private const double BarHeight = 16;
+    private const double SpreadGap = 8;
     private const double LegendRowHeight = 20;
 
     private readonly ToolTip _tip = new()
@@ -280,14 +281,12 @@ public sealed class PerformanceChartView : FrameworkElement
             ? " [" + row.RankScore.ToString("N0", CultureInfo.CurrentCulture) + "]"
             : "";
         FormattedText ratingText = LabelText(rating, 13, palette.Text);
-        FormattedText average = LabelText(row.Average.ToString("N0", CultureInfo.CurrentCulture), 13, palette.Text, FontWeights.SemiBold);
         FormattedText name = LabelText(row.ShortName, 13, palette.Text);
-        double nameWidth = LabelWidth - average.Width - ratingText.Width - 20;
+        double nameWidth = LabelWidth - ratingText.Width - 16;
         name.MaxTextWidth = Math.Max(24, nameWidth);
         name.Trimming = TextTrimming.CharacterEllipsis;
-        dc.DrawText(name, new Point(8, top + 6));
-        dc.DrawText(ratingText, new Point(8 + Math.Min(name.Width, name.MaxTextWidth), top + 6));
-        dc.DrawText(average, new Point(LabelWidth - average.Width - 8, top + 6));
+        dc.DrawText(name, new Point(8, top + 2));
+        dc.DrawText(ratingText, new Point(8 + Math.Min(name.Width, name.MaxTextWidth), top + 2));
 
         Brush raceBrush = row.SampleWarning switch
         {
@@ -298,7 +297,7 @@ public sealed class PerformanceChartView : FrameworkElement
         double subtitleLeft = 8;
         if (row.SampleWarning != PerformanceSampleWarning.None)
         {
-            dc.DrawEllipse(raceBrush, null, new Point(12, top + 32), 3.2, 3.2);
+            dc.DrawEllipse(raceBrush, null, new Point(12, top + 23), 3.2, 3.2);
             subtitleLeft = 20;
         }
 
@@ -308,8 +307,8 @@ public sealed class PerformanceChartView : FrameworkElement
         double subtitleRoom = Math.Max(24, LabelWidth - subtitleLeft - 8);
         prefix.MaxTextWidth = Math.Max(12, subtitleRoom - raceText.Width);
         prefix.Trimming = TextTrimming.CharacterEllipsis;
-        dc.DrawText(prefix, new Point(subtitleLeft, top + 26));
-        dc.DrawText(raceText, new Point(subtitleLeft + Math.Min(prefix.Width, prefix.MaxTextWidth), top + 26));
+        dc.DrawText(prefix, new Point(subtitleLeft, top + 17));
+        dc.DrawText(raceText, new Point(subtitleLeft + Math.Min(prefix.Width, prefix.MaxTextWidth), top + 17));
 
         double barY = top + BarTop;
         double positive = 0;
@@ -350,7 +349,7 @@ public sealed class PerformanceChartView : FrameworkElement
             dc.DrawRectangle(palette.Deduction, palette.SegmentEdge, new Rect(x0, barY, x1 - x0, BarHeight));
         }
 
-        double spreadY = top + BarTop + BarHeight + 12;
+        double spreadY = top + BarTop + BarHeight + SpreadGap;
         double minX = X(row.Min, axisMin, axisMax);
         double maxX = X(row.Max, axisMin, axisMax);
         double p25 = X(row.P25, axisMin, axisMax);

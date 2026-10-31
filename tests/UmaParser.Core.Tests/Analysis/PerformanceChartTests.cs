@@ -290,10 +290,13 @@ public sealed class PerformanceChartTests
 
         foreach (PerformanceUmaRow row in chart.Rows)
         {
-            int appearances = mismatch.Trials.Values.Count(trial => trial.RosterTrainedCharaIds.Contains(row.TrainedCharaId));
-            Assert.Equal(appearances, row.TrialCount);
+            List<TeamTrialResult> appearances = mismatch.Trials.Values
+                .Where(trial => trial.RaceRoster.TryGetValue(row.TrainedCharaId, out RaceHorseData? horse)
+                    && RunningStyleNames.FormatAnalysis(horse.RunningStyle) == row.Style)
+                .ToList();
+            Assert.Equal(appearances.Count, row.TrialCount);
             Assert.True(row.TrialCount < mismatch.Trials.Count || row.InCurrentLineup);
-            double[] bases = mismatch.Trials.Values
+            double[] bases = appearances
                 .Where(trial => trial.Results.ContainsKey(row.TrainedCharaId))
                 .Select(trial => (double)trial.UmaBaseScore(row.TrainedCharaId))
                 .ToArray();
@@ -302,16 +305,35 @@ public sealed class PerformanceChartTests
 
         TeamTrialBatch styleChange = TrialSets.Build("TT-StyleChange");
         PerformanceChart styles = PerformanceChartEngine.Build(styleChange);
-        Assert.True(styles.Available);
-        Assert.Equal(15, styles.Rows.Count);
-        Assert.Equal(styleChange.Trials.Count, styles.Rows[0].TrialCount);
-        Assert.All(styles.Rows, row => Assert.True(row.InCurrentLineup));
+        int changedId = styleChange.Trials.Values
+            .SelectMany(trial => trial.RaceRoster)
+            .GroupBy(pair => pair.Key)
+            .Where(group => group.Select(pair => pair.Value.RunningStyle).Distinct().Count() > 1)
+            .Select(group => group.Key)
+            .Single();
+        List<PerformanceUmaRow> changedRows = styles.Rows.Where(row => row.TrainedCharaId == changedId).ToList();
         TeamTrialResult newestStyle = styleChange.MostRecentTrial!;
-        for (int i = 0; i < newestStyle.RosterTrainedCharaIds.Count; i++)
+        int changedSlot = newestStyle.RosterTrainedCharaIds.ToList().IndexOf(changedId);
+
+        Assert.True(styles.Available);
+        Assert.True(styles.Rows.Count > 15);
+        Assert.Equal(2, changedRows.Count);
+        Assert.Equal(2, changedRows.Select(row => row.Style).Distinct().Count());
+        Assert.Equal(styleChange.Trials.Count, changedRows.Sum(row => row.TrialCount));
+        Assert.Equal(
+            newestStyle.RosterTrainedCharaIds,
+            styles.Rows.Where(row => row.InCurrentLineup).Select(row => row.TrainedCharaId));
+        PerformanceUmaRow currentStyle = Assert.Single(changedRows, row => row.InCurrentLineup);
+        Assert.Equal(RunningStyleNames.FormatAnalysis(newestStyle.RosterRunningStyles[changedSlot]), currentStyle.Style);
+        foreach (PerformanceUmaRow row in changedRows)
         {
-            int id = newestStyle.RosterTrainedCharaIds[i];
-            PerformanceUmaRow row = styles.Rows.Single(candidate => candidate.TrainedCharaId == id);
-            Assert.Equal(RunningStyleNames.FormatAnalysis(newestStyle.RosterRunningStyles[i]), row.Style);
+            double[] bases = styleChange.Trials.Values
+                .Where(trial => trial.RaceRoster.TryGetValue(changedId, out RaceHorseData? horse)
+                    && RunningStyleNames.FormatAnalysis(horse.RunningStyle) == row.Style)
+                .Select(trial => (double)trial.UmaBaseScore(changedId))
+                .ToArray();
+            Assert.Equal(bases.Length, row.TrialCount);
+            Assert.Equal(bases.Average(), row.Average, 6);
         }
 
         PerformanceChart empty = PerformanceChartEngine.Build(Array.Empty<TeamTrialResult>());
@@ -336,29 +358,34 @@ public sealed class PerformanceChartTests
                 (3, 1001, 2, 3, [Bucket(60, 40_000)])),
         ]);
 
-        Assert.Equal(3, chart.Rows.Count);
-        Assert.Equal([1, 3, 2], chart.Rows.Select(row => row.TrainedCharaId));
+        Assert.Equal(4, chart.Rows.Count);
+        Assert.Equal([1, 3, 1, 2], chart.Rows.Select(row => row.TrainedCharaId));
 
         PerformanceUmaRow kept = chart.Rows[0];
         PerformanceUmaRow added = chart.Rows[1];
-        PerformanceUmaRow replaced = chart.Rows[2];
+        PerformanceUmaRow oldStyle = chart.Rows[2];
+        PerformanceUmaRow replaced = chart.Rows[3];
         Assert.True(kept.InCurrentLineup);
         Assert.True(added.InCurrentLineup);
+        Assert.False(oldStyle.InCurrentLineup);
         Assert.False(replaced.InCurrentLineup);
-        Assert.Equal(15_000, kept.Average);
-        Assert.Equal(2, kept.TrialCount);
+        Assert.Equal(20_000, kept.Average);
+        Assert.Equal(1, kept.TrialCount);
         Assert.Equal("End", kept.Style);
-        Assert.Equal("Sprint · End · 2 races", kept.Subtitle);
+        Assert.Equal("Sprint · End · 1 race", kept.Subtitle);
         Assert.Equal(40_000, added.Average);
         Assert.Equal(1, added.TrialCount);
         Assert.Equal("Late", added.Style);
+        Assert.Equal(10_000, oldStyle.Average);
+        Assert.Equal(1, oldStyle.TrialCount);
+        Assert.Equal("Front", oldStyle.Style);
+        Assert.Equal(kept.TrainedCharaId, oldStyle.TrainedCharaId);
         Assert.Equal(30_000, replaced.Average);
         Assert.Equal(1, replaced.TrialCount);
         Assert.Equal("Pace", replaced.Style);
-        Assert.Equal(27_500, chart.TeamAverage);
+        Assert.Equal(30_000, chart.TeamAverage);
         Assert.Equal("Special Week", kept.ShortName);
         Assert.Equal("Special Week", added.ShortName);
-        Assert.Equal(kept.Name, added.Name);
         Assert.NotEqual(kept.TrainedCharaId, added.TrainedCharaId);
     }
 
@@ -442,6 +469,79 @@ public sealed class PerformanceChartTests
         Assert.Equal("Special Week [18,317]", row.Name);
         Assert.Equal(1_000, row.Average);
         Assert.True(row.InCurrentLineup);
+    }
+
+    [Fact]
+    public void HorseACT_trained_chara_data_rankScore_labels_the_row()
+    {
+        const string json = """
+            {
+              "race_start_params_array": [
+                {
+                  "round": 1,
+                  "race_horse_data_array": [
+                    {
+                      "trained_chara_id": 7,
+                      "chara_id": 1001,
+                      "team_id": 1,
+                      "team_member_id": 1,
+                      "running_style": 3,
+                      "trained_chara_data": {
+                        "id": 7,
+                        "rankScore": 18317
+                      }
+                    }
+                  ]
+                }
+              ],
+              "race_result_array": [
+                {
+                  "round": 1,
+                  "distance_type": 1,
+                  "race_scenario": "",
+                  "chara_result_array": [
+                    {
+                      "trained_chara_id": 7,
+                      "team_id": 1,
+                      "score_array": [
+                        { "raw_score_id": 60, "score": 1000, "bonus_array": [] }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "user_trained_chara_array_copy": []
+            }
+            """;
+
+        TeamRaceData data = JsonSerializer.Deserialize<TeamRaceData>(json, UmaCaptureJson.Options)!;
+        PerformanceChart chart = PerformanceChartEngine.Build([new TeamTrialResult(data)]);
+        PerformanceUmaRow row = Assert.Single(chart.Rows);
+
+        Assert.Equal(0, data.RaceStartParamsArray[0].RaceHorseDataArray[0].RankScore);
+        Assert.Equal(18_317, row.RankScore);
+        Assert.Equal("Special Week [18,317]", row.Name);
+        Assert.Equal("Late", row.Style);
+    }
+
+    [Fact]
+    public void A_later_style_still_shares_the_rating_learned_for_that_trained_uma()
+    {
+        TeamTrialResult older = Trial((1, 1001, 1, 1, [Bucket(60, 4_000)]));
+        TeamTrialResult newer = Trial((1, 1001, 1, 4, [Bucket(60, 8_000)]));
+        newer.Data!.UserTrainedCharaArrayCopy.Add(new TrainedChara
+        {
+            TrainedCharaId = 1,
+            RankScoreCamel = 18_317,
+        });
+
+        PerformanceChart chart = PerformanceChartEngine.Build([older, newer]);
+        Assert.Equal(2, chart.Rows.Count);
+        Assert.All(chart.Rows, row => Assert.Equal("Special Week [18,317]", row.Name));
+        Assert.Equal(["End", "Front"], chart.Rows.Select(row => row.Style));
+        Assert.True(chart.Rows[0].InCurrentLineup);
+        Assert.False(chart.Rows[1].InCurrentLineup);
+        Assert.Equal(8_000, chart.TeamAverage);
     }
 
     [Theory]

@@ -140,7 +140,7 @@ public sealed class PerformanceUmaRow
 }
 
 /// <summary>
-/// Chart for every trained uma in the loaded Team Trials files. <see cref="Rows"/> start in
+/// Chart for every trained uma and running style in the loaded Team Trials files. <see cref="Rows"/> start in
 /// current-lineup order (newest file), with umas who are not on that roster after them,
 /// until <see cref="Sorted"/> is called. <see cref="TeamAverage"/> is the mean of the
 /// current lineup's average base scores. On a consistent roster that lineup is every row,
@@ -194,9 +194,10 @@ public sealed class PerformanceChart
 /// <summary>
 /// Builds the Performance chart from the same normalized base scores Team Analysis uses.
 /// Each loaded file contributes one race (one base total) for each uma who was on that file's roster.
-/// Identity is <c>trained_chara_id</c>. A running-style change on that same uma stays one row.
-/// The last trial is the current lineup, matching <see cref="TeamTrialBatch.MostRecentTrial"/>
-/// (files are oldest first).
+/// Identity is trained character id plus running style, so the same uma in two strategies is two rows.
+/// Distance may still change inside one style. The last trial is the current lineup, matching
+/// <see cref="TeamTrialBatch.MostRecentTrial"/> (files are oldest first). A current row is the
+/// style that uma uses on that newest roster.
 /// </summary>
 public static class PerformanceChartEngine
 {
@@ -236,8 +237,9 @@ public static class PerformanceChartEngine
         }
 
         GameMasterCatalog catalog = GameMasterService.Current.Catalog;
-        var byId = new Dictionary<int, UmaAccumulator>();
-        var seen = new List<int>();
+        var byKey = new Dictionary<UmaStyleKey, UmaAccumulator>();
+        var seen = new List<UmaStyleKey>();
+        var rankByTrainedId = new Dictionary<int, int>();
         foreach (TeamTrialResult trial in trials)
         {
             int rosterIndex = 0;
@@ -245,18 +247,31 @@ public static class PerformanceChartEngine
             {
                 int trainedCharaId = entry.Key;
                 RaceHorseData horse = entry.Value;
-                if (!byId.TryGetValue(trainedCharaId, out UmaAccumulator? acc))
+                var key = new UmaStyleKey(trainedCharaId, horse.RunningStyle);
+                if (!byKey.TryGetValue(key, out UmaAccumulator? acc))
                 {
                     acc = new UmaAccumulator(trainedCharaId);
-                    byId[trainedCharaId] = acc;
-                    seen.Add(trainedCharaId);
+                    if (rankByTrainedId.TryGetValue(trainedCharaId, out int known))
+                    {
+                        acc.RankScore = known;
+                    }
+
+                    byKey[key] = acc;
+                    seen.Add(key);
                 }
 
                 acc.CharaId = horse.CharaId;
                 int rankScore = RankScoreOf(trial, trainedCharaId);
                 if (rankScore > 0)
                 {
-                    acc.RankScore = rankScore;
+                    rankByTrainedId[trainedCharaId] = rankScore;
+                    foreach (UmaAccumulator other in byKey.Values)
+                    {
+                        if (other.TrainedCharaId == trainedCharaId)
+                        {
+                            other.RankScore = rankScore;
+                        }
+                    }
                 }
 
                 (acc.Distance, acc.Style) = LayoutOf(trial, horse, rosterIndex);
@@ -271,21 +286,27 @@ public static class PerformanceChartEngine
         }
 
         TeamTrialResult newest = trials[^1];
-        var current = new HashSet<int>(newest.RosterTrainedCharaIds);
-        var order = new List<int>(newest.RosterTrainedCharaIds);
-        foreach (int trainedCharaId in seen)
+        var current = new List<UmaStyleKey>();
+        foreach (KeyValuePair<int, RaceHorseData> entry in newest.RaceRoster)
         {
-            if (!current.Contains(trainedCharaId))
+            current.Add(new UmaStyleKey(entry.Key, entry.Value.RunningStyle));
+        }
+
+        var currentSet = new HashSet<UmaStyleKey>(current);
+        var order = new List<UmaStyleKey>(current);
+        foreach (UmaStyleKey key in seen)
+        {
+            if (!currentSet.Contains(key))
             {
-                order.Add(trainedCharaId);
+                order.Add(key);
             }
         }
 
         var rows = new List<PerformanceUmaRow>(order.Count);
         for (int index = 0; index < order.Count; index++)
         {
-            UmaAccumulator acc = byId[order[index]];
-            rows.Add(acc.ToRow(index, current.Contains(acc.TrainedCharaId), thresholds, catalog));
+            UmaAccumulator acc = byKey[order[index]];
+            rows.Add(acc.ToRow(index, currentSet.Contains(order[index]), thresholds, catalog));
         }
 
         IEnumerable<PerformanceUmaRow> lineup = rows.Where(row => row.InCurrentLineup);
@@ -326,9 +347,11 @@ public static class PerformanceChartEngine
         return
             $"Base scores with support, opponent, and ace bonuses removed across {chart.TrialCount} trial(s). " +
             $"Dashed line {average}: mean of the current lineup's averages (the newest file). " +
-            "Each row counts only the trials that uma ran. " +
+            "Each row counts only the trials that uma ran in that running style. " +
             "Yellow is a short sample; red is shorter still. Thresholds are in Options.";
     }
+
+    private readonly record struct UmaStyleKey(int TrainedCharaId, int RunningStyle);
 
     private static int RankScoreOf(TeamTrialResult trial, int trainedCharaId)
     {
@@ -336,16 +359,20 @@ public static class PerformanceChartEngine
         {
             foreach (TrainedChara trained in trial.Data.UserTrainedCharaArrayCopy)
             {
-                if (trained.TrainedCharaId == trainedCharaId && trained.RankScore > 0)
+                if (trained.TrainedCharaId == trainedCharaId && trained.ResolvedRankScore > 0)
                 {
-                    return trained.RankScore;
+                    return trained.ResolvedRankScore;
                 }
             }
         }
 
-        if (trial.RaceRoster.TryGetValue(trainedCharaId, out RaceHorseData? horse) && horse.RankScore > 0)
+        if (trial.RaceRoster.TryGetValue(trainedCharaId, out RaceHorseData? horse))
         {
-            return horse.RankScore;
+            int score = horse.ResolveRankScore();
+            if (score > 0)
+            {
+                return score;
+            }
         }
 
         return 0;

@@ -1,5 +1,6 @@
 ﻿namespace UmaParser.DataModel.ResponseData
 {
+    using System.Text.Json;
     using System.Text.Json.Serialization;
     using System.Collections.Generic;
 
@@ -49,12 +50,123 @@
         public int TrainedCharaId { get; set; }
 
         /// <summary>
-        /// Rank score, the rating shown under the portrait. Same value as
-        /// <see cref="TrainedChara.RankScore"/>. Team Trials race horses usually omit it;
-        /// <see cref="TeamRaceData.UserTrainedCharaArrayCopy"/> is the other place a capture carries it.
+        /// Rank score, the rating shown under the portrait, when the capture puts
+        /// <c>rank_score</c> directly on the race horse. Same value as <see cref="TrainedChara.RankScore"/>.
+        /// HorseACT Team Trials dumps usually omit it here and put <c>rankScore</c> on
+        /// <c>trained_chara_data</c> instead. <see cref="ResolveRankScore"/> reads both.
         /// </summary>
         [JsonPropertyName("rank_score")]
         public int RankScore { get; set; }
+
+        /// <summary>
+        /// Horse fields this model does not map. HorseACT inserts <c>trained_chara_data</c>
+        /// (camelCase <c>rankScore</c> inside) when it can attach the veteran record.
+        /// </summary>
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement>? ExtensionData { get; set; }
+
+        /// <summary>
+        /// Portrait rating for this horse. Direct <c>rank_score</c> wins, then a nested
+        /// trained-character object (<c>trained_chara_data</c>, <c>trainedCharaData</c>, or the
+        /// Unity backing field) whose rating is <c>rankScore</c> or <c>rank_score</c>.
+        /// </summary>
+        public int ResolveRankScore()
+        {
+            if (RankScore > 0)
+            {
+                return RankScore;
+            }
+
+            if (ExtensionData == null)
+            {
+                return 0;
+            }
+
+            foreach (string name in new[] { "rankScore", "RankScore", "_rankScore" })
+            {
+                if (ExtensionData.TryGetValue(name, out JsonElement direct) && TryReadScore(direct, out int score))
+                {
+                    return score;
+                }
+            }
+
+            foreach (KeyValuePair<string, JsonElement> entry in ExtensionData)
+            {
+                if (entry.Value.ValueKind != JsonValueKind.Object || !IsTrainedCharaPayload(entry.Key))
+                {
+                    continue;
+                }
+
+                int nested = ReadNestedRankScore(entry.Value);
+                if (nested > 0)
+                {
+                    return nested;
+                }
+            }
+
+            return 0;
+        }
+
+        private static int ReadNestedRankScore(JsonElement obj)
+        {
+            foreach (string name in new[] { "rankScore", "rank_score", "_rankScore", "RankScore" })
+            {
+                if (obj.TryGetProperty(name, out JsonElement value) && TryReadScore(value, out int score))
+                {
+                    return score;
+                }
+            }
+
+            foreach (JsonProperty property in obj.EnumerateObject())
+            {
+                if (!IsRankScoreName(property.Name))
+                {
+                    continue;
+                }
+
+                if (TryReadScore(property.Value, out int score))
+                {
+                    return score;
+                }
+            }
+
+            return 0;
+        }
+
+        private static bool TryReadScore(JsonElement value, out int score)
+        {
+            score = 0;
+            if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out score))
+            {
+                return score > 0;
+            }
+
+            if (value.ValueKind == JsonValueKind.String
+                && int.TryParse(value.GetString(), out score))
+            {
+                return score > 0;
+            }
+
+            return false;
+        }
+
+        private static bool IsTrainedCharaPayload(string key)
+        {
+            string simplified = Simplify(key);
+            return simplified.Contains("trainedcharadata", StringComparison.Ordinal);
+        }
+
+        private static bool IsRankScoreName(string name)
+        {
+            string simplified = Simplify(name);
+            return simplified is "rankscore" or "rankscorekbackingfield";
+        }
+
+        private static string Simplify(string name) =>
+            name.Replace("_", "", StringComparison.Ordinal)
+                .Replace("<", "", StringComparison.Ordinal)
+                .Replace(">", "", StringComparison.Ordinal)
+                .ToLowerInvariant();
 
         /// <summary>
         /// 4-digit character ID (no variants).  ie 1001 = Special Week.
