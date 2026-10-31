@@ -60,14 +60,35 @@ be better off swapping aces.  However this requires a decently large sample size
 so take the recommendations with a grain of salt.
 
 ### Performance Tab
-Stacked base-score bars for the same consistent 15-uma roster as Team Analysis. Each bar is
-that uma's average score with support, opponent, and ace bonuses removed, split into finish
-place and win margin, white / gold / unique skills, strong start, and style lead plus other
-extras. A dashed line marks the team average. Under each bar, a thin line shows the P25–P75
-range, with a median tick, min/max dots, and a P90 marker. Rows start weakest-first. The sort
-box can order by average, median, max, P75, or P90, ascending or descending, and that choice
-is remembered in settings.json. Hover a row for
-the average, median, P90, and the segment split. Skill proc rates stay on the Skills tab.
+Stacked base-score bars for the Team Trials umas in the drop. A consistent 15-uma roster
+still works. A mixed set works too: every trained uma who appears in any loaded file gets a
+row, and that row's average uses only the trials that uma actually ran. Replacing one or two
+umas leaves the new and the old ones on the same list.
+
+Each bar is that uma's average score with support, opponent, and ace bonuses removed, split
+into finish place and win margin, white / gold / unique skills, strong start, and style lead
+plus other extras. Under each bar, a thin line shows the P25–P75 range, with a median tick,
+min/max dots, and a P90 marker. Rows start weakest-first. The sort box can order by average,
+median, max, P75, or P90, ascending or descending, and that choice is remembered in
+settings.json. Hover a row for the average, median, P90, and the segment split. Skill proc
+rates stay on the Skills tab.
+
+The name includes the uma's rating when the capture has one, for example `Oguri Cap [18,317]`.
+The rating is the rank score (`rank_score` on the trained character, or on the race horse when
+that is what the file contains). Two builds of the same character stay separate rows because
+the chart keys on trained character id, not on the name or the running style. The distance
+and style under the name are from that uma's most recent file. The same line ends with how
+many loaded trials that uma ran (`Sprint · Late · 12 races`).
+
+A short sample is marked on that race count. With the defaults, fewer than 10 races is red,
+10 through 19 are yellow, and 20 or more has no mark. Both cutoffs are editable under
+Options → Performance and are stored in settings.json. A missing setting uses 20 and 10.
+
+A bar at the left of the row means that uma is on the current lineup, which is the roster in
+the newest file. Replaced umas stay visible without the bar. The dashed line is the mean of
+the current lineup's average base scores, so a tryout is compared with the team in the newest
+file rather than with every row on the chart. When every file has the same roster, that line
+is the average of all 15.
 
 ### Skills Tab
 This tab provides detailed information for an uma's skill activations across multiple races.

@@ -25,6 +25,18 @@ internal sealed class GameMasterSettings
     /// <summary>Performance tab direction. Null or true = ascending (weakest first). False = descending.</summary>
     public bool? PerformanceSortAscending { get; set; }
 
+    /// <summary>
+    /// Performance tab yellow sample threshold. Null uses 20.
+    /// A row is yellow when its race count is at least the red threshold and below this value.
+    /// </summary>
+    public int? PerformanceSampleSoftThreshold { get; set; }
+
+    /// <summary>
+    /// Performance tab red sample threshold. Null uses 10.
+    /// A row is red when its race count is below this value.
+    /// </summary>
+    public int? PerformanceSampleHardThreshold { get; set; }
+
     public GridColumnPreferencesStore? GridColumns { get; set; }
 
     public GridColumnGridPreferences GetGridColumnPreferences(string gridKey)

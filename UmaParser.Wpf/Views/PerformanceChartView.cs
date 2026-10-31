@@ -10,12 +10,14 @@ using UmaParser.Analysis;
 namespace UmaParser.Views;
 
 /// <summary>
-/// Stacked base-score bars for the current roster, with the percentile spread under each bar
-/// and a dashed team-average line. Brushes come from the light/dark theme dictionaries.
+/// Stacked base-score bars for every trained uma in the loaded Team Trials files.
+/// The percentile spread sits under each bar. The dashed line is the mean of the current
+/// lineup (the newest file). A bar at the left marks that lineup. A short sample colors
+/// the race count yellow or red. Brushes come from the light/dark theme dictionaries.
 /// </summary>
 public sealed class PerformanceChartView : FrameworkElement
 {
-    private const double LabelWidth = 200;
+    private const double LabelWidth = 268;
     private const double RowHeight = 56;
     private const double AxisHeight = 28;
     private const double RightPad = 18;
@@ -168,7 +170,10 @@ public sealed class PerformanceChartView : FrameworkElement
 
         items.Add((null, "P25–P75, median, min/max", LegendMark.Spread));
         items.Add((null, "P90", LegendMark.P90));
-        items.Add((null, "Team average", LegendMark.Team));
+        items.Add((null, "Current lineup average", LegendMark.Team));
+        items.Add((null, "Current lineup", LegendMark.Current));
+        items.Add((null, "Short sample", LegendMark.SampleSoft));
+        items.Add((null, "Very short sample", LegendMark.SampleHard));
 
         double x = 0;
         double y = 0;
@@ -215,6 +220,15 @@ public sealed class PerformanceChartView : FrameworkElement
             case LegendMark.Team:
                 dc.DrawLine(palette.TeamPen, new Point(x, y + 6), new Point(x + 12, y + 6));
                 break;
+            case LegendMark.Current:
+                dc.DrawRectangle(palette.CurrentLineup, null, new Rect(x, y, 3, 12));
+                break;
+            case LegendMark.SampleSoft:
+                dc.DrawEllipse(palette.SampleSoft, null, new Point(x + 6, y + 6), 4, 4);
+                break;
+            case LegendMark.SampleHard:
+                dc.DrawEllipse(palette.SampleHard, null, new Point(x + 6, y + 6), 4, 4);
+                break;
         }
     }
 
@@ -257,17 +271,45 @@ public sealed class PerformanceChartView : FrameworkElement
             dc.DrawRectangle(palette.AltRow, null, new Rect(0, top, ActualWidth, RowHeight));
         }
 
-        FormattedText name = LabelText(row.Name, 13, palette.Text);
+        if (row.InCurrentLineup)
+        {
+            dc.DrawRectangle(palette.CurrentLineup, null, new Rect(0, top + 2, 3, RowHeight - 4));
+        }
+
+        string rating = row.RankScore > 0
+            ? " [" + row.RankScore.ToString("N0", CultureInfo.CurrentCulture) + "]"
+            : "";
+        FormattedText ratingText = LabelText(rating, 13, palette.Text);
         FormattedText average = LabelText(row.Average.ToString("N0", CultureInfo.CurrentCulture), 13, palette.Text, FontWeights.SemiBold);
-        FormattedText subtitle = LabelText(row.Subtitle, 11, palette.Muted);
-        double nameWidth = LabelWidth - average.Width - 20;
+        FormattedText name = LabelText(row.ShortName, 13, palette.Text);
+        double nameWidth = LabelWidth - average.Width - ratingText.Width - 20;
         name.MaxTextWidth = Math.Max(24, nameWidth);
         name.Trimming = TextTrimming.CharacterEllipsis;
-        subtitle.MaxTextWidth = LabelWidth - 12;
-        subtitle.Trimming = TextTrimming.CharacterEllipsis;
         dc.DrawText(name, new Point(8, top + 6));
+        dc.DrawText(ratingText, new Point(8 + Math.Min(name.Width, name.MaxTextWidth), top + 6));
         dc.DrawText(average, new Point(LabelWidth - average.Width - 8, top + 6));
-        dc.DrawText(subtitle, new Point(8, top + 26));
+
+        Brush raceBrush = row.SampleWarning switch
+        {
+            PerformanceSampleWarning.Hard => palette.SampleHard,
+            PerformanceSampleWarning.Soft => palette.SampleSoft,
+            _ => palette.Muted,
+        };
+        double subtitleLeft = 8;
+        if (row.SampleWarning != PerformanceSampleWarning.None)
+        {
+            dc.DrawEllipse(raceBrush, null, new Point(12, top + 32), 3.2, 3.2);
+            subtitleLeft = 20;
+        }
+
+        string races = PerformanceChartEngine.FormatRaceCount(row.TrialCount);
+        FormattedText raceText = LabelText(races, 11, raceBrush);
+        FormattedText prefix = LabelText($"{row.Distance} · {row.Style} · ", 11, palette.Muted);
+        double subtitleRoom = Math.Max(24, LabelWidth - subtitleLeft - 8);
+        prefix.MaxTextWidth = Math.Max(12, subtitleRoom - raceText.Width);
+        prefix.Trimming = TextTrimming.CharacterEllipsis;
+        dc.DrawText(prefix, new Point(subtitleLeft, top + 26));
+        dc.DrawText(raceText, new Point(subtitleLeft + Math.Min(prefix.Width, prefix.MaxTextWidth), top + 26));
 
         double barY = top + BarTop;
         double positive = 0;
@@ -438,6 +480,9 @@ public sealed class PerformanceChartView : FrameworkElement
         Spread,
         P90,
         Team,
+        Current,
+        SampleSoft,
+        SampleHard,
     }
 
     private sealed class Palette
@@ -461,6 +506,9 @@ public sealed class PerformanceChartView : FrameworkElement
         public required Pen SpreadPen { get; init; }
         public required Pen MedianPen { get; init; }
         public required Pen AxisPen { get; init; }
+        public required Brush CurrentLineup { get; init; }
+        public required Brush SampleSoft { get; init; }
+        public required Brush SampleHard { get; init; }
 
         public Brush Segment(PerformanceScoreSource source) => _segments[source];
 
@@ -495,6 +543,9 @@ public sealed class PerformanceChartView : FrameworkElement
                 SpreadPen = Pen(spread, 2),
                 MedianPen = Pen(median, 2),
                 AxisPen = Pen(grid, 1),
+                CurrentLineup = Solid(owner, "Performance.CurrentLineup"),
+                SampleSoft = Solid(owner, "Performance.SampleSoft"),
+                SampleHard = Solid(owner, "Performance.SampleHard"),
             };
         }
 

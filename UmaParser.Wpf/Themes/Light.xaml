@@ -80,5 +80,8 @@
     <SolidColorBrush x:Key="Performance.P90" Color="#FFC4483A"/>
     <SolidColorBrush x:Key="Performance.TeamAverage" Color="#FF404040"/>
     <SolidColorBrush x:Key="Performance.Hover" Color="#140078D7"/>
+    <SolidColorBrush x:Key="Performance.CurrentLineup" Color="#FF2B6CA3"/>
+    <SolidColorBrush x:Key="Performance.SampleSoft" Color="#FF8A6A00"/>
+    <SolidColorBrush x:Key="Performance.SampleHard" Color="#FFB42318"/>
 
 </ResourceDictionary>

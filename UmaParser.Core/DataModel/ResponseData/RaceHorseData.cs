@@ -49,6 +49,14 @@
         public int TrainedCharaId { get; set; }
 
         /// <summary>
+        /// Rank score, the rating shown under the portrait. Same value as
+        /// <see cref="TrainedChara.RankScore"/>. Team Trials race horses usually omit it;
+        /// <see cref="TeamRaceData.UserTrainedCharaArrayCopy"/> is the other place a capture carries it.
+        /// </summary>
+        [JsonPropertyName("rank_score")]
+        public int RankScore { get; set; }
+
+        /// <summary>
         /// 4-digit character ID (no variants).  ie 1001 = Special Week.
         /// </summary>
         [JsonPropertyName("chara_id")]

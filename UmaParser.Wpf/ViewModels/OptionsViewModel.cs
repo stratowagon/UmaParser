@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
+using UmaParser.Analysis;
 using UmaParser.MasterData;
 using UmaParser.Mvvm;
 using UmaParser.Settings;
@@ -97,12 +99,21 @@ public sealed class OptionsViewModel : ObservableObject
     private bool _canMoveUp;
     private bool _canMoveDown;
     private bool _suppress;
+    private string _sampleSoftThresholdText;
+    private string _sampleHardThresholdText;
+    private string _sampleThresholdError = "";
 
     public OptionsViewModel(Func<GridColumnContext>? context = null, string? settingsPath = null)
     {
         _context = context ?? (() => GridColumnContext.Empty);
         _settingsPath = settingsPath;
-        _session = ColumnOptionsSession.Load(GameMasterSettings.Load(settingsPath), _context());
+        GameMasterSettings settings = GameMasterSettings.Load(settingsPath);
+        _session = ColumnOptionsSession.Load(settings, _context());
+        PerformanceSampleThresholds thresholds = PerformanceSampleThresholds.FromSaved(
+            settings.PerformanceSampleSoftThreshold,
+            settings.PerformanceSampleHardThreshold);
+        _sampleSoftThresholdText = thresholds.Soft.ToString(CultureInfo.CurrentCulture);
+        _sampleHardThresholdText = thresholds.Hard.ToString(CultureInfo.CurrentCulture);
         Grids = new ObservableCollection<ColumnOptionGridItem>(
             _session.Grids.Select(grid => new ColumnOptionGridItem(grid.Key, grid.DisplayName)));
         Columns = new ObservableCollection<ColumnOptionLine>();
@@ -186,6 +197,33 @@ public sealed class OptionsViewModel : ObservableObject
         private set => SetProperty(ref _canMoveDown, value);
     }
 
+    /// <summary>Yellow sample line. Blank on save means 20.</summary>
+    public string SampleSoftThresholdText
+    {
+        get => _sampleSoftThresholdText;
+        set => SetProperty(ref _sampleSoftThresholdText, value);
+    }
+
+    /// <summary>Red sample line. Blank on save means 10. Has to be lower than the yellow line.</summary>
+    public string SampleHardThresholdText
+    {
+        get => _sampleHardThresholdText;
+        set => SetProperty(ref _sampleHardThresholdText, value);
+    }
+
+    public string SampleThresholdError
+    {
+        get => _sampleThresholdError;
+        private set => SetProperty(ref _sampleThresholdError, value);
+    }
+
+    public void RestoreSampleDefaults()
+    {
+        SampleSoftThresholdText = PerformanceSampleThresholds.DefaultSoft.ToString(CultureInfo.CurrentCulture);
+        SampleHardThresholdText = PerformanceSampleThresholds.DefaultHard.ToString(CultureInfo.CurrentCulture);
+        SampleThresholdError = "";
+    }
+
     public void MoveUp() => Move(-1);
 
     public void MoveDown() => Move(1);
@@ -216,8 +254,21 @@ public sealed class OptionsViewModel : ObservableObject
     /// </summary>
     public bool Save()
     {
+        if (!PerformanceSampleThresholds.TryParse(
+                _sampleSoftThresholdText,
+                _sampleHardThresholdText,
+                out PerformanceSampleThresholds thresholds,
+                out string error))
+        {
+            SampleThresholdError = error;
+            return false;
+        }
+
+        SampleThresholdError = "";
         GameMasterSettings settings = GameMasterSettings.Load(_settingsPath);
         _session.WriteTo(settings);
+        settings.PerformanceSampleSoftThreshold = thresholds.Soft;
+        settings.PerformanceSampleHardThreshold = thresholds.Hard;
         settings.Save(_settingsPath);
         PreferencesApplied?.Invoke(this, EventArgs.Empty);
         return true;

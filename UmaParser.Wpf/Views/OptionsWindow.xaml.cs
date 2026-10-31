@@ -46,4 +46,6 @@ public partial class OptionsWindow : Window
     private void MoveDown_Click(object sender, RoutedEventArgs e) => _viewModel.MoveDown();
 
     private void RestoreDefaults_Click(object sender, RoutedEventArgs e) => _viewModel.RestoreDefaults();
+
+    private void RestoreSampleDefaults_Click(object sender, RoutedEventArgs e) => _viewModel.RestoreSampleDefaults();
 }

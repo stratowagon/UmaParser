@@ -199,6 +199,7 @@ public sealed class MainViewModel : ObservableObject
         Analysis.ReloadColumns();
         Skills.ReloadColumns();
         Tracks.ReloadColumns();
+        Performance.ReloadSampleThresholds();
         Results.RequestRepaint();
         _options?.RefreshAvailability();
     }

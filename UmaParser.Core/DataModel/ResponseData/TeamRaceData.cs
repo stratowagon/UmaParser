@@ -21,7 +21,15 @@ namespace UmaParser.DataModel.ResponseData
         // last_checked_round
         [JsonPropertyName("support_card_bonus")] public int SupportCardBonus { get; set; }
         // user_team_data_array_copy
-        // user_trained_chara_array_copy
+
+        /// <summary>
+        /// Player trained characters copied into some Team Trials responses.
+        /// <see cref="TrainedChara.RankScore"/> on each entry is the rating under the portrait.
+        /// HorseACT often leaves this array empty; it is still the field the capture uses when the rating is present.
+        /// </summary>
+        [JsonPropertyName("user_trained_chara_array_copy")]
+        public List<TrainedChara> UserTrainedCharaArrayCopy { get; set; } = new();
+
         // opponent_info_copy
         // opponent_chara_info_array_latest_copy
     }
