@@ -20,10 +20,10 @@ public sealed class PerformanceSortChoice
 }
 
 /// <summary>
-/// Performance tab state. A consistent roster fills <see cref="Chart"/> once per drop.
+/// Performance tab state. A Team Trials drop fills <see cref="Chart"/> once, including a mixed roster.
 /// Changing the sort key reorders those rows and does not read the capture files again.
-/// The sort metric and direction are stored in settings.json, the same file as ColorMode,
-/// and written when they change.
+/// The sort metric, direction, and sample thresholds are stored in settings.json, the same file as ColorMode.
+/// Sort is written when it changes. Thresholds are written from Options.
 /// </summary>
 public sealed class PerformanceViewModel : ObservableObject
 {
@@ -31,6 +31,7 @@ public sealed class PerformanceViewModel : ObservableObject
     private PerformanceChart? _base;
     private PerformanceChart? _chart;
     private PerformanceSortChoice _selectedSort;
+    private PerformanceSampleThresholds _thresholds = PerformanceSampleThresholds.Default;
     private bool _ascending = true;
     private bool _showChart;
     private string _summary = "";
@@ -54,6 +55,7 @@ public sealed class PerformanceViewModel : ObservableObject
             new PerformanceSortChoice(PerformanceSortKey.P90, "P90"),
         ];
         (PerformanceSortKey key, bool ascending) = PerformanceSortPreferences.Load(settingsPath);
+        _thresholds = PerformanceSamplePreferences.Load(settingsPath);
         _selectedSort = Choice(key);
         _ascending = ascending;
         UseAscendingCommand = new RelayCommand(_ => SetAscending(true));
@@ -120,7 +122,16 @@ public sealed class PerformanceViewModel : ObservableObject
 
     public void Apply(TeamTrialBatch batch)
     {
-        _base = PerformanceChartEngine.Build(batch);
+        _thresholds = PerformanceSamplePreferences.Load(_settingsPath);
+        _base = PerformanceChartEngine.Build(batch, _thresholds);
+        Publish();
+    }
+
+    /// <summary>Re-reads the Options sample thresholds and recolors the open chart.</summary>
+    public void ReloadSampleThresholds()
+    {
+        _thresholds = PerformanceSamplePreferences.Load(_settingsPath);
+        _base?.ApplySampleThresholds(_thresholds);
         Publish();
     }
 

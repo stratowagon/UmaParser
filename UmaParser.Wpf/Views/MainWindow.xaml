@@ -38,6 +38,9 @@
     </Window.Resources>
     <DockPanel>
         <Menu DockPanel.Dock="Top">
+            <MenuItem Header="File">
+                <MenuItem Header="Clear All Data" Command="{Binding ClearFilesCommand}"/>
+            </MenuItem>
             <MenuItem Header="Options">
                 <MenuItem Header="Preferences..." Command="{Binding OpenPreferencesCommand}"/>
             </MenuItem>

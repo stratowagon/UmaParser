@@ -84,18 +84,40 @@ public sealed class PerformanceSegment
     public required double Average { get; init; }
 }
 
-/// <summary>One roster uma, ready for a stacked bar and the spread drawn under it.</summary>
+/// <summary>One trained uma, ready for a stacked bar and the spread drawn under it.</summary>
 public sealed class PerformanceUmaRow
 {
     public required int TrainedCharaId { get; init; }
     public required int RosterIndex { get; init; }
+
+    /// <summary>Catalog short name, without the rank-score suffix.</summary>
+    public required string ShortName { get; init; }
+
+    /// <summary>
+    /// Catalog short name. Team Trials captures do not include a portrait rating, so this stays the short name.
+    /// A positive <see cref="RankScore"/> is appended as <c>[18,317]</c> when some other capture type supplies one.
+    /// </summary>
     public required string Name { get; init; }
+
+    /// <summary>Portrait rating when the capture has one. Team Trials rows leave this at 0.</summary>
+    public required int RankScore { get; init; }
     public required string Distance { get; init; }
     public required string Style { get; init; }
 
-    /// <summary>Distance and running style. Ace and support are not shown; those bonuses are already stripped.</summary>
+    /// <summary>Distance, running style, and how many loaded trials this uma ran. Ace and support are not shown.</summary>
     public required string Subtitle { get; init; }
+
+    /// <summary>Loaded trials in which this uma raced. Averages use only those trials.</summary>
     public required int TrialCount { get; init; }
+
+    /// <summary>True when this trained uma is on the roster of the newest loaded file.</summary>
+    public required bool InCurrentLineup { get; init; }
+
+    /// <summary>
+    /// Set from the Options thresholds. Updated in place when those thresholds change,
+    /// so a sort does not have to rebuild the bars.
+    /// </summary>
+    public PerformanceSampleWarning SampleWarning { get; set; }
     public required IReadOnlyList<PerformanceSegment> Segments { get; init; }
     public required double Average { get; init; }
     public required double Median { get; init; }
@@ -121,17 +143,33 @@ public sealed class PerformanceUmaRow
 }
 
 /// <summary>
-/// Chart for one consistent Team Trials roster. <see cref="Rows"/> stay in roster order
+/// Chart for every trained uma, running style, and distance in the loaded Team Trials files.
+/// <see cref="Rows"/> start in
+/// current-lineup order (newest file), with umas who are not on that roster after them,
 /// until <see cref="Sorted"/> is called. <see cref="TeamAverage"/> is the mean of the
-/// per-uma average base scores.
+/// current lineup's average base scores. On a consistent roster that lineup is every row,
+/// so the line matches the old team average.
 /// </summary>
 public sealed class PerformanceChart
 {
     public bool Available { get; init; }
     public string EmptyMessage { get; init; } = "";
+
+    /// <summary>How many Team Trials files were loaded. A row's own count can be smaller.</summary>
     public int TrialCount { get; init; }
+
+    /// <summary>Mean of the current lineup's per-uma average base scores (the newest file's roster).</summary>
     public double TeamAverage { get; init; }
     public IReadOnlyList<PerformanceUmaRow> Rows { get; init; } = Array.Empty<PerformanceUmaRow>();
+
+    /// <summary>Restamps <see cref="PerformanceUmaRow.SampleWarning"/> from <paramref name="thresholds"/>.</summary>
+    public void ApplySampleThresholds(PerformanceSampleThresholds thresholds)
+    {
+        foreach (PerformanceUmaRow row in Rows)
+        {
+            row.SampleWarning = thresholds.Classify(row.TrialCount);
+        }
+    }
 
     public PerformanceChart Sorted(PerformanceSortKey key, bool ascending)
     {
@@ -159,20 +197,29 @@ public sealed class PerformanceChart
 
 /// <summary>
 /// Builds the Performance chart from the same normalized base scores Team Analysis uses.
-/// Each loaded file contributes one race (one base total) per uma.
+/// Each loaded file contributes one race (one base total) for each uma who was on that file's roster.
+/// Identity is trained character id, running style, and distance type. The same uma in two
+/// styles or two distances is two rows. Team slot is not part of the key, so ace and support
+/// stay one row when id, style, and distance match. The last trial is the current lineup,
+/// matching <see cref="TeamTrialBatch.MostRecentTrial"/> (files are oldest first). A current
+/// row is the style and distance that uma uses on that newest roster.
 /// </summary>
 public static class PerformanceChartEngine
 {
     public const string DropMessage = "Drop one or more .json capture files onto this window.";
 
-    public const string UnavailableMessage =
-        "Performance is only active for Team Trials files that all have the exact same roster of 15 umas.";
+    public const string NonTeamTrialsMessage =
+        "Performance reads Team Trials captures. Drop Team Trials files on their own, without Champions Meet, Room Match, or Practice.";
 
-    public static PerformanceChart Build(TeamTrialBatch batch)
+    public static PerformanceChart Build(TeamTrialBatch batch) =>
+        Build(batch, PerformanceSampleThresholds.Default);
+
+    public static PerformanceChart Build(TeamTrialBatch batch, PerformanceSampleThresholds thresholds)
     {
-        if (batch.Kind != TeamTrialBatchKind.RosterStats)
+        if (batch.Kind is not (TeamTrialBatchKind.RosterStats or TeamTrialBatchKind.RosterMismatch))
         {
-            return Unavailable(UnavailableMessage);
+            string message = batch.Kind == TeamTrialBatchKind.Empty ? DropMessage : NonTeamTrialsMessage;
+            return Unavailable(message);
         }
 
         var trials = new List<TeamTrialResult>(batch.Trials.Count);
@@ -181,153 +228,232 @@ public static class PerformanceChartEngine
             trials.Add(trial);
         }
 
-        return Build(trials);
+        return Build(trials, thresholds);
     }
 
-    public static PerformanceChart Build(IReadOnlyList<TeamTrialResult> trials)
+    public static PerformanceChart Build(IReadOnlyList<TeamTrialResult> trials) =>
+        Build(trials, PerformanceSampleThresholds.Default);
+
+    public static PerformanceChart Build(IReadOnlyList<TeamTrialResult> trials, PerformanceSampleThresholds thresholds)
     {
         if (trials.Count == 0)
         {
             return Unavailable(DropMessage);
         }
 
-        TeamTrialResult layout = trials[^1];
-        IReadOnlyList<int> ids = layout.RosterTrainedCharaIds;
-        IReadOnlyList<string> names = layout.RosterNames;
-        if (ids.Count == 0 || names.Count != ids.Count)
+        GameMasterCatalog catalog = GameMasterService.Current.Catalog;
+        var byKey = new Dictionary<UmaRowKey, UmaAccumulator>();
+        var seen = new List<UmaRowKey>();
+        foreach (TeamTrialResult trial in trials)
+        {
+            int rosterIndex = 0;
+            foreach (KeyValuePair<int, RaceHorseData> entry in trial.RaceRoster)
+            {
+                int trainedCharaId = entry.Key;
+                RaceHorseData horse = entry.Value;
+                var key = new UmaRowKey(trainedCharaId, horse.RunningStyle, DistanceTypeOf(trial, horse, rosterIndex));
+                if (!byKey.TryGetValue(key, out UmaAccumulator? acc))
+                {
+                    acc = new UmaAccumulator(trainedCharaId);
+                    byKey[key] = acc;
+                    seen.Add(key);
+                }
+
+                acc.CharaId = horse.CharaId;
+                (acc.Distance, acc.Style) = LayoutOf(trial, horse, rosterIndex);
+                acc.Add(trial, catalog);
+                rosterIndex++;
+            }
+        }
+
+        if (seen.Count == 0)
         {
             return Unavailable(DropMessage);
         }
 
-        int trialCount = trials.Count;
-        int sourceCount = PerformanceScoreSources.StackOrder.Count;
-        var sourceSums = new double[ids.Count, sourceCount];
-        var totals = new double[ids.Count][];
-        for (int i = 0; i < ids.Count; i++)
+        TeamTrialResult newest = trials[^1];
+        var current = new List<UmaRowKey>();
+        int currentIndex = 0;
+        foreach (KeyValuePair<int, RaceHorseData> entry in newest.RaceRoster)
         {
-            totals[i] = new double[trialCount];
+            current.Add(new UmaRowKey(
+                entry.Key,
+                entry.Value.RunningStyle,
+                DistanceTypeOf(newest, entry.Value, currentIndex)));
+            currentIndex++;
         }
 
-        GameMasterCatalog catalog = GameMasterService.Current.Catalog;
-        for (int trialIndex = 0; trialIndex < trialCount; trialIndex++)
+        var currentSet = new HashSet<UmaRowKey>(current);
+        var order = new List<UmaRowKey>(current);
+        foreach (UmaRowKey key in seen)
         {
-            TeamTrialResult trial = trials[trialIndex];
-            for (int umaIndex = 0; umaIndex < ids.Count; umaIndex++)
+            if (!currentSet.Contains(key))
             {
-                if (!trial.Results.TryGetValue(ids[umaIndex], out CharaResult? chara))
-                {
-                    continue;
-                }
+                order.Add(key);
+            }
+        }
 
-                double total = 0;
+        var rows = new List<PerformanceUmaRow>(order.Count);
+        for (int index = 0; index < order.Count; index++)
+        {
+            UmaAccumulator acc = byKey[order[index]];
+            rows.Add(acc.ToRow(index, currentSet.Contains(order[index]), thresholds, catalog));
+        }
+
+        IEnumerable<PerformanceUmaRow> lineup = rows.Where(row => row.InCurrentLineup);
+        if (!lineup.Any())
+        {
+            lineup = rows;
+        }
+
+        return new PerformanceChart
+        {
+            Available = true,
+            EmptyMessage = "",
+            TrialCount = trials.Count,
+            TeamAverage = lineup.Average(row => row.Average),
+            Rows = rows,
+        };
+    }
+
+    public static string FormatRaceCount(int raceCount) =>
+        raceCount == 1 ? "1 race" : $"{raceCount.ToString(CultureInfo.CurrentCulture)} races";
+
+    public static string FormatName(string shortName, int rankScore)
+    {
+        if (rankScore <= 0)
+        {
+            return shortName;
+        }
+
+        return $"{shortName} [{rankScore.ToString("N0", CultureInfo.CurrentCulture)}]";
+    }
+
+    public static string FormatSubtitle(string distance, string style, int raceCount) =>
+        $"{distance} · {style} · {FormatRaceCount(raceCount)}";
+
+    public static string Describe(PerformanceChart chart)
+    {
+        string average = chart.TeamAverage.ToString("N0", CultureInfo.CurrentCulture);
+        return
+            $"Base scores without bonuses across {chart.TrialCount} total trials. " +
+            $"Current lineup average: {average}";
+    }
+
+    /// <summary>
+    /// One chart row. Team member slot is intentionally absent: ace and support share a row
+    /// when the trained uma, running style, and distance match. Ace bonus is already removed
+    /// from the base score.
+    /// </summary>
+    private readonly record struct UmaRowKey(int TrainedCharaId, int RunningStyle, int DistanceType);
+
+    private sealed class UmaAccumulator
+    {
+        private readonly double[] _sourceSums = new double[PerformanceScoreSources.StackOrder.Count];
+        private readonly List<double> _scores = new();
+
+        public UmaAccumulator(int trainedCharaId)
+        {
+            TrainedCharaId = trainedCharaId;
+        }
+
+        public int TrainedCharaId { get; }
+        public int CharaId { get; set; }
+        public int RankScore { get; set; }
+        public string Distance { get; set; } = "";
+        public string Style { get; set; } = "";
+
+        public void Add(TeamTrialResult trial, GameMasterCatalog catalog)
+        {
+            double total = 0;
+            if (trial.Results.TryGetValue(TrainedCharaId, out CharaResult? chara))
+            {
                 foreach (TeamTrialsScore bucket in chara.ScoreArray)
                 {
                     double points = bucket.BaseScore;
                     total += points;
                     PerformanceScoreSource source = PerformanceScoreSources.Classify(bucket.RawScoreId, catalog);
-                    sourceSums[umaIndex, SourceIndex(source)] += points;
+                    _sourceSums[SourceIndex(source)] += points;
                 }
-
-                totals[umaIndex][trialIndex] = total;
             }
+
+            _scores.Add(total);
         }
 
-        var rows = new List<PerformanceUmaRow>(ids.Count);
-        for (int umaIndex = 0; umaIndex < ids.Count; umaIndex++)
+        public PerformanceUmaRow ToRow(
+            int rosterIndex,
+            bool inCurrentLineup,
+            PerformanceSampleThresholds thresholds,
+            GameMasterCatalog catalog)
         {
-            rows.Add(BuildRow(
-                layout,
-                ids[umaIndex],
-                names[umaIndex],
-                umaIndex,
-                trialCount,
-                sourceSums,
-                totals[umaIndex]));
-        }
-
-        double teamAverage = rows.Count > 0 ? rows.Average(row => row.Average) : 0;
-        return new PerformanceChart
-        {
-            Available = true,
-            EmptyMessage = "",
-            TrialCount = trialCount,
-            TeamAverage = teamAverage,
-            Rows = rows,
-        };
-    }
-
-    public static string Describe(PerformanceChart chart) =>
-        $"Base scores with support, opponent, and ace bonuses removed across {chart.TrialCount} trial(s). " +
-        $"Team average {chart.TeamAverage.ToString("N0", CultureInfo.CurrentCulture)}. ";
-
-    private static PerformanceUmaRow BuildRow(
-        TeamTrialResult layout,
-        int trainedCharaId,
-        string name,
-        int rosterIndex,
-        int trialCount,
-        double[,] sourceSums,
-        double[] scores)
-    {
-        var segments = new List<PerformanceSegment>(PerformanceScoreSources.StackOrder.Count);
-        foreach (PerformanceScoreSource source in PerformanceScoreSources.StackOrder)
-        {
-            segments.Add(new PerformanceSegment
+            int raceCount = _scores.Count;
+            var segments = new List<PerformanceSegment>(PerformanceScoreSources.StackOrder.Count);
+            foreach (PerformanceScoreSource source in PerformanceScoreSources.StackOrder)
             {
-                Source = source,
-                Label = PerformanceScoreSources.Label(source),
-                Average = sourceSums[rosterIndex, SourceIndex(source)] / trialCount,
-            });
+                segments.Add(new PerformanceSegment
+                {
+                    Source = source,
+                    Label = PerformanceScoreSources.Label(source),
+                    Average = _sourceSums[SourceIndex(source)] / raceCount,
+                });
+            }
+
+            string shortName = catalog.FormatCharaShortName(CharaId);
+            string name = FormatName(shortName, RankScore);
+            string subtitle = FormatSubtitle(Distance, Style, raceCount);
+            double average = _scores.Average();
+            double median = ScorePercentile.Linear(_scores, 0.5);
+            double p90 = ScorePercentile.Linear(_scores, 0.9);
+            double skillAverage = segments.Where(segment => PerformanceScoreSources.IsSkill(segment.Source)).Sum(segment => segment.Average);
+            var row = new PerformanceUmaRow
+            {
+                TrainedCharaId = TrainedCharaId,
+                RosterIndex = rosterIndex,
+                ShortName = shortName,
+                Name = name,
+                RankScore = RankScore,
+                Distance = Distance,
+                Style = Style,
+                Subtitle = subtitle,
+                TrialCount = raceCount,
+                InCurrentLineup = inCurrentLineup,
+                SampleWarning = thresholds.Classify(raceCount),
+                Segments = segments,
+                Average = average,
+                Median = median,
+                Min = _scores.Min(),
+                Max = _scores.Max(),
+                P25 = ScorePercentile.Linear(_scores, 0.25),
+                P75 = ScorePercentile.Linear(_scores, 0.75),
+                P90 = p90,
+                SkillAverage = skillAverage,
+                Tooltip = "",
+            };
+            return new PerformanceUmaRow
+            {
+                TrainedCharaId = row.TrainedCharaId,
+                RosterIndex = row.RosterIndex,
+                ShortName = row.ShortName,
+                Name = row.Name,
+                RankScore = row.RankScore,
+                Distance = row.Distance,
+                Style = row.Style,
+                Subtitle = row.Subtitle,
+                TrialCount = row.TrialCount,
+                InCurrentLineup = row.InCurrentLineup,
+                SampleWarning = row.SampleWarning,
+                Segments = row.Segments,
+                Average = row.Average,
+                Median = row.Median,
+                Min = row.Min,
+                Max = row.Max,
+                P25 = row.P25,
+                P75 = row.P75,
+                P90 = row.P90,
+                SkillAverage = row.SkillAverage,
+                Tooltip = FormatTooltip(row),
+            };
         }
-
-        double average = scores.Average();
-        double skillAverage = segments.Where(segment => PerformanceScoreSources.IsSkill(segment.Source)).Sum(segment => segment.Average);
-        (string distance, string style) = LayoutOf(layout, rosterIndex);
-        string subtitle = $"{distance} · {style}";
-        double median = ScorePercentile.Linear(scores, 0.5);
-        double p90 = ScorePercentile.Linear(scores, 0.9);
-
-        var row = new PerformanceUmaRow
-        {
-            TrainedCharaId = trainedCharaId,
-            RosterIndex = rosterIndex,
-            Name = name,
-            Distance = distance,
-            Style = style,
-            Subtitle = subtitle,
-            TrialCount = trialCount,
-            Segments = segments,
-            Average = average,
-            Median = median,
-            Min = scores.Min(),
-            Max = scores.Max(),
-            P25 = ScorePercentile.Linear(scores, 0.25),
-            P75 = ScorePercentile.Linear(scores, 0.75),
-            P90 = p90,
-            SkillAverage = skillAverage,
-            Tooltip = "",
-        };
-
-        return new PerformanceUmaRow
-        {
-            TrainedCharaId = row.TrainedCharaId,
-            RosterIndex = row.RosterIndex,
-            Name = row.Name,
-            Distance = row.Distance,
-            Style = row.Style,
-            Subtitle = row.Subtitle,
-            TrialCount = row.TrialCount,
-            Segments = row.Segments,
-            Average = row.Average,
-            Median = row.Median,
-            Min = row.Min,
-            Max = row.Max,
-            P25 = row.P25,
-            P75 = row.P75,
-            P90 = row.P90,
-            SkillAverage = row.SkillAverage,
-            Tooltip = FormatTooltip(row),
-        };
     }
 
     internal static string FormatTooltip(PerformanceUmaRow row)
@@ -365,20 +491,16 @@ public static class PerformanceChartEngine
         return order.Count - 1;
     }
 
-    private static (string Distance, string Style) LayoutOf(TeamTrialResult layout, int rosterIndex)
+    private static int DistanceTypeOf(TeamTrialResult trial, RaceHorseData uma, int rosterIndex)
     {
         int teamIndex = rosterIndex / 3;
-        if (layout.RaceRoster.Count > rosterIndex)
-        {
-            var uma = layout.RaceRoster.ElementAt(rosterIndex).Value;
-            int distanceType = layout.FindRaceResultByUma(uma)?.DistanceType ?? (teamIndex + 1);
-            return (
-                DistanceTypeNames.FormatAnalysis(distanceType),
-                RunningStyleNames.FormatAnalysis(uma.RunningStyle));
-        }
-
-        return (DistanceTypeNames.FormatTeamSlot(teamIndex), "—");
+        return trial.FindRaceResultByUma(uma)?.DistanceType ?? (teamIndex + 1);
     }
+
+    private static (string Distance, string Style) LayoutOf(TeamTrialResult trial, RaceHorseData uma, int rosterIndex) =>
+        (
+            DistanceTypeNames.FormatAnalysis(DistanceTypeOf(trial, uma, rosterIndex)),
+            RunningStyleNames.FormatAnalysis(uma.RunningStyle));
 
     private static PerformanceChart Unavailable(string message) => new()
     {

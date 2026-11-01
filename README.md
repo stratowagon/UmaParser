@@ -61,15 +61,25 @@ The "Ace Delta" column is comparing the umas within one team to their ace to see
 be better off swapping aces.  However this requires a decently large sample size to be meaningful,
 so take the recommendations with a grain of salt.
 
+
 ### Performance Tab
 Visualization ~~stolen from~~inspired by [Chernobyl Liquidator's work](https://uma.satki.org/team_trial).
-Stacked base-score bars for all loaded Team Trials umas, highlighting the current (latest) active team.
-Each bar shows categorized normalized (bonuses removed) averages as a stacked bar. Under each bar, a
-thin line shows the P25–P75 range, with a median tick, min/max dots, and a P90 marker. Rows can be
-sorted by various criteria.  Hover over a row for exact splits.
+Stacked base-score bars for the Team Trials umas in the loaded set. All files must be Team
+Trials, but this tab does not require the same roster across every file the way Team Analysis
+does.  The current lineup (based on the newest file in the batch) will be highlighted.
 
-The Performance tab is only valid for Team Trials races, but it does not require a consistent team
-across all files the way Team Analysis does.
+Each row shows a stacked bar breaking down the different buckets (normalized without bonuses)
+for that uma averaged across all races. Under each bar, a thin line shows the P25–P75 range,
+a median tick, min/max dots, and a P90 marker. Hover a row for details on the bucket averages.
+
+A row is one trained uma, one running style, and one distance. The same uma in two styles,
+or in two distances, will show as different rows. Each row's race count and stats use only
+the trials that match that style and distance.
+
+A short sample is marked if the race count is low. With the defaults, fewer than 10 races is red,
+10 through 19 are yellow, and 20 or more has no mark. Both cutoffs are editable under
+Options → Performance.
+
 
 ### Skills Tab
 This tab provides detailed information for an uma's skill activations across multiple races.

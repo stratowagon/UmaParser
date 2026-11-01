@@ -103,7 +103,10 @@ public sealed class PerformanceChartTests
         Assert.True(chart.Available);
         Assert.Equal(1, chart.TrialCount);
         Assert.Equal("Special Week", row.Name);
-        Assert.Equal("Sprint · Front", row.Subtitle);
+        Assert.Equal("Sprint · Front · 1 race", row.Subtitle);
+        Assert.Equal(1, row.TrialCount);
+        Assert.True(row.InCurrentLineup);
+        Assert.Equal(PerformanceSampleWarning.Hard, row.SampleWarning);
         Assert.DoesNotContain("Ace", row.Subtitle);
         Assert.DoesNotContain("Support", row.Subtitle);
         Assert.Equal(19_700, row.Average);
@@ -162,7 +165,8 @@ public sealed class PerformanceChartTests
         Assert.Equal(3_000, flat.P75);
         Assert.Equal(3_000, flat.P90);
         Assert.Equal("End", flat.Style);
-        Assert.Equal("Sprint · End", flat.Subtitle);
+        Assert.Equal("Sprint · End · 4 races", flat.Subtitle);
+        Assert.Equal(PerformanceSampleWarning.Hard, flat.SampleWarning);
         Assert.DoesNotContain("Support", flat.Tooltip);
 
         Assert.Equal([1, 2], Ids(chart, PerformanceSortKey.Average, ascending: true));
@@ -202,9 +206,9 @@ public sealed class PerformanceChartTests
         Assert.Equal(19_000, row.P90);
         Assert.Equal(10_000, row.Min);
         Assert.Equal(20_000, row.Max);
-        Assert.Contains("bonuses removed", PerformanceChartEngine.Describe(chart));
+        Assert.Contains("without bonuses", PerformanceChartEngine.Describe(chart));
         Assert.Contains("15,000", PerformanceChartEngine.Describe(chart));
-        Assert.Contains("0.02s", PerformanceChartEngine.Describe(chart));
+        Assert.Contains("Current lineup average", PerformanceChartEngine.Describe(chart));
     }
 
     [Fact]
@@ -238,6 +242,10 @@ public sealed class PerformanceChartTests
             Assert.Contains("Median ", row.Tooltip);
             Assert.Contains("P90 ", row.Tooltip);
             Assert.Contains(row.Subtitle, row.Tooltip);
+            Assert.Equal(trials.Count, row.TrialCount);
+            Assert.True(row.InCurrentLineup);
+            Assert.Equal(PerformanceSampleThresholds.Default.Classify(row.TrialCount), row.SampleWarning);
+            Assert.Contains(PerformanceChartEngine.FormatRaceCount(row.TrialCount), row.Subtitle);
             Assert.DoesNotContain("Ace", row.Subtitle);
             Assert.DoesNotContain("Support", row.Subtitle);
             Assert.DoesNotContain("%", row.Tooltip);
@@ -264,19 +272,272 @@ public sealed class PerformanceChartTests
     }
 
     [Fact]
-    public void A_roster_that_is_not_consistent_has_no_chart()
+    public void A_roster_that_is_not_consistent_still_charts_every_trained_uma()
     {
-        PerformanceChart mismatch = PerformanceChartEngine.Build(TrialSets.Build("TT-Mismatch"));
-        PerformanceChart styleChange = PerformanceChartEngine.Build(TrialSets.Build("TT-StyleChange"));
-        PerformanceChart empty = PerformanceChartEngine.Build(Array.Empty<TeamTrialResult>());
+        TeamTrialBatch mismatch = TrialSets.Build("TT-Mismatch");
+        PerformanceChart chart = PerformanceChartEngine.Build(mismatch);
+        TeamTrialResult newest = mismatch.MostRecentTrial!;
 
-        Assert.False(mismatch.Available);
-        Assert.Empty(mismatch.Rows);
-        Assert.Equal(PerformanceChartEngine.UnavailableMessage, mismatch.EmptyMessage);
-        Assert.False(styleChange.Available);
+        Assert.True(chart.Available);
+        Assert.True(chart.Rows.Count > 15);
+        Assert.Equal(newest.RosterTrainedCharaIds, chart.Rows.Where(row => row.InCurrentLineup).Select(row => row.TrainedCharaId));
+        Assert.Contains(chart.Rows, row => !row.InCurrentLineup);
+        Assert.Equal(
+            chart.Rows.Where(row => row.InCurrentLineup).Average(row => row.Average),
+            chart.TeamAverage);
+        Assert.Equal(chart.TeamAverage, chart.Sorted(PerformanceSortKey.Average, ascending: false).TeamAverage);
+
+        foreach (PerformanceUmaRow row in chart.Rows)
+        {
+            List<TeamTrialResult> appearances = mismatch.Trials.Values
+                .Where(trial => SameRow(trial, row))
+                .ToList();
+            Assert.Equal(appearances.Count, row.TrialCount);
+            Assert.True(row.TrialCount < mismatch.Trials.Count || row.InCurrentLineup);
+            double[] bases = appearances
+                .Where(trial => trial.Results.ContainsKey(row.TrainedCharaId))
+                .Select(trial => (double)trial.UmaBaseScore(row.TrainedCharaId))
+                .ToArray();
+            Assert.Equal(bases.Average(), row.Average, 6);
+        }
+
+        TeamTrialBatch styleChange = TrialSets.Build("TT-StyleChange");
+        PerformanceChart styles = PerformanceChartEngine.Build(styleChange);
+        int changedId = styleChange.Trials.Values
+            .SelectMany(trial => trial.RaceRoster)
+            .GroupBy(pair => pair.Key)
+            .Where(group => group.Select(pair => pair.Value.RunningStyle).Distinct().Count() > 1)
+            .Select(group => group.Key)
+            .Single();
+        List<PerformanceUmaRow> changedRows = styles.Rows.Where(row => row.TrainedCharaId == changedId).ToList();
+        TeamTrialResult newestStyle = styleChange.MostRecentTrial!;
+        int changedSlot = newestStyle.RosterTrainedCharaIds.ToList().IndexOf(changedId);
+        RaceHorseData newestHorse = newestStyle.RaceRoster[changedId];
+        int expectedRows = styleChange.Trials.Values
+            .Select(trial => (
+                trial.RaceRoster[changedId].RunningStyle,
+                trial.FindRaceResultByUma(trial.RaceRoster[changedId])?.DistanceType))
+            .Distinct()
+            .Count();
+
+        Assert.True(styles.Available);
+        Assert.Equal(expectedRows, changedRows.Count);
+        Assert.True(styles.Rows.Count > 15);
+        Assert.Equal(2, changedRows.Select(row => row.Style).Distinct().Count());
+        Assert.Equal(styleChange.Trials.Count, changedRows.Sum(row => row.TrialCount));
+        Assert.Equal(
+            newestStyle.RosterTrainedCharaIds,
+            styles.Rows.Where(row => row.InCurrentLineup).Select(row => row.TrainedCharaId));
+        PerformanceUmaRow currentStyle = Assert.Single(changedRows, row => row.InCurrentLineup);
+        Assert.Equal(RunningStyleNames.FormatAnalysis(newestHorse.RunningStyle), currentStyle.Style);
+        Assert.Equal(DistanceLabel(newestStyle, newestHorse, changedSlot), currentStyle.Distance);
+        foreach (PerformanceUmaRow row in changedRows)
+        {
+            double[] bases = styleChange.Trials.Values
+                .Where(trial => SameRow(trial, row))
+                .Select(trial => (double)trial.UmaBaseScore(changedId))
+                .ToArray();
+            Assert.Equal(bases.Length, row.TrialCount);
+            Assert.Equal(bases.Average(), row.Average, 6);
+        }
+
+        _ = expectedRows;
+
+        PerformanceChart empty = PerformanceChartEngine.Build(Array.Empty<TeamTrialResult>());
+        PerformanceChart otherModes = PerformanceChartEngine.Build(TrialSets.Build("Single-CM12"));
         Assert.False(empty.Available);
         Assert.Equal(PerformanceChartEngine.DropMessage, empty.EmptyMessage);
+        Assert.False(otherModes.Available);
+        Assert.Equal(PerformanceChartEngine.NonTeamTrialsMessage, otherModes.EmptyMessage);
         Assert.Same(empty, empty.Sorted(PerformanceSortKey.Max, ascending: false));
+    }
+
+    [Fact]
+    public void Mixed_rows_average_only_the_trials_that_uma_ran_and_the_line_is_the_current_lineup()
+    {
+        PerformanceChart chart = PerformanceChartEngine.Build(
+        [
+            Trial(
+                (1, 1001, 1, 1, [Bucket(60, 10_000)]),
+                (2, 1002, 2, 2, [Bucket(60, 30_000)])),
+            Trial(
+                (1, 1001, 1, 4, [Bucket(60, 20_000)]),
+                (3, 1001, 2, 3, [Bucket(60, 40_000)])),
+        ]);
+
+        Assert.Equal(4, chart.Rows.Count);
+        Assert.Equal([1, 3, 1, 2], chart.Rows.Select(row => row.TrainedCharaId));
+
+        PerformanceUmaRow kept = chart.Rows[0];
+        PerformanceUmaRow added = chart.Rows[1];
+        PerformanceUmaRow oldStyle = chart.Rows[2];
+        PerformanceUmaRow replaced = chart.Rows[3];
+        Assert.True(kept.InCurrentLineup);
+        Assert.True(added.InCurrentLineup);
+        Assert.False(oldStyle.InCurrentLineup);
+        Assert.False(replaced.InCurrentLineup);
+        Assert.Equal(20_000, kept.Average);
+        Assert.Equal(1, kept.TrialCount);
+        Assert.Equal("End", kept.Style);
+        Assert.Equal("Sprint · End · 1 race", kept.Subtitle);
+        Assert.Equal(40_000, added.Average);
+        Assert.Equal(1, added.TrialCount);
+        Assert.Equal("Late", added.Style);
+        Assert.Equal(10_000, oldStyle.Average);
+        Assert.Equal(1, oldStyle.TrialCount);
+        Assert.Equal("Front", oldStyle.Style);
+        Assert.Equal(kept.TrainedCharaId, oldStyle.TrainedCharaId);
+        Assert.Equal(30_000, replaced.Average);
+        Assert.Equal(1, replaced.TrialCount);
+        Assert.Equal("Pace", replaced.Style);
+        Assert.Equal(30_000, chart.TeamAverage);
+        Assert.Equal("Special Week", kept.ShortName);
+        Assert.Equal("Special Week", added.ShortName);
+        Assert.NotEqual(kept.TrainedCharaId, added.TrainedCharaId);
+    }
+
+    [Fact]
+    public void Team_trials_rows_use_the_catalog_name_and_keep_two_builds_apart()
+    {
+        PerformanceChart chart = PerformanceChartEngine.Build(
+        [
+            Trial(
+                (1, 1001, 1, 1, [Bucket(60, 1_000)]),
+                (2, 1001, 2, 2, [Bucket(60, 2_000)])),
+            Trial((1, 1001, 1, 1, [Bucket(60, 3_000)])),
+        ]);
+        PerformanceUmaRow first = chart.Rows.Single(row => row.TrainedCharaId == 1);
+        PerformanceUmaRow second = chart.Rows.Single(row => row.TrainedCharaId == 2);
+
+        Assert.Equal("Special Week", first.Name);
+        Assert.Equal(0, first.RankScore);
+        Assert.DoesNotContain("[", first.Name);
+        Assert.Equal(2_000, first.Average);
+        Assert.True(first.InCurrentLineup);
+        Assert.Equal("Special Week", second.Name);
+        Assert.Equal(0, second.RankScore);
+        Assert.Equal(2_000, second.Average);
+        Assert.False(second.InCurrentLineup);
+        Assert.Equal(2_000, chart.TeamAverage);
+    }
+
+    [Fact]
+    public void A_later_style_is_its_own_row_without_a_rating_suffix()
+    {
+        PerformanceChart chart = PerformanceChartEngine.Build(
+        [
+            Trial((1, 1001, 1, 1, [Bucket(60, 4_000)])),
+            Trial((1, 1001, 1, 4, [Bucket(60, 8_000)])),
+        ]);
+        Assert.Equal(2, chart.Rows.Count);
+        Assert.All(chart.Rows, row =>
+        {
+            Assert.Equal("Special Week", row.Name);
+            Assert.Equal(0, row.RankScore);
+        });
+        Assert.Equal(["End", "Front"], chart.Rows.Select(row => row.Style));
+        Assert.True(chart.Rows[0].InCurrentLineup);
+        Assert.False(chart.Rows[1].InCurrentLineup);
+        Assert.Equal(8_000, chart.TeamAverage);
+    }
+
+    [Theory]
+    [InlineData(0, PerformanceSampleWarning.Hard)]
+    [InlineData(9, PerformanceSampleWarning.Hard)]
+    [InlineData(10, PerformanceSampleWarning.Soft)]
+    [InlineData(19, PerformanceSampleWarning.Soft)]
+    [InlineData(20, PerformanceSampleWarning.None)]
+    [InlineData(21, PerformanceSampleWarning.None)]
+    public void Default_sample_thresholds_are_red_below_10_and_yellow_below_20(int races, PerformanceSampleWarning warning)
+    {
+        Assert.Equal(warning, PerformanceSampleThresholds.Default.Classify(races));
+    }
+
+    [Fact]
+    public void Custom_thresholds_restamp_warnings_without_moving_the_scores()
+    {
+        var trials = new List<TeamTrialResult>();
+        for (int i = 0; i < 12; i++)
+        {
+            trials.Add(Trial((1, 1001, 1, 1, [Bucket(60, 1_000)])));
+        }
+
+        PerformanceSampleThresholds custom = new(5, 2);
+        PerformanceChart chart = PerformanceChartEngine.Build(trials, custom);
+        PerformanceUmaRow row = Assert.Single(chart.Rows);
+        Assert.Equal(12, row.TrialCount);
+        Assert.Equal(PerformanceSampleWarning.None, row.SampleWarning);
+        Assert.Equal(1_000, row.Average);
+
+        chart.ApplySampleThresholds(PerformanceSampleThresholds.Default);
+        Assert.Equal(PerformanceSampleWarning.Soft, row.SampleWarning);
+        Assert.Equal(1_000, row.Average);
+
+        Assert.Equal(PerformanceSampleWarning.Hard, custom.Classify(1));
+        Assert.Equal(PerformanceSampleWarning.Soft, custom.Classify(2));
+        Assert.Equal(PerformanceSampleWarning.Soft, custom.Classify(4));
+        Assert.Equal(PerformanceSampleWarning.None, custom.Classify(5));
+    }
+
+    [Fact]
+    public void Distance_splits_a_row_and_ace_versus_support_does_not()
+    {
+        TeamTrialResult sprintAce = Trial((1, 1001, 1, 3, [Bucket(60, 10_000, bonus: 1_000)]));
+        TeamTrialResult mileAce = Trial((1, 1001, 1, 3, [Bucket(60, 30_000)]));
+        mileAce.Data!.RaceResultArray[0].DistanceType = 2;
+
+        PerformanceChart distances = PerformanceChartEngine.Build([sprintAce, mileAce]);
+        Assert.Equal(2, distances.Rows.Count);
+        Assert.Equal(["Mile", "Sprint"], distances.Rows.Select(row => row.Distance));
+        Assert.All(distances.Rows, row => Assert.Equal("Late", row.Style));
+        Assert.Equal(30_000, distances.Rows[0].Average);
+        Assert.Equal(1, distances.Rows[0].TrialCount);
+        Assert.True(distances.Rows[0].InCurrentLineup);
+        Assert.Equal("Mile · Late · 1 race", distances.Rows[0].Subtitle);
+        Assert.Equal(10_000, distances.Rows[1].Average);
+        Assert.False(distances.Rows[1].InCurrentLineup);
+        Assert.Equal(30_000, distances.TeamAverage);
+
+        TeamTrialResult asAce = Trial((1, 1001, 1, 3, [Bucket(60, 10_000, bonus: 2_000)]));
+        TeamTrialResult asSupport = Trial((1, 1001, 3, 3, [Bucket(60, 20_000)]));
+        PerformanceChart slot = PerformanceChartEngine.Build([asAce, asSupport]);
+        PerformanceUmaRow row = Assert.Single(slot.Rows);
+
+        Assert.Equal(15_000, row.Average);
+        Assert.Equal(2, row.TrialCount);
+        Assert.Equal("Sprint · Late · 2 races", row.Subtitle);
+        Assert.True(row.InCurrentLineup);
+        Assert.Equal(15_000, slot.TeamAverage);
+        Assert.DoesNotContain("Ace", row.Subtitle);
+        Assert.DoesNotContain("Support", row.Subtitle);
+    }
+
+    private static bool SameRow(TeamTrialResult trial, PerformanceUmaRow row)
+    {
+        if (!trial.RaceRoster.TryGetValue(row.TrainedCharaId, out RaceHorseData? horse))
+        {
+            return false;
+        }
+
+        int rosterIndex = 0;
+        foreach (int id in trial.RosterTrainedCharaIds)
+        {
+            if (id == row.TrainedCharaId)
+            {
+                break;
+            }
+
+            rosterIndex++;
+        }
+
+        return RunningStyleNames.FormatAnalysis(horse.RunningStyle) == row.Style
+            && DistanceLabel(trial, horse, rosterIndex) == row.Distance;
+    }
+
+    private static string DistanceLabel(TeamTrialResult trial, RaceHorseData horse, int rosterIndex)
+    {
+        int distanceType = trial.FindRaceResultByUma(horse)?.DistanceType ?? (rosterIndex / 3 + 1);
+        return DistanceTypeNames.FormatAnalysis(distanceType);
     }
 
     private static PerformanceScoreSource Source(GameMasterCatalog catalog, string name) =>

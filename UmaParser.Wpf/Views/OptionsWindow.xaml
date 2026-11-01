@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Options"
         Width="680"
-        Height="520"
+        Height="560"
         MinWidth="640"
         MinHeight="480"
         WindowStartupLocation="CenterOwner"
@@ -11,15 +11,15 @@
         ShowInTaskbar="False"
         Background="{DynamicResource Window.Background}"
         Foreground="{DynamicResource Window.Foreground}">
-    <TabControl Margin="8">
-        <TabItem Header="Columns">
-            <DockPanel Margin="8">
-                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
-                    <Button Content="Apply" Width="80" Margin="0,0,8,0" Click="Apply_Click"/>
-                    <Button Content="Cancel" Width="80" Margin="0,0,8,0" IsCancel="True" Click="Cancel_Click"/>
-                    <Button Content="OK" Width="80" IsDefault="True" Click="Ok_Click"/>
-                </StackPanel>
-                <Grid>
+    <DockPanel Margin="8">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+            <Button Content="Apply" Width="80" Margin="0,0,8,0" Click="Apply_Click"/>
+            <Button Content="Cancel" Width="80" Margin="0,0,8,0" IsCancel="True" Click="Cancel_Click"/>
+            <Button Content="OK" Width="80" IsDefault="True" Click="Ok_Click"/>
+        </StackPanel>
+        <TabControl>
+            <TabItem Header="Columns">
+                <Grid Margin="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="160"/>
                         <ColumnDefinition Width="8"/>
@@ -67,7 +67,39 @@
                         </ListBox>
                     </DockPanel>
                 </Grid>
-            </DockPanel>
-        </TabItem>
-    </TabControl>
+            </TabItem>
+            <TabItem Header="Performance">
+                <StackPanel Margin="12">
+                    <TextBlock TextWrapping="Wrap" Margin="0,0,0,12"
+                               Foreground="{DynamicResource Window.Foreground}"
+                               Text="The Performance chart marks a thin sample on each uma. Red when that uma's race count is below the red number. Yellow when the count is at least the red number and below the yellow number. At or above the yellow number there is no mark. Defaults are red below 10 and yellow from 10 up to, but not including, 20. Leave a box blank to keep its default. The red number has to be lower than the yellow number."/>
+                    <TextBlock TextWrapping="Wrap" Margin="0,0,0,12"
+                               Foreground="{DynamicResource Muted.Foreground}"
+                               Text="The dashed line is the mean of the current lineup's averages. Current means the roster in the newest file. Umas who are not on that roster stay on the chart and do not move the line."/>
+                    <DockPanel Margin="0,0,0,8">
+                        <TextBlock DockPanel.Dock="Left" Width="220" VerticalAlignment="Center"
+                                   Text="Red when races are below"
+                                   Foreground="{DynamicResource Window.Foreground}"/>
+                        <TextBox Width="72" HorizontalAlignment="Left"
+                                 Text="{Binding SampleHardThresholdText, UpdateSourceTrigger=PropertyChanged}"/>
+                    </DockPanel>
+                    <DockPanel Margin="0,0,0,8">
+                        <TextBlock DockPanel.Dock="Left" Width="220" VerticalAlignment="Center"
+                                   Text="Yellow when races are below"
+                                   Foreground="{DynamicResource Window.Foreground}"/>
+                        <TextBox Width="72" HorizontalAlignment="Left"
+                                 Text="{Binding SampleSoftThresholdText, UpdateSourceTrigger=PropertyChanged}"/>
+                    </DockPanel>
+                    <TextBlock TextWrapping="Wrap" Margin="0,0,0,8"
+                               Foreground="{DynamicResource Muted.Foreground}"
+                               Text="Example with the defaults: 9 races is red, 10 through 19 are yellow, 20 or more has no mark."/>
+                    <TextBlock Text="{Binding SampleThresholdError}"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource Performance.SampleHard}"/>
+                    <Button Content="Restore Defaults" Width="120" HorizontalAlignment="Left" Margin="0,12,0,0"
+                            Click="RestoreSampleDefaults_Click"/>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
 </Window>

@@ -10,17 +10,20 @@ using UmaParser.Analysis;
 namespace UmaParser.Views;
 
 /// <summary>
-/// Stacked base-score bars for the current roster, with the percentile spread under each bar
-/// and a dashed team-average line. Brushes come from the light/dark theme dictionaries.
+/// Stacked base-score bars for every trained uma in the loaded Team Trials files.
+/// The percentile spread sits under each bar. The dashed line is the mean of the current
+/// lineup (the newest file). A bar at the left marks that lineup. A short sample colors
+/// the race count yellow or red. Brushes come from the light/dark theme dictionaries.
 /// </summary>
 public sealed class PerformanceChartView : FrameworkElement
 {
-    private const double LabelWidth = 200;
-    private const double RowHeight = 56;
+    private const double LabelWidth = 232;
+    private const double RowHeight = 44;
     private const double AxisHeight = 28;
     private const double RightPad = 18;
-    private const double BarTop = 10;
+    private const double BarTop = 4;
     private const double BarHeight = 16;
+    private const double SpreadGap = 8;
     private const double LegendRowHeight = 20;
 
     private readonly ToolTip _tip = new()
@@ -38,6 +41,24 @@ public sealed class PerformanceChartView : FrameworkElement
 
     private double _legendHeight = LegendRowHeight;
     private int _hover = -1;
+
+    /// <summary>
+    /// When true, this element draws only the color and symbol key. The scrolling chart
+    /// leaves it false so the key can sit outside the scroll viewer and stay on screen.
+    /// </summary>
+    public static readonly DependencyProperty LegendOnlyProperty = DependencyProperty.Register(
+        nameof(LegendOnly),
+        typeof(bool),
+        typeof(PerformanceChartView),
+        new FrameworkPropertyMetadata(
+            false,
+            FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
+
+    public bool LegendOnly
+    {
+        get => (bool)GetValue(LegendOnlyProperty);
+        set => SetValue(LegendOnlyProperty, value);
+    }
 
     public PerformanceChartView()
     {
@@ -64,35 +85,50 @@ public sealed class PerformanceChartView : FrameworkElement
 
     protected override Size MeasureOverride(Size available)
     {
+        double width = double.IsInfinity(available.Width) ? 720 : Math.Max(360, available.Width);
+        if (LegendOnly)
+        {
+            _legendHeight = MeasureLegend(width);
+            return new Size(width, _legendHeight);
+        }
+
         PerformanceChart? chart = Chart;
         if (chart == null || !chart.Available || chart.Rows.Count == 0)
         {
             return new Size(0, 0);
         }
 
-        double width = double.IsInfinity(available.Width) ? 720 : Math.Max(360, available.Width);
-        _legendHeight = MeasureLegend(width);
-        return new Size(width, _legendHeight + AxisHeight + chart.Rows.Count * RowHeight + 8);
+        return new Size(width, AxisHeight + chart.Rows.Count * RowHeight + 8);
     }
 
     protected override void OnRender(DrawingContext dc)
     {
-        PerformanceChart? chart = Chart;
-        if (chart == null || !chart.Available || chart.Rows.Count == 0 || ActualWidth <= 1)
+        if (ActualWidth <= 1)
         {
             return;
         }
 
         Palette palette = Palette.Capture(this);
-        double legend = DrawLegend(dc, palette, ActualWidth);
-        if (Math.Abs(legend - _legendHeight) > 1)
+        if (LegendOnly)
         {
-            _legendHeight = legend;
-            Dispatcher.BeginInvoke(new Action(InvalidateMeasure));
+            double legend = DrawLegend(dc, palette, ActualWidth);
+            if (Math.Abs(legend - _legendHeight) > 1)
+            {
+                _legendHeight = legend;
+                Dispatcher.BeginInvoke(new Action(InvalidateMeasure));
+            }
+
+            return;
+        }
+
+        PerformanceChart? chart = Chart;
+        if (chart == null || !chart.Available || chart.Rows.Count == 0)
+        {
+            return;
         }
 
         (double axisMin, double axisMax, double step) = Axis(chart);
-        double plotTop = _legendHeight;
+        double plotTop = 0;
         double rowsTop = plotTop + AxisHeight;
         DrawAxis(dc, palette, axisMin, axisMax, step, plotTop);
         for (int i = 0; i < chart.Rows.Count; i++)
@@ -106,6 +142,11 @@ public sealed class PerformanceChartView : FrameworkElement
     protected override void OnMouseMove(MouseEventArgs e)
     {
         base.OnMouseMove(e);
+        if (LegendOnly)
+        {
+            return;
+        }
+
         int index = HitRow(e.GetPosition(this));
         if (index == _hover)
         {
@@ -146,7 +187,7 @@ public sealed class PerformanceChartView : FrameworkElement
             return -1;
         }
 
-        double top = _legendHeight + AxisHeight;
+        double top = AxisHeight;
         if (point.Y < top)
         {
             return -1;
@@ -168,7 +209,10 @@ public sealed class PerformanceChartView : FrameworkElement
 
         items.Add((null, "P25–P75, median, min/max", LegendMark.Spread));
         items.Add((null, "P90", LegendMark.P90));
-        items.Add((null, "Team average", LegendMark.Team));
+        items.Add((null, "Current lineup average", LegendMark.Team));
+        items.Add((null, "Current lineup", LegendMark.Current));
+        items.Add((null, "Short sample", LegendMark.SampleSoft));
+        items.Add((null, "Very short sample", LegendMark.SampleHard));
 
         double x = 0;
         double y = 0;
@@ -215,6 +259,15 @@ public sealed class PerformanceChartView : FrameworkElement
             case LegendMark.Team:
                 dc.DrawLine(palette.TeamPen, new Point(x, y + 6), new Point(x + 12, y + 6));
                 break;
+            case LegendMark.Current:
+                dc.DrawRectangle(palette.CurrentLineup, null, new Rect(x, y, 3, 12));
+                break;
+            case LegendMark.SampleSoft:
+                dc.DrawEllipse(palette.SampleSoft, null, new Point(x + 6, y + 6), 4, 4);
+                break;
+            case LegendMark.SampleHard:
+                dc.DrawEllipse(palette.SampleHard, null, new Point(x + 6, y + 6), 4, 4);
+                break;
         }
     }
 
@@ -257,17 +310,45 @@ public sealed class PerformanceChartView : FrameworkElement
             dc.DrawRectangle(palette.AltRow, null, new Rect(0, top, ActualWidth, RowHeight));
         }
 
-        FormattedText name = LabelText(row.Name, 13, palette.Text);
-        FormattedText average = LabelText(row.Average.ToString("N0", CultureInfo.CurrentCulture), 13, palette.Text, FontWeights.SemiBold);
-        FormattedText subtitle = LabelText(row.Subtitle, 11, palette.Muted);
-        double nameWidth = LabelWidth - average.Width - 20;
+        if (row.InCurrentLineup)
+        {
+            dc.DrawRectangle(palette.CurrentLineup, null, new Rect(0, top + 2, 3, RowHeight - 4));
+        }
+
+        string rating = row.RankScore > 0
+            ? " [" + row.RankScore.ToString("N0", CultureInfo.CurrentCulture) + "]"
+            : "";
+        FormattedText ratingText = LabelText(rating, 13, palette.Text);
+        FormattedText name = LabelText(row.ShortName, 13, palette.Text);
+        double nameWidth = LabelWidth - ratingText.Width - 16;
         name.MaxTextWidth = Math.Max(24, nameWidth);
         name.Trimming = TextTrimming.CharacterEllipsis;
-        subtitle.MaxTextWidth = LabelWidth - 12;
-        subtitle.Trimming = TextTrimming.CharacterEllipsis;
-        dc.DrawText(name, new Point(8, top + 6));
-        dc.DrawText(average, new Point(LabelWidth - average.Width - 8, top + 6));
-        dc.DrawText(subtitle, new Point(8, top + 26));
+        dc.DrawText(name, new Point(8, top + 2));
+        dc.DrawText(ratingText, new Point(8 + Math.Min(name.Width, name.MaxTextWidth), top + 2));
+
+        Brush raceBrush = row.SampleWarning switch
+        {
+            PerformanceSampleWarning.Hard => palette.SampleHard,
+            PerformanceSampleWarning.Soft => palette.SampleSoft,
+            _ => palette.Muted,
+        };
+        double subtitleLeft = 8;
+        if (row.SampleWarning != PerformanceSampleWarning.None)
+        {
+            dc.DrawEllipse(raceBrush, null, new Point(12, top + 23), 3.2, 3.2);
+            subtitleLeft = 20;
+        }
+
+        // FormattedText.Width drops trailing spaces, so the gap before the race count
+        // has to lead that run. Both " · " separators then keep the same space.
+        string races = " " + PerformanceChartEngine.FormatRaceCount(row.TrialCount);
+        FormattedText raceText = LabelText(races, 11, raceBrush);
+        FormattedText prefix = LabelText($"{row.Distance} · {row.Style} ·", 11, palette.Muted);
+        double subtitleRoom = Math.Max(24, LabelWidth - subtitleLeft - 8);
+        prefix.MaxTextWidth = Math.Max(12, subtitleRoom - raceText.Width);
+        prefix.Trimming = TextTrimming.CharacterEllipsis;
+        dc.DrawText(prefix, new Point(subtitleLeft, top + 17));
+        dc.DrawText(raceText, new Point(subtitleLeft + Math.Min(prefix.Width, prefix.MaxTextWidth), top + 17));
 
         double barY = top + BarTop;
         double positive = 0;
@@ -308,7 +389,7 @@ public sealed class PerformanceChartView : FrameworkElement
             dc.DrawRectangle(palette.Deduction, palette.SegmentEdge, new Rect(x0, barY, x1 - x0, BarHeight));
         }
 
-        double spreadY = top + BarTop + BarHeight + 12;
+        double spreadY = top + BarTop + BarHeight + SpreadGap;
         double minX = X(row.Min, axisMin, axisMax);
         double maxX = X(row.Max, axisMin, axisMax);
         double p25 = X(row.P25, axisMin, axisMax);
@@ -438,6 +519,9 @@ public sealed class PerformanceChartView : FrameworkElement
         Spread,
         P90,
         Team,
+        Current,
+        SampleSoft,
+        SampleHard,
     }
 
     private sealed class Palette
@@ -461,6 +545,9 @@ public sealed class PerformanceChartView : FrameworkElement
         public required Pen SpreadPen { get; init; }
         public required Pen MedianPen { get; init; }
         public required Pen AxisPen { get; init; }
+        public required Brush CurrentLineup { get; init; }
+        public required Brush SampleSoft { get; init; }
+        public required Brush SampleHard { get; init; }
 
         public Brush Segment(PerformanceScoreSource source) => _segments[source];
 
@@ -495,6 +582,9 @@ public sealed class PerformanceChartView : FrameworkElement
                 SpreadPen = Pen(spread, 2),
                 MedianPen = Pen(median, 2),
                 AxisPen = Pen(grid, 1),
+                CurrentLineup = Solid(owner, "Performance.CurrentLineup"),
+                SampleSoft = Solid(owner, "Performance.SampleSoft"),
+                SampleHard = Solid(owner, "Performance.SampleHard"),
             };
         }
 

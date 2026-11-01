@@ -155,4 +155,49 @@ public sealed class OptionsViewModelTests
         Assert.Equal(GridColumnIds.Analysis.Avg, analysis.Order[0]);
         Assert.Contains(GridColumnIds.Analysis.Gap, analysis.Hidden);
     }
+
+    [Fact]
+    public void Performance_sample_thresholds_save_with_the_other_settings_keys()
+    {
+        using var file = new TempSettingsFile();
+        var seeded = new GameMasterSettings
+        {
+            ColorMode = "Dark",
+            PerformanceSort = "P90",
+            PerformanceSortAscending = false,
+            WindowWidth = 900,
+        };
+        seeded.Save(file.FilePath);
+
+        var viewModel = new OptionsViewModel(settingsPath: file.FilePath);
+        Assert.Equal("20", viewModel.SampleSoftThresholdText);
+        Assert.Equal("10", viewModel.SampleHardThresholdText);
+
+        viewModel.SampleSoftThresholdText = "25";
+        viewModel.SampleHardThresholdText = "8";
+        Assert.True(viewModel.Save());
+
+        GameMasterSettings saved = GameMasterSettings.Load(file.FilePath);
+        Assert.Equal(25, saved.PerformanceSampleSoftThreshold);
+        Assert.Equal(8, saved.PerformanceSampleHardThreshold);
+        Assert.Equal("Dark", saved.ColorMode);
+        Assert.Equal("P90", saved.PerformanceSort);
+        Assert.False(saved.PerformanceSortAscending);
+        Assert.Equal(900, saved.WindowWidth);
+
+        var again = new OptionsViewModel(settingsPath: file.FilePath);
+        Assert.Equal("25", again.SampleSoftThresholdText);
+        Assert.Equal("8", again.SampleHardThresholdText);
+
+        again.SampleHardThresholdText = "25";
+        Assert.False(again.Save());
+        Assert.False(string.IsNullOrWhiteSpace(again.SampleThresholdError));
+        Assert.Equal(8, GameMasterSettings.Load(file.FilePath).PerformanceSampleHardThreshold);
+        Assert.Equal("Dark", GameMasterSettings.Load(file.FilePath).ColorMode);
+
+        again.RestoreSampleDefaults();
+        Assert.Equal("20", again.SampleSoftThresholdText);
+        Assert.Equal("10", again.SampleHardThresholdText);
+        Assert.Equal("", again.SampleThresholdError);
+    }
 }

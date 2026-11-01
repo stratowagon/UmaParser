@@ -16,5 +16,9 @@ public partial class PerformanceView : UserControl
         Unloaded += (_, _) => AppTheme.Changed -= OnThemeChanged;
     }
 
-    private void OnThemeChanged(object? sender, EventArgs e) => ChartView.InvalidateVisual();
+    private void OnThemeChanged(object? sender, EventArgs e)
+    {
+        LegendView.InvalidateVisual();
+        ChartView.InvalidateVisual();
+    }
 }
