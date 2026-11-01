@@ -61,41 +61,25 @@ The "Ace Delta" column is comparing the umas within one team to their ace to see
 be better off swapping aces.  However this requires a decently large sample size to be meaningful,
 so take the recommendations with a grain of salt.
 
+
 ### Performance Tab
 Visualization ~~stolen from~~inspired by [Chernobyl Liquidator's work](https://uma.satki.org/team_trial).
-Stacked base-score bars for the Team Trials umas in the loaded set. A consistent roster still
-works. A mixed set works too: every trained uma who appears in any loaded file gets a row, and
-that row's average uses only the trials that uma actually ran. This tab is only for Team Trials,
-and it does not require the same team in every file the way Team Analysis does.
+Stacked base-score bars for the Team Trials umas in the loaded set. All files must be Team
+Trials, but this tab does not require the same roster across every file the way Team Analysis
+does.  The current lineup (based on the newest file in the batch) will be highlighted.
 
-Each bar is that uma's average score with support, opponent, and ace bonuses removed, split
-into finish place and win margin, white / gold / unique skills, strong start, and style lead
-plus other extras. Under each bar, a thin line shows the P25–P75 range, with a median tick,
-min/max dots, and a P90 marker. Rows start weakest-first. The sort box can order by average,
-median, max, P75, or P90, ascending or descending, and that choice is remembered in
-settings.json. Hover a row for the average, median, P90, and the segment split. Skill proc
-rates stay on the Skills tab. The color legend stays above the scrolling bars.
-
-Team Trials captures do not include the portrait rating, so each row is labeled with the
-catalog short name. Champions Meet, Room Match, and Practice still tell veterans apart by
-rating on the Skills and Tracks lists. The average itself stays off the Performance row; hover
-still shows it.
+Each row shows a stacked bar breaking down the different buckets (normalized without bonuses)
+for that uma averaged across all races. Under each bar, a thin line shows the P25–P75 range,
+a median tick, min/max dots, and a P90 marker. Hover a row for details on the bucket averages.
 
 A row is one trained uma, one running style, and one distance. The same uma in two styles,
-or in two distances, is two rows. Each row's race count and stats use only the trials that
-match that style and distance. Moving between ace and support does not split the row when
-the id, style, and distance stay the same. The line under the name ends with how many of
-those trials there were (`Sprint · Late · 12 races`).
+or in two distances, will show as different rows. Each row's race count and stats use only
+the trials that match that style and distance.
 
-A short sample is marked on that race count. With the defaults, fewer than 10 races is red,
+A short sample is marked if the race count is low. With the defaults, fewer than 10 races is red,
 10 through 19 are yellow, and 20 or more has no mark. Both cutoffs are editable under
-Options → Performance and are stored in settings.json. A missing setting uses 20 and 10.
+Options → Performance.
 
-A bar at the left of the row means that uma, in that running style and distance, is on the
-current lineup: the roster in the newest file. Replaced umas, and the same uma's other styles
-or distances, stay visible without the bar. The dashed line is the mean of those current
-rows' average base scores. When every file has the same roster, styles, and distances, that
-line is the average of all 15.
 
 ### Skills Tab
 This tab provides detailed information for an uma's skill activations across multiple races.
