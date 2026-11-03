@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>UmaParser</RootNamespace>
+    <AssemblyName>UmaParser.Web</AssemblyName>
+  </PropertyGroup>
+
+  <!--
+    The two packages below are the Blazor WebAssembly host from the SDK template.
+    Capture JSON in Core uses the reflection serializer, so the published app keeps
+    that serializer (the SDK default for this project type) and does not trim Core.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.33" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.33" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UmaParser.Core\UmaParser.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TrimmerRootAssembly Include="UmaParser.Core" />
+  </ItemGroup>
+
+  <!-- GitHub Pages skips paths that start with "_" unless this file is at the site root. -->
+  <Target Name="WriteNoJekyll" AfterTargets="Publish">
+    <MakeDir Directories="$(PublishDir)wwwroot" />
+    <WriteLinesToFile File="$(PublishDir)wwwroot/.nojekyll" Lines="" Overwrite="true" />
+  </Target>
+
+</Project>

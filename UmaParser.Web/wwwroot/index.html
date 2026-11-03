@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UmaParser</title>
+    <!--
+      Local `dotnet run` is served at /. Leave this tag as "/".
+      GitHub Pages for this repo is served at /UmaParser/. The deploy workflow rewrites
+      this tag to <base href="/UmaParser/" /> after publish. The browser's preload
+      scanner reads the tag before any script runs, so it cannot be fixed in JavaScript.
+      A user or org site at the domain root can keep "/".
+    -->
+    <base href="/" id="umaparser-base" />
+    <script>
+        (function () {
+            var saved = null;
+            try { saved = localStorage.getItem("umaparser-theme"); } catch (e) { }
+            var theme = saved === "light" || saved === "dark"
+                ? saved
+                : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+            document.documentElement.setAttribute("data-theme", theme);
+
+            window.umaTheme = {
+                get: function () {
+                    return document.documentElement.getAttribute("data-theme") || "light";
+                },
+                set: function (mode) {
+                    document.documentElement.setAttribute("data-theme", mode);
+                    try { localStorage.setItem("umaparser-theme", mode); } catch (e) { }
+                }
+            };
+        })();
+    </script>
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+</head>
+<body>
+    <div id="app">
+        <p class="hint">Loading UmaParser…</p>
+    </div>
+
+    <div id="blazor-error-ui">
+        The page failed to start.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">✕</a>
+    </div>
+
+    <script>
+        window.addEventListener("dragover", function (event) { event.preventDefault(); });
+        window.addEventListener("drop", function (event) {
+            if (event.target instanceof HTMLInputElement && event.target.type === "file") {
+                return;
+            }
+            event.preventDefault();
+        });
+    </script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

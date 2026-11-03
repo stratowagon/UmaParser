@@ -1,0 +1,164 @@
+@page "/"
+@inject WebSession Session
+@inject IJSRuntime JS
+
+<PageTitle>UmaParser</PageTitle>
+
+<div class="shell">
+    <header class="top">
+        <h1>UmaParser</h1>
+        <button type="button" class="theme" title="Switch color theme" @onclick="ToggleTheme">@ThemeLabel</button>
+    </header>
+
+    <nav class="tabs" aria-label="Screens">
+        <button type="button" class="@TabClass(ShellTab.Results)" aria-selected="@Selected(ShellTab.Results)" @onclick="() => _tab = ShellTab.Results">Results</button>
+        <button type="button" class="@TabClass(ShellTab.Analysis)" aria-selected="@Selected(ShellTab.Analysis)" @onclick="() => _tab = ShellTab.Analysis">Team Analysis</button>
+        <button type="button" class="@TabClass(ShellTab.Performance)" aria-selected="@Selected(ShellTab.Performance)" @onclick="() => _tab = ShellTab.Performance">Performance</button>
+        <button type="button" class="@TabClass(ShellTab.Skills)" aria-selected="@Selected(ShellTab.Skills)" @onclick="() => _tab = ShellTab.Skills">Skills</button>
+        <button type="button" class="@TabClass(ShellTab.Tracks)" aria-selected="@Selected(ShellTab.Tracks)" @onclick="() => _tab = ShellTab.Tracks">Tracks</button>
+    </nav>
+
+    <div class="dropbar">
+        <label class="drop">
+            <InputFile @key="_pickerKey"
+                       OnChange="OnFiles"
+                       multiple
+                       accept=".json,application/json"
+                       aria-label="Choose .json capture files" />
+            <span>@DropLabel</span>
+        </label>
+        <div class="drop-actions">
+            <span class="count">@CountLabel</span>
+            <button type="button" @onclick="Clear" disabled="@(!Session.HasLoaded)">Clear</button>
+        </div>
+    </div>
+
+    <main class="main">
+        @if (_tab == ShellTab.Skills)
+        {
+            <SkillsPanel Screen="Session.Skills" HasLoaded="Session.HasLoaded" Theme="_theme" OnSelect="SelectSkills" />
+        }
+        else if (_tab == ShellTab.Tracks)
+        {
+            <TracksPanel Screen="Session.Tracks" HasLoaded="Session.HasLoaded" Theme="_theme" OnSelect="SelectTracks" />
+        }
+        else
+        {
+            <PlaceholderTab Title="@PlaceholderTitle" />
+        }
+    </main>
+
+    <footer class="status" role="status">
+        <span>@Session.StatusText</span>
+        <span>@Session.MasterStatus</span>
+    </footer>
+</div>
+
+@code {
+    private enum ShellTab
+    {
+        Results,
+        Analysis,
+        Performance,
+        Skills,
+        Tracks,
+    }
+
+    private ShellTab _tab = ShellTab.Skills;
+    private ColorTheme _theme = ColorTheme.Light;
+    private bool _busy;
+    private int _pickerKey;
+
+    private string ThemeLabel => _theme == ColorTheme.Dark ? "Dark" : "Light";
+
+    private string DropLabel => _busy
+        ? "Reading files…"
+        : "Drop .json captures here, or click to choose";
+
+    private string CountLabel => Session.HasLoaded ? $"{Session.LoadedCount} file(s)" : "No files";
+
+    private string PlaceholderTitle => _tab switch
+    {
+        ShellTab.Results => "Results",
+        ShellTab.Analysis => "Team Analysis",
+        ShellTab.Performance => "Performance",
+        _ => "",
+    };
+
+    protected override void OnInitialized()
+    {
+        if (JS is IJSInProcessRuntime js)
+        {
+            string mode = js.Invoke<string>("umaTheme.get");
+            _theme = mode == "dark" ? ColorTheme.Dark : ColorTheme.Light;
+        }
+    }
+
+    private void ToggleTheme()
+    {
+        _theme = _theme == ColorTheme.Dark ? ColorTheme.Light : ColorTheme.Dark;
+        if (JS is IJSInProcessRuntime js)
+        {
+            js.InvokeVoid("umaTheme.set", _theme == ColorTheme.Dark ? "dark" : "light");
+        }
+    }
+
+    private async Task OnFiles(InputFileChangeEventArgs e)
+    {
+        if (_busy)
+        {
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            var incoming = new List<IncomingCapture>();
+            foreach (IBrowserFile file in e.GetMultipleFiles(maximumFileCount: 200))
+            {
+                incoming.Add(await ReadAsync(file));
+            }
+
+            int added = Session.Add(incoming);
+            if (added > 0 && _tab is ShellTab.Results or ShellTab.Analysis or ShellTab.Performance)
+            {
+                _tab = ShellTab.Skills;
+            }
+        }
+        finally
+        {
+            _busy = false;
+            _pickerKey++;
+        }
+    }
+
+    private static async Task<IncomingCapture> ReadAsync(IBrowserFile file)
+    {
+        if (!file.Name.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+        {
+            return new IncomingCapture(file.Name, null, file.Size, file.LastModified, null);
+        }
+
+        try
+        {
+            await using Stream stream = file.OpenReadStream(maxAllowedSize: WebSession.MaxFileBytes);
+            using var reader = new StreamReader(stream);
+            string json = await reader.ReadToEndAsync();
+            return new IncomingCapture(file.Name, json, file.Size, file.LastModified, null);
+        }
+        catch (Exception ex)
+        {
+            return new IncomingCapture(file.Name, null, file.Size, file.LastModified, ex.Message);
+        }
+    }
+
+    private void Clear() => Session.Clear();
+
+    private void SelectSkills(int index) => Session.SelectSkills(index);
+
+    private void SelectTracks(int index) => Session.SelectTracks(index);
+
+    private string TabClass(ShellTab tab) => _tab == tab ? "tab active" : "tab";
+
+    private bool Selected(ShellTab tab) => _tab == tab;
+}

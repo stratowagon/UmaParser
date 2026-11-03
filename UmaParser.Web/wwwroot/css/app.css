@@ -1,0 +1,283 @@
+/*
+  Chrome colors match UmaParser.Wpf/Themes/Light.xaml and Dark.xaml.
+  Skill and track cell fills are not listed here. Those come from CellBandPalette.
+*/
+
+:root,
+html[data-theme="light"] {
+    color-scheme: light;
+    --window-bg: #f0f0f0;
+    --window-fg: #000000;
+    --muted: #6d6d6d;
+    --input-bg: #ffffff;
+    --status-bg: #f0f0f0;
+    --tab-inactive: #e1e1e1;
+    --grid-bg: #ffffff;
+    --grid-fg: #000000;
+    --grid-alt: #f3f3f3;
+    --header-bg: #f0f0f0;
+    --line: #d0d0d0;
+    --border: #688caf;
+    --accent: #0078d7;
+    --accent-fg: #ffffff;
+    --button-bg: #f0f0f0;
+    --button-border: #ababab;
+    --button-hover: #e5f1fb;
+    --total-bg: #e7eef5;
+}
+
+html[data-theme="dark"] {
+    color-scheme: dark;
+    --window-bg: #202020;
+    --window-fg: #f1f1f1;
+    --muted: #a0a0a0;
+    --input-bg: #2d2d30;
+    --status-bg: #2d2d30;
+    --tab-inactive: #37373a;
+    --grid-bg: #202020;
+    --grid-fg: #f1f1f1;
+    --grid-alt: #2a2a2d;
+    --header-bg: #37373a;
+    --line: #46464a;
+    --border: #3f3f46;
+    --accent: #264f78;
+    --accent-fg: #ffffff;
+    --button-bg: #3a3a3d;
+    --button-border: #555555;
+    --button-hover: #4a4a4f;
+    --total-bg: #2c3440;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #app {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    background: var(--window-bg);
+    color: var(--window-fg);
+    font-family: "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+}
+
+button, select {
+    background: var(--button-bg);
+    color: var(--window-fg);
+    border: 1px solid var(--button-border);
+    border-radius: 4px;
+    font: inherit;
+    padding: 0.3rem 0.65rem;
+}
+
+button { cursor: pointer; }
+button:hover:not(:disabled) { background: var(--button-hover); }
+button:disabled { opacity: 0.55; cursor: default; }
+
+.shell {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.55rem 0.9rem 0.2rem;
+}
+
+.top h1 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 650;
+}
+
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0.35rem 0.9rem 0.5rem;
+}
+
+.tab {
+    background: var(--tab-inactive);
+    border-color: transparent;
+}
+
+.tab.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-fg);
+}
+
+.dropbar {
+    display: flex;
+    align-items: stretch;
+    gap: 0.6rem;
+    padding: 0 0.9rem 0.55rem;
+}
+
+.drop {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    min-height: 2.6rem;
+    padding: 0.45rem 0.8rem;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    background: var(--input-bg);
+    color: var(--muted);
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.drop:focus-within {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+.drop input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.drop-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.count {
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.main {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 0.2rem 0.9rem 0.8rem;
+}
+
+.panel-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.45rem;
+}
+
+.panel-head label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 600;
+}
+
+.summary {
+    margin: 0;
+    flex: 1;
+    min-width: 12rem;
+}
+
+.hint {
+    margin: 0.4rem 0;
+    color: var(--muted);
+}
+
+.placeholder h2 {
+    margin: 0.2rem 0 0.4rem;
+    font-size: 1.05rem;
+}
+
+.grid-wrap {
+    overflow: auto;
+    border: 1px solid var(--border);
+    background: var(--grid-bg);
+    max-height: calc(100vh - 15rem);
+}
+
+table {
+    border-collapse: collapse;
+    width: max-content;
+    min-width: 100%;
+    background: var(--grid-bg);
+    color: var(--grid-fg);
+    font-variant-numeric: tabular-nums;
+}
+
+th, td {
+    border-bottom: 1px solid var(--line);
+    padding: 0.22rem 0.5rem;
+    text-align: left;
+    white-space: nowrap;
+}
+
+th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--header-bg);
+    font-weight: 650;
+}
+
+th button {
+    background: transparent;
+    border: 0;
+    color: inherit;
+    padding: 0;
+    width: 100%;
+    text-align: inherit;
+    border-radius: 0;
+}
+
+th button:hover { background: transparent; text-decoration: underline; }
+
+td.num, th.num, th.num button { text-align: right; }
+
+tbody tr:nth-child(even) { background: var(--grid-alt); }
+
+tbody tr.total {
+    font-weight: 650;
+    background: var(--total-bg);
+}
+
+.status {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 0.35rem 0.9rem;
+    background: var(--status-bg);
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+}
+
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    padding: 0.6rem 2rem 0.6rem 0.9rem;
+    background: #fff3c4;
+    color: #000;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+}
+
+#blazor-error-ui .dismiss {
+    position: absolute;
+    right: 0.75rem;
+    top: 0.45rem;
+    cursor: pointer;
+}

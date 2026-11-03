@@ -18,6 +18,7 @@ public sealed class BrowserMasterDataTests
         {
             GameMasterBootstrap.UseEmbeddedCatalog();
             Assert.Equal(MasterDataSourceKind.Embedded, GameMasterService.Current.PrimarySource);
+            Assert.Contains("built-in names", GameMasterBootstrap.StatusLine(), StringComparison.Ordinal);
             Assert.Equal("Special Week", GameMasterService.Current.Catalog.FormatCharaShortName(1001));
 
             Assert.False(GameMasterBootstrap.TryUseCacheJson("{", out string? invalidError));
@@ -28,6 +29,7 @@ public sealed class BrowserMasterDataTests
             Assert.True(GameMasterBootstrap.TryUseCacheJson(cacheJson, out string? error));
             Assert.Null(error);
             Assert.Equal(MasterDataSourceKind.Cache, GameMasterService.Current.PrimarySource);
+            Assert.Contains("cached master data", GameMasterBootstrap.StatusLine(), StringComparison.Ordinal);
             Assert.Null(GameMasterService.Current.ResolvedDatabasePath);
             Assert.Equal("From Cache", GameMasterService.Current.Catalog.FormatCharaShortName(1001));
 

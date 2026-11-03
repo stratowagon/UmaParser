@@ -9,7 +9,7 @@ UmaParser is a Windows desktop app for analyzing **Uma Musume: Pretty Derby** ra
 - **README.md** — user-facing usage and feature descriptions.
 - **This file** — build steps, architecture, and conventions for agents.
 
-The solution is the WPF app, Core, Core.Desktop, and Core tests, plus a few dev-only console tools under `Tools/`. `UmaParser.Wpf` is the UI. `UmaParser.Core` owns parsing, analysis, the settings model, and the screen models both shells display. `UmaParser.Core.Desktop` owns Sqlite `master.mdb` reads, AppData paths, path-based import, and the Windows theme reader. A future web host references Core only.
+The solution is the WPF app, the Blazor WebAssembly shell, Core, Core.Desktop, and Core tests, plus a few dev-only console tools under `Tools/`. `UmaParser.Wpf` is the desktop UI. `UmaParser.Web` is the browser shell and references Core only. `UmaParser.Core` owns parsing, analysis, the settings model, and the screen models both shells display. `UmaParser.Core.Desktop` owns Sqlite `master.mdb` reads, AppData paths, path-based import, and the Windows theme reader.
 
 ## Repository layout
 
@@ -23,6 +23,10 @@ UmaParser.sln
 │   ├── Converters/         CellBand to brush
 │   ├── Services/           Shell dialogs and window monitors
 │   └── Themes/             Light, dark, and System chrome; cell-band brushes
+├── UmaParser.Web/          Blazor WebAssembly shell (references Core only)
+│   ├── Components/         Skills and Tracks grids, plus placeholder tabs
+│   ├── Services/           In-browser capture set (name + text + last modified)
+│   └── wwwroot/            Static host page, base href, and .nojekyll
 ├── UmaParser.Core/         Browser-safe logic (no Sqlite, no Registry, no AppData requirement)
 │   ├── Import/             JSON capture decoding from text (CaptureImportService.TryImport)
 │   ├── Analysis/           Score/skill/track analysis engines
@@ -58,6 +62,9 @@ dotnet test UmaParser.sln -c Release
 
 # Run the WPF app (from repo root). This is the startup project.
 dotnet run --project UmaParser.Wpf/UmaParser.Wpf.csproj -c Release
+
+# Run the web shell (from repo root). No Node install. The console prints the localhost URL.
+dotnet run --project UmaParser.Web
 ```
 
 `UmaParser.Wpf` sets `EnableWindowsTargeting` itself, so a non-Windows build of the desktop project does not need an extra property. The Cloud Agent commands below still pass `-p:EnableWindowsTargeting=true`.
@@ -82,7 +89,8 @@ Published executables land in `publish/`, `release/`, or `_publish-sc/` (all git
 
 - **UmaParser.Core** owns parsing, analysis, the in-memory master-data catalog, domain types, the settings model, and the shared screen models (`UmaParser.Presentation`). It must not reference Sqlite, the Windows Registry, or AppData / LocalLow / Documents. A web host calls `GameMasterBootstrap.UseEmbeddedCatalog` (or `TryUseCacheJson`) and `CaptureImportService.TryImport`.
 - **UmaParser.Core.Desktop** owns live `master.mdb` loading, the settings file, path-based capture import, and the registry theme reader. WPF references Core and Desktop. Do not move a shared calculation here.
-- **UmaParser.Wpf** owns the WPF shell. New screens go here and call Core. Do not reimplement a calculation in the view model. Desktop-only I/O goes through Desktop (`DesktopGameMaster`, `GameMasterSettingsStore`, `CaptureFileImport`).
+- **UmaParser.Wpf** owns the WPF shell. New desktop screens go here and call Core. Do not reimplement a calculation in the view model. Desktop-only I/O goes through Desktop (`DesktopGameMaster`, `GameMasterSettingsStore`, `CaptureFileImport`).
+- **UmaParser.Web** owns the Blazor WebAssembly shell. It references Core only. Startup calls `GameMasterBootstrap.UseEmbeddedCatalog`. The status line uses `GameMasterBootstrap.StatusLine`. Captures go through `CaptureImportService.TryImport` (file name, JSON text, and last-modified time). Skills and Tracks render `SkillsScreen` and `TracksScreen`. It does not read `master.mdb`. `wwwroot/index.html` keeps `<base href="/" />` for local run. `.github/workflows/deploy-web.yml` rewrites that tag to `/UmaParser/` when it publishes to GitHub Pages.
 
 ### WPF organization
 
@@ -101,7 +109,7 @@ Tab order is Results, Team Analysis, Performance, Skills, Tracks. A new screen i
 
 ### Namespace
 
-Projects use **`UmaParser`** as the root namespace (e.g. `UmaParser.Analysis`, `UmaParser.Import`, `UmaParser.Presentation`, `UmaParser.ViewModels`). Assembly names are `UmaParser.Wpf`, `UmaParser.Core`, and `UmaParser.Core.Desktop`. `GameMasterService` and `DesktopGameMaster` stay `internal`. `UmaParser.Core.Desktop`, `UmaParser.Wpf`, `SkillProbe`, and `UmaParser.Core.Tests` are on Core's `InternalsVisibleTo` list. Desktop exposes its internals to WPF, SkillProbe, and the test assembly. The public web entry point is `GameMasterBootstrap`.
+Projects use **`UmaParser`** as the root namespace (e.g. `UmaParser.Analysis`, `UmaParser.Import`, `UmaParser.Presentation`, `UmaParser.ViewModels`). Assembly names are `UmaParser.Wpf`, `UmaParser.Web`, `UmaParser.Core`, and `UmaParser.Core.Desktop`. `GameMasterService` and `DesktopGameMaster` stay `internal`. `UmaParser.Core.Desktop`, `UmaParser.Wpf`, `SkillProbe`, and `UmaParser.Core.Tests` are on Core's `InternalsVisibleTo` list. Desktop exposes its internals to WPF, SkillProbe, and the test assembly. The public web entry point is `GameMasterBootstrap`. The web project is not on that list.
 
 ## Domain concepts agents should know
 
@@ -141,7 +149,7 @@ Open `master.mdb` read-only only at startup or on explicit refresh/browse, read 
 - Prefer `sealed` classes and `internal` visibility in Core unless the type is part of a public surface.
 - Use `file-scoped namespaces` where surrounding files already do.
 - Match naming in the folder you are editing (`GameMasterService`, `CaptureImportService`, etc.).
-- Cell-band colors live in `UmaParser.Core/Presentation/CellBandPalette.cs`. WPF maps `CellBand` through `UmaParser.Wpf/Themes/CellBandBrushSource.cs`. Window chrome colors live in `UmaParser.Wpf/Themes/Light.xaml` and `Dark.xaml`. Do not add another copy of those colors.
+- Cell-band colors live in `UmaParser.Core/Presentation/CellBandPalette.cs`. WPF maps `CellBand` through `UmaParser.Wpf/Themes/CellBandBrushSource.cs`. The web shell calls `CellBandPalette` for those cells. Window chrome colors live in `UmaParser.Wpf/Themes/Light.xaml` and `Dark.xaml`. The web shell's matching chrome is `UmaParser.Web/wwwroot/css/app.css`. Do not add a third copy of those colors.
 - Keep changes focused; no drive-by refactors or unrelated warning fixes.
 
 ## What to avoid
@@ -162,7 +170,7 @@ Open `master.mdb` read-only only at startup or on explicit refresh/browse, read 
 
 Cloud Agent Builds preinstall the .NET 8 SDK and restore `UmaParser.sln` from `.cursor/environment.json` (`.cursor/install.sh`). Use the `dotnet` already on `PATH` from that Build. Install the SDK only when `dotnet` is missing or is not major version 8. Do not use Ubuntu’s `dotnet-sdk-8.0` apt package: it omits `Microsoft.NET.Sdk.WindowsDesktop`, and the WPF project then fails at `Microsoft.NET.Sdk.WindowsDesktop.targets`. When a reinstall is required, use Microsoft’s script (`https://dot.net/v1/dotnet-install.sh --channel 8.0`) into `/usr/share/dotnet` and symlink `dotnet` into `/usr/local/bin`, which is what the install script does. App hosts look for the runtime in that directory, so `dotnet test` does not need a shell profile.
 
-The Cloud Agent VM is Ubuntu. `UmaParser.Wpf` still compiles here; it targets `Microsoft.WindowsDesktop.App` and does not launch (there is no Linux desktop runtime). `dotnet test` is the check that import and analysis work. It uses embedded master data only. With no `master.mdb`, startup reports built-in names. The corpus smoke test stays skipped unless `UMAPARSER_CORPUS` is set.
+The Cloud Agent VM is Ubuntu. `UmaParser.Wpf` still compiles here; it targets `Microsoft.WindowsDesktop.App` and does not launch (there is no Linux desktop runtime). `UmaParser.Web` builds and runs here with `dotnet run --project UmaParser.Web` (no `EnableWindowsTargeting`). `dotnet test` is the check that import and analysis work. It uses embedded master data only. With no `master.mdb`, startup reports built-in names. The corpus smoke test stays skipped unless `UMAPARSER_CORPUS` is set.
 
 ```powershell
 dotnet build UmaParser.sln -c Release -p:EnableWindowsTargeting=true
