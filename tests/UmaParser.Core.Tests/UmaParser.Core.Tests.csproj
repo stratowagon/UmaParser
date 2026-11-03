@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\UmaParser.Core\UmaParser.Core.csproj" />
+    <ProjectReference Include="..\..\UmaParser.Core.Desktop\UmaParser.Core.Desktop.csproj" />
   </ItemGroup>
 
   <!--

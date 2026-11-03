@@ -25,7 +25,7 @@ internal static class AppTheme
 
     public static void Initialize()
     {
-        Preference = ColorModeSetting.Parse(GameMasterSettings.Load().ColorMode);
+        Preference = ColorModeSetting.Parse(GameMasterSettingsStore.Load().ColorMode);
         ApplyResolved();
         SystemThemeWatcher.Start();
     }
@@ -41,7 +41,7 @@ internal static class AppTheme
         }
 
         Preference = mode;
-        GameMasterSettings settings = GameMasterSettings.Load();
+        GameMasterSettings settings = GameMasterSettingsStore.Load();
         settings.ColorMode = ColorModeSetting.Format(mode);
         settings.Save();
         ApplyResolved();

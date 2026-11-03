@@ -44,13 +44,13 @@ public sealed class ImportStatusTextTests
             string notes = Path.Combine(folder, "notes.txt");
             File.WriteAllText(notes, "not a capture");
 
-            CaptureImportResult droppedFolder = CaptureImportService.TryImportPath(folder);
+            CaptureImportResult droppedFolder = CaptureFileImport.TryImportPath(folder);
             Assert.Equal(ImportStatus.UnsupportedExtension, droppedFolder.Status);
 
             TeamTrialBatch batch = TeamTrialBatchBuilder.Build(
             [
-                CaptureImportService.TryImportPath(json),
-                CaptureImportService.TryImportPath(notes),
+                CaptureFileImport.TryImportPath(json),
+                CaptureFileImport.TryImportPath(notes),
                 droppedFolder,
             ]);
 

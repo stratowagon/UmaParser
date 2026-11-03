@@ -9,7 +9,7 @@ UmaParser is a Windows desktop app for analyzing **Uma Musume: Pretty Derby** ra
 - **README.md** — user-facing usage and feature descriptions.
 - **This file** — build steps, architecture, and conventions for agents.
 
-The solution is the WPF app, Core, and Core tests, plus a few dev-only console tools under `Tools/`. `UmaParser.Wpf` is the UI. `UmaParser.Core` owns parsing, analysis, shared settings, and the screen models the UI displays.
+The solution is the WPF app, Core, Core.Desktop, and Core tests, plus a few dev-only console tools under `Tools/`. `UmaParser.Wpf` is the UI. `UmaParser.Core` owns parsing, analysis, the settings model, and the screen models both shells display. `UmaParser.Core.Desktop` owns Sqlite `master.mdb` reads, AppData paths, path-based import, and the Windows theme reader. A future web host references Core only.
 
 ## Repository layout
 
@@ -23,14 +23,19 @@ UmaParser.sln
 │   ├── Converters/         CellBand to brush
 │   ├── Services/           Shell dialogs and window monitors
 │   └── Themes/             Light, dark, and System chrome; cell-band brushes
-├── UmaParser.Core/         All non-UI logic
-│   ├── Import/             JSON capture decoding and batch loading
+├── UmaParser.Core/         Browser-safe logic (no Sqlite, no Registry, no AppData requirement)
+│   ├── Import/             JSON capture decoding from text (CaptureImportService.TryImport)
 │   ├── Analysis/           Score/skill/track analysis engines
 │   ├── Presentation/       Shared column lists and the Results, Team Analysis, Skills, and Tracks screens
-│   ├── MasterData/         Game master DB (master.mdb) + embedded fallback
+│   ├── MasterData/         Catalog, embedded fallback, and GameMasterBootstrap
 │   ├── DataModel/          Deserialized API/capture shapes
 │   ├── ObjectModel/        App-level domain types (e.g. TeamTrialResult)
-│   └── Settings/           Column preferences and window placement (shared settings.json)
+│   └── Settings/           Column preferences and window placement (in-memory settings model)
+├── UmaParser.Core.Desktop/ Desktop I/O used by WPF (references Core)
+│   ├── MasterData/         master.mdb via Sqlite, AppData paths, settings.json, cache file
+│   ├── Import/             Path drops (CaptureFileImport) and the Documents capture folder
+│   ├── Presentation/       Windows registry app theme (RegistryWindowsAppThemeReader)
+│   └── Analysis/           Settings-file adapters for the Performance sort and sample thresholds
 ├── tests/
 │   └── UmaParser.Core.Tests/  xUnit tests, scrubbed fixtures, and golden snapshots
 └── Tools/                  Dev utilities (not shipped with the app)
@@ -57,7 +62,7 @@ dotnet run --project UmaParser.Wpf/UmaParser.Wpf.csproj -c Release
 
 `UmaParser.Wpf` sets `EnableWindowsTargeting` itself, so a non-Windows build of the desktop project does not need an extra property. The Cloud Agent commands below still pass `-p:EnableWindowsTargeting=true`.
 
-`tests/UmaParser.Core.Tests` is an xUnit project. It runs from Visual Studio Test Explorer and from `dotnet test`. Tests call `GameMasterService.InitializeEmbeddedOnly()` and use **EmbeddedMasterFallback** only — they must not read AppData or a live `master.mdb`.
+`tests/UmaParser.Core.Tests` is an xUnit project. It runs from Visual Studio Test Explorer and from `dotnet test`. Tests boot through the embedded catalog (`GameMasterBootstrap.UseEmbeddedCatalog` / `GameMasterService.InitializeEmbeddedOnly()`) and use **EmbeddedMasterFallback** only — they must not read AppData or a live `master.mdb`, except the desktop master-path tests, which build a temporary database.
 
 Scrubbed fixtures live in `tests/UmaParser.Core.Tests/Fixtures/` (see `manifest.json` for provenance). To add more, scrub a **copy** first. The tool never modifies the folder you point it at, and it refuses to write into that same folder:
 
@@ -75,8 +80,9 @@ Published executables land in `publish/`, `release/`, or `_publish-sc/` (all git
 
 ### Keep logic out of the UI
 
-- **UmaParser.Core** owns parsing, analysis, master-data access, domain types, shared settings, and the shared screen models (`UmaParser.Presentation`).
-- **UmaParser.Wpf** owns the WPF shell. New screens go here and call Core. Do not reimplement a calculation in the view model.
+- **UmaParser.Core** owns parsing, analysis, the in-memory master-data catalog, domain types, the settings model, and the shared screen models (`UmaParser.Presentation`). It must not reference Sqlite, the Windows Registry, or AppData / LocalLow / Documents. A web host calls `GameMasterBootstrap.UseEmbeddedCatalog` (or `TryUseCacheJson`) and `CaptureImportService.TryImport`.
+- **UmaParser.Core.Desktop** owns live `master.mdb` loading, the settings file, path-based capture import, and the registry theme reader. WPF references Core and Desktop. Do not move a shared calculation here.
+- **UmaParser.Wpf** owns the WPF shell. New screens go here and call Core. Do not reimplement a calculation in the view model. Desktop-only I/O goes through Desktop (`DesktopGameMaster`, `GameMasterSettingsStore`, `CaptureFileImport`).
 
 ### WPF organization
 
@@ -95,7 +101,7 @@ Tab order is Results, Team Analysis, Performance, Skills, Tracks. A new screen i
 
 ### Namespace
 
-Projects use **`UmaParser`** as the root namespace (e.g. `UmaParser.Analysis`, `UmaParser.Import`, `UmaParser.Presentation`, `UmaParser.ViewModels`). Assembly names are `UmaParser.Wpf` and `UmaParser.Core`. `GameMasterService` stays `internal`; `UmaParser.Wpf`, `SkillProbe`, and `UmaParser.Core.Tests` are on the `InternalsVisibleTo` list.
+Projects use **`UmaParser`** as the root namespace (e.g. `UmaParser.Analysis`, `UmaParser.Import`, `UmaParser.Presentation`, `UmaParser.ViewModels`). Assembly names are `UmaParser.Wpf`, `UmaParser.Core`, and `UmaParser.Core.Desktop`. `GameMasterService` and `DesktopGameMaster` stay `internal`. `UmaParser.Core.Desktop`, `UmaParser.Wpf`, `SkillProbe`, and `UmaParser.Core.Tests` are on Core's `InternalsVisibleTo` list. Desktop exposes its internals to WPF, SkillProbe, and the test assembly. The public web entry point is `GameMasterBootstrap`.
 
 ## Domain concepts agents should know
 

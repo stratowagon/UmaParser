@@ -150,7 +150,7 @@ public sealed class OptionsViewModelTests
         Assert.Equal(GridColumnIds.Analysis.Style, again.Columns[1].Id);
         Assert.False(again.Columns.Single(column => column.Id == GridColumnIds.Analysis.Gap).IsVisible);
 
-        GameMasterSettings settings = GameMasterSettings.Load(file.FilePath);
+        GameMasterSettings settings = GameMasterSettingsStore.Load(file.FilePath);
         GridColumnGridPreferences analysis = SavedGridColumns.ForAnalysis(settings);
         Assert.Equal(GridColumnIds.Analysis.Avg, analysis.Order[0]);
         Assert.Contains(GridColumnIds.Analysis.Gap, analysis.Hidden);
@@ -177,7 +177,7 @@ public sealed class OptionsViewModelTests
         viewModel.SampleHardThresholdText = "8";
         Assert.True(viewModel.Save());
 
-        GameMasterSettings saved = GameMasterSettings.Load(file.FilePath);
+        GameMasterSettings saved = GameMasterSettingsStore.Load(file.FilePath);
         Assert.Equal(25, saved.PerformanceSampleSoftThreshold);
         Assert.Equal(8, saved.PerformanceSampleHardThreshold);
         Assert.Equal("Dark", saved.ColorMode);
@@ -192,8 +192,8 @@ public sealed class OptionsViewModelTests
         again.SampleHardThresholdText = "25";
         Assert.False(again.Save());
         Assert.False(string.IsNullOrWhiteSpace(again.SampleThresholdError));
-        Assert.Equal(8, GameMasterSettings.Load(file.FilePath).PerformanceSampleHardThreshold);
-        Assert.Equal("Dark", GameMasterSettings.Load(file.FilePath).ColorMode);
+        Assert.Equal(8, GameMasterSettingsStore.Load(file.FilePath).PerformanceSampleHardThreshold);
+        Assert.Equal("Dark", GameMasterSettingsStore.Load(file.FilePath).ColorMode);
 
         again.RestoreSampleDefaults();
         Assert.Equal("20", again.SampleSoftThresholdText);

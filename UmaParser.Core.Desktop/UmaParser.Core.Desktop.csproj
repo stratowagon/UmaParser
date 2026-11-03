@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>UmaParser</RootNamespace>
+    <AssemblyName>UmaParser.Core.Desktop</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UmaParser.Core\UmaParser.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="UmaParser.Wpf" />
+    <InternalsVisibleTo Include="SkillProbe" />
+    <InternalsVisibleTo Include="UmaParser.Core.Tests" />
+  </ItemGroup>
+
+</Project>

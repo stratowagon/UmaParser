@@ -4,30 +4,13 @@ using UmaParser.ObjectModel;
 
 namespace UmaParser.Import;
 
+/// <summary>
+/// Imports capture JSON from text already in memory. A desktop shell reads the file first
+/// (<c>CaptureFileImport.TryImportPath</c> in UmaParser.Core.Desktop). A browser host passes
+/// the file name and the JSON text.
+/// </summary>
 public static class CaptureImportService
 {
-    public static CaptureImportResult TryImportPath(string filePath)
-    {
-        string fileName = Path.GetFileName(filePath);
-        string extension = Path.GetExtension(filePath);
-        DateTime lastWriteUtc = File.GetLastWriteTimeUtc(filePath);
-
-        try
-        {
-            CaptureImportResult result = extension.ToLowerInvariant() switch
-            {
-                ".json" => TryImport(fileName, jsonText: File.ReadAllText(filePath)),
-                _ => UnsupportedExtension(fileName, extension),
-            };
-
-            return result.WithFileTimestamp(lastWriteUtc);
-        }
-        catch (Exception ex)
-        {
-            return Failed(fileName, ImportStatus.InvalidFormat, ex.Message).WithFileTimestamp(lastWriteUtc);
-        }
-    }
-
     public static CaptureImportResult TryImport(
         string fileName,
         string? jsonText = null)
@@ -184,9 +167,6 @@ public static class CaptureImportService
         }
         return false;
     }
-
-    private static CaptureImportResult UnsupportedExtension(string fileName, string extension) =>
-        Failed(fileName, ImportStatus.UnsupportedExtension, $"Unsupported file extension: {extension}");
 
     private static CaptureImportResult Failed(string fileName, ImportStatus status, string? message) =>
         new()

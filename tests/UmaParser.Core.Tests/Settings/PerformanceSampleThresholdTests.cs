@@ -52,23 +52,23 @@ public sealed class PerformanceSampleThresholdTests
 
         Assert.Equal(PerformanceSampleThresholds.Default, PerformanceSamplePreferences.Load(file.FilePath));
 
-        GameMasterSettings settings = GameMasterSettings.Load(file.FilePath);
+        GameMasterSettings settings = GameMasterSettingsStore.Load(file.FilePath);
         settings.PerformanceSampleSoftThreshold = 40;
         settings.PerformanceSampleHardThreshold = 12;
         settings.Save(file.FilePath);
 
         Assert.Equal(new PerformanceSampleThresholds(40, 12), PerformanceSamplePreferences.Load(file.FilePath));
-        GameMasterSettings saved = GameMasterSettings.Load(file.FilePath);
+        GameMasterSettings saved = GameMasterSettingsStore.Load(file.FilePath);
         Assert.Equal("Light", saved.ColorMode);
         Assert.Equal("Median", saved.PerformanceSort);
         Assert.True(saved.PerformanceSortAscending);
         Assert.Equal(15, saved.WindowX);
 
-        settings = GameMasterSettings.Load(file.FilePath);
+        settings = GameMasterSettingsStore.Load(file.FilePath);
         settings.PerformanceSampleSoftThreshold = 8;
         settings.PerformanceSampleHardThreshold = 8;
         settings.Save(file.FilePath);
         Assert.Equal(PerformanceSampleThresholds.Default, PerformanceSamplePreferences.Load(file.FilePath));
-        Assert.Equal("Light", GameMasterSettings.Load(file.FilePath).ColorMode);
+        Assert.Equal("Light", GameMasterSettingsStore.Load(file.FilePath).ColorMode);
     }
 }
