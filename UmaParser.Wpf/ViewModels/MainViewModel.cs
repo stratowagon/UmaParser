@@ -59,7 +59,7 @@ public sealed class MainViewModel : ObservableObject
         Skills.PropertyChanged += OnUmaSelectionChanged;
         Tracks.PropertyChanged += OnUmaSelectionChanged;
         AppTheme.Changed += (_, _) => Results.ApplyTheme(AppTheme.Current);
-        _statusText = GameMasterService.Current.GetStatusLine();
+        _statusText = DesktopGameMaster.Current.GetStatusLine();
     }
 
     /// <summary>View menu. Saves System, Light, or Dark and swaps the WPF theme without a restart.</summary>
@@ -124,7 +124,7 @@ public sealed class MainViewModel : ObservableObject
         // The whole set is imported again. A folder is not walked: a path that is not a .json
         // file is skipped, and one bad file does not drop the captures already loaded.
         long started = Stopwatch.GetTimestamp();
-        TeamTrialBatch batch = TeamTrialBatchBuilder.Build(_captures.Paths.Select(CaptureImportService.TryImportPath));
+        TeamTrialBatch batch = TeamTrialBatchBuilder.Build(_captures.Paths.Select(CaptureFileImport.TryImportPath));
         double importMs = ElapsedMs(started);
         if (!batch.HasAnyData)
         {
@@ -233,18 +233,18 @@ public sealed class MainViewModel : ObservableObject
         };
 
     private void ShowMasterDataStatus(object? parameter) =>
-        _shell.ShowInformation("Master data", GameMasterService.Current.GetDetailedStatus());
+        _shell.ShowInformation("Master data", DesktopGameMaster.Current.GetDetailedStatus());
 
     private void RefreshMasterData(object? parameter)
     {
-        GameMasterService.Current.Refresh();
-        StatusText = GameMasterService.Current.GetStatusLine();
+        DesktopGameMaster.Current.Refresh();
+        StatusText = DesktopGameMaster.Current.GetStatusLine();
     }
 
     private void UseDefaultMasterData(object? parameter)
     {
-        GameMasterService.Current.UseDefaultDatabaseLocation();
-        StatusText = GameMasterService.Current.GetStatusLine();
+        DesktopGameMaster.Current.UseDefaultDatabaseLocation();
+        StatusText = DesktopGameMaster.Current.GetStatusLine();
     }
 
     private void BrowseMasterData(object? parameter)
@@ -258,14 +258,14 @@ public sealed class MainViewModel : ObservableObject
             return;
         }
 
-        if (!GameMasterService.Current.TrySetCustomDatabasePath(path))
+        if (!DesktopGameMaster.Current.TrySetCustomDatabasePath(path))
         {
             _shell.ShowWarning(
                 "Master data",
-                GameMasterService.Current.LastError ?? "Could not load the selected file.");
+                DesktopGameMaster.Current.LastError ?? "Could not load the selected file.");
         }
 
-        StatusText = GameMasterService.Current.GetStatusLine();
+        StatusText = DesktopGameMaster.Current.GetStatusLine();
     }
 
     private void OpenMasterDataFolder(object? parameter) =>

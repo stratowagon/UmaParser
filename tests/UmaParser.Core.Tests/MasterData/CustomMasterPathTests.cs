@@ -57,9 +57,9 @@ public sealed class CustomMasterPathTests
         Assert.DoesNotContain("invalid-master.mdb", service.GetStatusLine());
 
         service.Settings.Save(file.FilePath);
-        Assert.Equal(goodPath, GameMasterSettings.Load(file.FilePath).CustomMasterDbPath);
+        Assert.Equal(goodPath, GameMasterSettingsStore.Load(file.FilePath).CustomMasterDbPath);
 
-        var closing = GameMasterSettings.Load(file.FilePath);
+        var closing = GameMasterSettingsStore.Load(file.FilePath);
         closing.WindowWidth = 801;
         closing.Save(file.FilePath);
 
@@ -68,7 +68,7 @@ public sealed class CustomMasterPathTests
         Assert.Same(catalog, service.Catalog);
         Assert.Equal(goodPath, service.Settings.CustomMasterDbPath);
 
-        GameMasterSettings saved = GameMasterSettings.Load(file.FilePath);
+        GameMasterSettings saved = GameMasterSettingsStore.Load(file.FilePath);
         Assert.Equal(goodPath, saved.CustomMasterDbPath);
         Assert.Equal(15, saved.WindowX);
         Assert.Equal(801, saved.WindowWidth);
@@ -106,16 +106,16 @@ public sealed class CustomMasterPathTests
         Assert.Equal("Saved Skill", service.Catalog.FormatSkillName(MarkerSkillId));
         Assert.DoesNotContain("could not be loaded", service.GetStatusLine());
 
-        GameMasterSettings saved = GameMasterSettings.Load(file.FilePath);
+        GameMasterSettings saved = GameMasterSettingsStore.Load(file.FilePath);
         Assert.Equal(goodPath, saved.CustomMasterDbPath);
         Assert.Equal(15, saved.WindowX);
         Assert.Equal("Maximized", saved.WindowState);
         Assert.Equal("Dark", saved.ColorMode);
 
-        var closing = GameMasterSettings.Load(file.FilePath);
+        var closing = GameMasterSettingsStore.Load(file.FilePath);
         closing.WindowHeight = 700;
         closing.Save(file.FilePath);
-        GameMasterSettings afterClose = GameMasterSettings.Load(file.FilePath);
+        GameMasterSettings afterClose = GameMasterSettingsStore.Load(file.FilePath);
         Assert.Equal(goodPath, afterClose.CustomMasterDbPath);
         Assert.Equal(700, afterClose.WindowHeight);
         Assert.Equal("Dark", afterClose.ColorMode);
@@ -155,7 +155,7 @@ public sealed class CustomMasterPathTests
         Assert.Contains("Using the default location.", status);
         Assert.Contains("game master DB", status);
 
-        GameMasterSettings saved = GameMasterSettings.Load(file.FilePath);
+        GameMasterSettings saved = GameMasterSettingsStore.Load(file.FilePath);
         Assert.Null(saved.CustomMasterDbPath);
         Assert.Equal(120, saved.WindowX);
         Assert.Equal(40, saved.WindowY);
@@ -199,7 +199,7 @@ public sealed class CustomMasterPathTests
         Assert.Contains("Using the default location.", status);
         Assert.Contains("built-in names", status);
 
-        GameMasterSettings saved = GameMasterSettings.Load(file.FilePath);
+        GameMasterSettings saved = GameMasterSettingsStore.Load(file.FilePath);
         Assert.Null(saved.CustomMasterDbPath);
         Assert.Equal(77, saved.WindowX);
         Assert.Equal("Light", saved.ColorMode);
@@ -240,11 +240,11 @@ public sealed class CustomMasterPathTests
         AssertReleasedThenReplaceAndDelete(invalidPath);
     }
 
-    private static GameMasterService NewService(TempSettingsFile file, string? defaultDbPath = null)
+    private static DesktopGameMaster NewService(TempSettingsFile file, string? defaultDbPath = null)
     {
         string defaultPath = defaultDbPath ?? Path.Combine(file.DirectoryPath, "no-default-master.mdb");
         string cachePath = Path.Combine(file.DirectoryPath, "no-cache.json");
-        return new GameMasterService(file.FilePath, defaultPath, cachePath);
+        return new DesktopGameMaster(file.FilePath, defaultPath, cachePath);
     }
 
     private static void WriteMasterDatabase(string path, int skillId, string skillName)

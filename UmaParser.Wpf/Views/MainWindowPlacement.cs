@@ -13,7 +13,7 @@ internal static class MainWindowPlacement
 {
     public static void Restore(Window window)
     {
-        GameMasterSettings settings = GameMasterSettings.Load();
+        GameMasterSettings settings = GameMasterSettingsStore.Load();
         if (!WindowPlacement.TryReadSize(settings, out int width, out int height))
         {
             return;
@@ -38,7 +38,7 @@ internal static class MainWindowPlacement
 
     public static void Save(Window window)
     {
-        GameMasterSettings settings = GameMasterSettings.Load();
+        GameMasterSettings settings = GameMasterSettingsStore.Load();
         bool maximized = window.WindowState == WindowState.Maximized;
         Rect bounds = window.WindowState == WindowState.Normal
             ? new Rect(window.Left, window.Top, window.Width, window.Height)

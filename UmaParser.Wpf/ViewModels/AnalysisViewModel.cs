@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using UmaParser.Analysis;
 using UmaParser.Import;
+using UmaParser.MasterData;
 using UmaParser.Mvvm;
 using UmaParser.Presentation;
 using UmaParser.Settings;
@@ -64,7 +65,7 @@ public sealed class AnalysisViewModel : ObservableObject
     public void Apply(TeamTrialBatch batch, GridColumnGridPreferences? columnPreferences = null)
     {
         _batch = batch;
-        GridColumnGridPreferences preferences = columnPreferences ?? SavedGridColumns.ForAnalysis();
+        GridColumnGridPreferences preferences = columnPreferences ?? SavedGridColumns.ForAnalysis(GameMasterSettingsStore.Load());
         AnalysisScreen screen = AnalysisScreen.Load(batch, preferences);
         Rows = new ObservableCollection<AnalysisGridRow>(screen.Rows);
         OnPropertyChanged(nameof(Rows));
@@ -87,6 +88,6 @@ public sealed class AnalysisViewModel : ObservableObject
             return;
         }
 
-        Apply(_batch, columnPreferences ?? SavedGridColumns.ForAnalysis());
+        Apply(_batch, columnPreferences ?? SavedGridColumns.ForAnalysis(GameMasterSettingsStore.Load()));
     }
 }

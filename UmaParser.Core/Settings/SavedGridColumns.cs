@@ -4,8 +4,9 @@ using UmaParser.Presentation;
 namespace UmaParser.Settings;
 
 /// <summary>
-/// Reads one grid's saved column order and hidden list from settings.json.
-/// WinForms and WPF both call this so a preference written by either app means the same columns.
+/// Reads one grid's saved column order and hidden list from a <see cref="GameMasterSettings"/> object.
+/// The desktop shell loads settings.json and passes it in. A null object is unsaved defaults, so this
+/// type does not open AppData.
 /// </summary>
 internal static class SavedGridColumns
 {
@@ -14,7 +15,7 @@ internal static class SavedGridColumns
         IReadOnlyList<string> defaultCustomizableOrder,
         GameMasterSettings? settings = null)
     {
-        settings ??= GameMasterSettings.Load();
+        settings ??= new GameMasterSettings();
         return GridColumnPreferencesMerger.Merge(
             defaultCustomizableOrder,
             settings.GetGridColumnPreferences(gridKey));

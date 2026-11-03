@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using UmaParser.Analysis;
 using UmaParser.Import;
+using UmaParser.MasterData;
 using UmaParser.Mvvm;
 using UmaParser.Presentation;
 using UmaParser.Settings;
@@ -83,7 +84,7 @@ public sealed class SkillsViewModel : ObservableObject
         GridColumnGridPreferences? columnPreferences = null,
         NonTeamTrialLoad? singleRaceLoad = null)
     {
-        GridColumnGridPreferences preferences = columnPreferences ?? SavedGridColumns.ForSkills();
+        GridColumnGridPreferences preferences = columnPreferences ?? SavedGridColumns.ForSkills(GameMasterSettingsStore.Load());
         Show(SkillsScreen.Load(batch, preferences, singleRaceLoad), resetUmas: true);
     }
 
@@ -104,7 +105,7 @@ public sealed class SkillsViewModel : ObservableObject
             return;
         }
 
-        Show(_screen.WithPreferences(columnPreferences ?? SavedGridColumns.ForSkills()), resetUmas: false);
+        Show(_screen.WithPreferences(columnPreferences ?? SavedGridColumns.ForSkills(GameMasterSettingsStore.Load())), resetUmas: false);
     }
 
     private void Show(SkillsScreen screen, bool resetUmas)

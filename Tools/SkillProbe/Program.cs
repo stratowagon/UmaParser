@@ -20,7 +20,7 @@ if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
     return 1;
 }
 
-GameMasterService.Current.Initialize();
+DesktopGameMaster.Current.Initialize();
 
 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 options.Converters.Add(new UmaApiResponseConverter());

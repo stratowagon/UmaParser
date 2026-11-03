@@ -11,8 +11,7 @@ namespace UmaParser.Behaviors;
 /// to <c>MainViewModel.LoadFilesCommand</c>. A few lines in MainWindow code-behind would
 /// also work. The behavior keeps that code-behind empty and leaves the import in the view model.
 ///
-/// WinForms does the same hand-off in Form1_DragDrop: each dropped path goes to
-/// CaptureImportService.TryImportPath. Folders are not opened.
+/// Each dropped path goes to CaptureFileImport.TryImportPath. Folders are not opened.
 /// </summary>
 public static class FileDropBehavior
 {

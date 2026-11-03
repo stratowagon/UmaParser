@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using UmaParser.Analysis;
 using UmaParser.Import;
+using UmaParser.MasterData;
 using UmaParser.Mvvm;
 using UmaParser.Presentation;
 using UmaParser.Settings;
@@ -85,7 +86,7 @@ public sealed class TracksViewModel : ObservableObject
         GridColumnGridPreferences? columnPreferences = null,
         NonTeamTrialLoad? singleRaceLoad = null)
     {
-        GridColumnGridPreferences preferences = columnPreferences ?? SavedGridColumns.ForTracks();
+        GridColumnGridPreferences preferences = columnPreferences ?? SavedGridColumns.ForTracks(GameMasterSettingsStore.Load());
         Show(TracksScreen.Load(batch, preferences, singleRaceLoad), resetUmas: true);
     }
 
@@ -103,7 +104,7 @@ public sealed class TracksViewModel : ObservableObject
             return;
         }
 
-        Show(_screen.WithPreferences(columnPreferences ?? SavedGridColumns.ForTracks()), resetUmas: false);
+        Show(_screen.WithPreferences(columnPreferences ?? SavedGridColumns.ForTracks(GameMasterSettingsStore.Load())), resetUmas: false);
     }
 
     private void Show(TracksScreen screen, bool resetUmas)

@@ -107,7 +107,7 @@ public sealed class OptionsViewModel : ObservableObject
     {
         _context = context ?? (() => GridColumnContext.Empty);
         _settingsPath = settingsPath;
-        GameMasterSettings settings = GameMasterSettings.Load(settingsPath);
+        GameMasterSettings settings = GameMasterSettingsStore.Load(settingsPath);
         _session = ColumnOptionsSession.Load(settings, _context());
         PerformanceSampleThresholds thresholds = PerformanceSampleThresholds.FromSaved(
             settings.PerformanceSampleSoftThreshold,
@@ -265,7 +265,7 @@ public sealed class OptionsViewModel : ObservableObject
         }
 
         SampleThresholdError = "";
-        GameMasterSettings settings = GameMasterSettings.Load(_settingsPath);
+        GameMasterSettings settings = GameMasterSettingsStore.Load(_settingsPath);
         _session.WriteTo(settings);
         settings.PerformanceSampleSoftThreshold = thresholds.Soft;
         settings.PerformanceSampleHardThreshold = thresholds.Hard;

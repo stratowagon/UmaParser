@@ -54,7 +54,7 @@ public sealed class SettingsRoundTripTests
         Assert.True(wit.IsAvailable);
         Assert.False(wit.IsVisible);
 
-        GameMasterSettings loaded = GameMasterSettings.Load(file.FilePath);
+        GameMasterSettings loaded = GameMasterSettingsStore.Load(file.FilePath);
         Assert.Equal("Dark", loaded.ColorMode);
         Assert.Equal("D:/games/master.mdb", loaded.CustomMasterDbPath);
         Assert.True(WindowPlacement.IsMaximized(loaded));
@@ -86,7 +86,7 @@ public sealed class SettingsRoundTripTests
         viewModel.Columns.Single(column => column.Id == GridColumnIds.Tracks.Survival).IsVisible = false;
         viewModel.Save();
 
-        GameMasterSettings loaded = GameMasterSettings.Load(file.FilePath);
+        GameMasterSettings loaded = GameMasterSettingsStore.Load(file.FilePath);
         GridColumnGridPreferences tracks = SavedGridColumns.ForTracks(loaded);
         Assert.Equal(GridColumnIds.Tracks.Races, tracks.Order[0]);
         Assert.Equal(GridColumnIds.Tracks.Distance, tracks.Order[1]);
@@ -142,7 +142,7 @@ public sealed class SettingsRoundTripTests
         Assert.True(viewModel.Columns[2].IsVisible);
 
         viewModel.Save();
-        GameMasterSettings loaded = GameMasterSettings.Load(file.FilePath);
+        GameMasterSettings loaded = GameMasterSettingsStore.Load(file.FilePath);
         Assert.Equal("Dark", loaded.ColorMode);
         Assert.Equal(WindowPlacement.Maximized, loaded.WindowState);
         Assert.Equal("D:/games/master.mdb", loaded.CustomMasterDbPath);
@@ -172,11 +172,11 @@ public sealed class SettingsRoundTripTests
         });
         settings.Save(file.FilePath);
 
-        GameMasterSettings windowSave = GameMasterSettings.Load(file.FilePath);
+        GameMasterSettings windowSave = GameMasterSettingsStore.Load(file.FilePath);
         WindowPlacement.Write(windowSave, 4, 8, 1000, 700, maximized: false);
         windowSave.Save(file.FilePath);
 
-        GameMasterSettings afterWindow = GameMasterSettings.Load(file.FilePath);
+        GameMasterSettings afterWindow = GameMasterSettingsStore.Load(file.FilePath);
         GridColumnGridPreferences skills = SavedGridColumns.ForSkills(afterWindow);
         Assert.Equal(GridColumnIds.Skills.Activations, skills.Order[0]);
         Assert.Contains(GridColumnIds.Skills.PtsRace, skills.Hidden);
@@ -193,7 +193,7 @@ public sealed class SettingsRoundTripTests
         session.WriteTo(afterWindow);
         afterWindow.Save(file.FilePath);
 
-        GameMasterSettings afterColumns = GameMasterSettings.Load(file.FilePath);
+        GameMasterSettings afterColumns = GameMasterSettingsStore.Load(file.FilePath);
         Assert.Equal(4, afterColumns.WindowX);
         Assert.Equal(8, afterColumns.WindowY);
         Assert.Equal(1000, afterColumns.WindowWidth);

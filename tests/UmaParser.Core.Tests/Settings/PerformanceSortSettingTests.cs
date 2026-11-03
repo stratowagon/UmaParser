@@ -57,7 +57,7 @@ public sealed class PerformanceSortSettingTests
 
         PerformanceSortPreferences.Save(file.FilePath, PerformanceSortKey.P90, ascending: false);
 
-        GameMasterSettings saved = GameMasterSettings.Load(file.FilePath);
+        GameMasterSettings saved = GameMasterSettingsStore.Load(file.FilePath);
         Assert.Equal("P90", saved.PerformanceSort);
         Assert.False(saved.PerformanceSortAscending);
         Assert.Equal("Dark", saved.ColorMode);
@@ -76,7 +76,7 @@ public sealed class PerformanceSortSettingTests
         (PerformanceSortKey median, bool up) = PerformanceSortPreferences.Load(file.FilePath);
         Assert.Equal(PerformanceSortKey.Median, median);
         Assert.True(up);
-        Assert.Equal("Dark", GameMasterSettings.Load(file.FilePath).ColorMode);
+        Assert.Equal("Dark", GameMasterSettingsStore.Load(file.FilePath).ColorMode);
     }
 
     [Fact]
@@ -94,7 +94,7 @@ public sealed class PerformanceSortSettingTests
         (PerformanceSortKey key, bool ascending) = PerformanceSortPreferences.Load(file.FilePath);
         Assert.Equal(PerformanceSortKey.Average, key);
         Assert.True(ascending);
-        Assert.Equal("Light", GameMasterSettings.Load(file.FilePath).ColorMode);
-        Assert.Equal("NotAMetric", GameMasterSettings.Load(file.FilePath).PerformanceSort);
+        Assert.Equal("Light", GameMasterSettingsStore.Load(file.FilePath).ColorMode);
+        Assert.Equal("NotAMetric", GameMasterSettingsStore.Load(file.FilePath).PerformanceSort);
     }
 }

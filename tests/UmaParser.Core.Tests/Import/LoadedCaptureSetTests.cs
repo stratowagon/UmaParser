@@ -20,9 +20,9 @@ public sealed class LoadedCaptureSetTests
         Assert.Equal(0, set.Add([second.ToUpperInvariant()]));
         Assert.Equal([LoadedCaptureSet.Normalize(first), LoadedCaptureSet.Normalize(second)], set.Paths);
 
-        TeamTrialBatch combined = TeamTrialBatchBuilder.Build(set.Paths.Select(CaptureImportService.TryImportPath));
+        TeamTrialBatch combined = TeamTrialBatchBuilder.Build(set.Paths.Select(CaptureFileImport.TryImportPath));
         TeamTrialBatch direct = TeamTrialBatchBuilder.Build(
-            new[] { first, second }.Select(CaptureImportService.TryImportPath));
+            new[] { first, second }.Select(CaptureFileImport.TryImportPath));
 
         Assert.Equal(direct.Kind, combined.Kind);
         Assert.Equal(direct.Trials.Keys, combined.Trials.Keys);
@@ -44,13 +44,13 @@ public sealed class LoadedCaptureSetTests
 
         Assert.Equal(1, set.Add([notes]));
         Assert.Equal(0, set.Add([notes]));
-        TeamTrialBatch skippedOnly = TeamTrialBatchBuilder.Build(set.Paths.Select(CaptureImportService.TryImportPath));
+        TeamTrialBatch skippedOnly = TeamTrialBatchBuilder.Build(set.Paths.Select(CaptureFileImport.TryImportPath));
         Assert.False(skippedOnly.HasAnyData);
         Assert.Equal(1, skippedOnly.SkippedFileCount);
         Assert.Equal(DropStatusText.NoneLoaded(1), DropStatusText.For(skippedOnly));
 
         Assert.Equal(1, set.Add([capture]));
-        TeamTrialBatch merged = TeamTrialBatchBuilder.Build(set.Paths.Select(CaptureImportService.TryImportPath));
+        TeamTrialBatch merged = TeamTrialBatchBuilder.Build(set.Paths.Select(CaptureFileImport.TryImportPath));
         Assert.True(merged.HasAnyData);
         Assert.Single(merged.Trials);
         Assert.Equal(1, merged.SkippedFileCount);
