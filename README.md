@@ -63,7 +63,7 @@ so take the recommendations with a grain of salt.
 
 
 ### Performance Tab
-Visualization ~~stolen from~~inspired by [Chernobyl Liquidator's work](https://uma.satki.org/team_trial).
+Visualization ~~stolen from~~inspired by [Chernobyl Liquidator's work](https://tachyon.satki.org/).
 Stacked base-score bars for the Team Trials umas in the loaded set. All files must be Team
 Trials, but this tab does not require the same roster across every file the way Team Analysis
 does.  The current lineup (based on the newest file in the batch) will be highlighted.
