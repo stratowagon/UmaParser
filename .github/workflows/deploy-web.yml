@@ -1,0 +1,61 @@
+# Publishes UmaParser.Web to GitHub Pages.
+#
+# Enable it once, in the repo settings:
+#   Settings → Pages → Build and deployment → Source: GitHub Actions
+#
+# The site is https://<user>.github.io/UmaParser/
+# Local `dotnet run --project UmaParser.Web` keeps <base href="/" />.
+# This workflow rewrites that tag to <base href="/UmaParser/" /> in the published index.html.
+#
+# Desktop release tags (V1.0, V1.1, V1.1.1, …) deploy the web shell too.
+# workflow_dispatch deploys the branch you pick without a new tag.
+
+name: Deploy web
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "V*"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Publish Blazor WebAssembly
+        run: dotnet publish UmaParser.Web/UmaParser.Web.csproj -c Release -o "${{ runner.temp }}/web"
+
+      # The committed index.html uses "/" so `dotnet run` works. Project Pages is /UmaParser/.
+      - name: Set GitHub Pages base href
+        run: sed -i 's#<base href="/" id="umaparser-base" />#<base href="/UmaParser/" id="umaparser-base" />#' "${{ runner.temp }}/web/wwwroot/index.html"
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ runner.temp }}/web/wwwroot
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

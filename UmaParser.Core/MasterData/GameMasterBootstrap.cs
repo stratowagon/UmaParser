@@ -17,6 +17,12 @@ public static class GameMasterBootstrap
         GameMasterService.Current.InitializeEmbeddedOnly();
 
     /// <summary>
+    /// One-line description of the catalog currently in use.
+    /// Same sentence the desktop status bar shows for master data.
+    /// </summary>
+    public static string StatusLine() => GameMasterService.Current.GetStatusLine();
+
+    /// <summary>
     /// Replaces the shared catalog with a master-cache JSON document, the same shape the
     /// desktop app writes to <c>master-cache.json</c>. Does not read a file. Invalid or empty
     /// JSON leaves the current catalog unchanged.

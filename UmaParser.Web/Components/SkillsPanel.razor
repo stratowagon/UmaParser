@@ -1,0 +1,74 @@
+@if (!HasLoaded)
+{
+    <p class="hint">Drop one or more .json capture files onto this window.</p>
+}
+else
+{
+    <div class="panel-head">
+        @if (Screen.Umas.Count > 0)
+        {
+            <label>
+                Uma
+                <select value="@Screen.SelectedIndex" @onchange="OnUma">
+                    @for (int i = 0; i < Screen.Umas.Count; i++)
+                    {
+                        <option value="@i">@Screen.Umas[i].Name</option>
+                    }
+                </select>
+            </label>
+        }
+        <p class="summary">@Screen.Summary</p>
+    </div>
+    <SkillGrid Rows="Screen.Rows" Columns="Screen.Columns" Theme="Theme" />
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public SkillsScreen Screen { get; set; } = SkillsScreen.Empty;
+
+    [Parameter]
+    public bool HasLoaded { get; set; }
+
+    [Parameter]
+    public ColorTheme Theme { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnSelect { get; set; }
+
+    private bool _render = true;
+    private bool _seen;
+    private SkillsScreen? _shown;
+    private bool _shownLoaded;
+    private ColorTheme _shownTheme;
+
+    protected override void OnParametersSet()
+    {
+        _render = !_seen
+            || !ReferenceEquals(_shown, Screen)
+            || _shownLoaded != HasLoaded
+            || _shownTheme != Theme;
+    }
+
+    protected override bool ShouldRender() => _render;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (_render)
+        {
+            _seen = true;
+            _shown = Screen;
+            _shownLoaded = HasLoaded;
+            _shownTheme = Theme;
+        }
+    }
+
+    private Task OnUma(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int index))
+        {
+            return OnSelect.InvokeAsync(index);
+        }
+
+        return Task.CompletedTask;
+    }
+}

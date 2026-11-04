@@ -1,0 +1,183 @@
+@if (Columns.Count > 0 && Rows.Count > 0)
+{
+    <div class="grid-wrap">
+        <table>
+            <thead>
+                <tr>
+                    @foreach (var column in Columns)
+                    {
+                        <th scope="col" class="@NumClass(column.Id)" aria-sort="@Aria(column.Id)" title="@column.Tooltip">
+                            <button type="button" @onclick="() => OnSort(column.Id)">@column.Header @Indicator(column.Id)</button>
+                        </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (TracksGridRow row in Sorted())
+                {
+                    <tr class="@(row.IsFooter ? "total" : null)">
+                        @foreach (var column in Columns)
+                        {
+                            (string text, CellBand band, bool numeric) = Cell(row, column.Id);
+                            <td class="@(numeric ? "num" : null)" style="@BandStyle.For(band, Theme)">@text</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<TracksGridRow> Rows { get; set; } = Array.Empty<TracksGridRow>();
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<GridColumnDefinition<TracksRow>> Columns { get; set; } =
+        Array.Empty<GridColumnDefinition<TracksRow>>();
+
+    [Parameter]
+    public ColorTheme Theme { get; set; }
+
+    private IReadOnlyList<TracksGridRow>? _seen;
+    private string? _sortId;
+    private bool _descending;
+    private bool _render = true;
+    private GridRenderGate _gate;
+
+    protected override void OnParametersSet()
+    {
+        if (!ReferenceEquals(_seen, Rows))
+        {
+            _seen = Rows;
+            _sortId = null;
+            _descending = false;
+        }
+
+        _render = _gate.NeedsRender(Rows, Columns, Theme);
+    }
+
+    protected override bool ShouldRender() => _render;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (_render)
+        {
+            _gate.MarkRendered(Rows, Columns, Theme);
+        }
+    }
+
+    private string ActiveId
+    {
+        get
+        {
+            if (_sortId != null && Columns.Any(column => column.Id == _sortId))
+            {
+                return _sortId;
+            }
+
+            return GridColumnIds.Tracks.Track;
+        }
+    }
+
+    private bool ActiveDescending => _sortId != null && _descending;
+
+    private void OnSort(string id)
+    {
+        if (ActiveId == id)
+        {
+            _descending = !ActiveDescending;
+            _sortId = id;
+            return;
+        }
+
+        _sortId = id;
+        _descending = id is not (GridColumnIds.Tracks.Track or GridColumnIds.Tracks.Distance);
+    }
+
+    private string Aria(string id) =>
+        ActiveId == id ? (ActiveDescending ? "descending" : "ascending") : "none";
+
+    private string Indicator(string id) =>
+        ActiveId == id ? (ActiveDescending ? "▼" : "▲") : "";
+
+    private static string? NumClass(string id) =>
+        id == GridColumnIds.Tracks.Track ? null : "num";
+
+    private IEnumerable<TracksGridRow> Sorted()
+    {
+        string member = Member(ActiveId);
+        bool descending = ActiveDescending;
+        return Rows.OrderBy(row => row, Comparer<TracksGridRow>.Create(
+            (left, right) => TracksGridSort.Compare(left, right, member, descending)));
+    }
+
+    private static string Member(string columnId) => columnId switch
+    {
+        GridColumnIds.Tracks.Distance => nameof(TracksGridRow.Distance),
+        GridColumnIds.Tracks.Races => nameof(TracksGridRow.Races),
+        GridColumnIds.Tracks.AvgPlace => nameof(TracksGridRow.AvgPlace),
+        GridColumnIds.Tracks.PctFirst => nameof(TracksGridRow.PctFirst),
+        GridColumnIds.Tracks.PctTop3 => nameof(TracksGridRow.PctTop3),
+        GridColumnIds.Tracks.PctTop5 => nameof(TracksGridRow.PctTop5),
+        GridColumnIds.Tracks.SpurtRate => nameof(TracksGridRow.SpurtRate),
+        GridColumnIds.Tracks.Survival => nameof(TracksGridRow.Survival),
+        GridColumnIds.Tracks.AvgSkillPts => nameof(TracksGridRow.AvgSkillPoints),
+        _ => nameof(TracksGridRow.Track),
+    };
+
+    private static (string Text, CellBand Band, bool Numeric) Cell(TracksGridRow row, string id)
+    {
+        if (id == GridColumnIds.Tracks.Track)
+        {
+            return (row.Track, CellBand.None, false);
+        }
+
+        if (id == GridColumnIds.Tracks.Distance)
+        {
+            return (row.DistanceText, CellBand.None, true);
+        }
+
+        if (id == GridColumnIds.Tracks.Races)
+        {
+            return (row.Races.ToString(), CellBand.None, true);
+        }
+
+        if (id == GridColumnIds.Tracks.AvgPlace)
+        {
+            return (row.AvgPlaceText, CellBand.None, true);
+        }
+
+        if (id == GridColumnIds.Tracks.PctFirst)
+        {
+            return (row.PctFirstText, CellBand.None, true);
+        }
+
+        if (id == GridColumnIds.Tracks.PctTop3)
+        {
+            return (row.PctTop3Text, CellBand.None, true);
+        }
+
+        if (id == GridColumnIds.Tracks.PctTop5)
+        {
+            return (row.PctTop5Text, CellBand.None, true);
+        }
+
+        if (id == GridColumnIds.Tracks.SpurtRate)
+        {
+            return (row.SpurtRateText, row.IsFooter ? CellBand.None : row.SpurtBand, true);
+        }
+
+        if (id == GridColumnIds.Tracks.Survival)
+        {
+            return (row.SurvivalText, row.IsFooter ? CellBand.None : row.SurvivalBand, true);
+        }
+
+        if (id == GridColumnIds.Tracks.AvgSkillPts)
+        {
+            return (row.AvgSkillPointsText, CellBand.None, true);
+        }
+
+        return ("", CellBand.None, false);
+    }
+}

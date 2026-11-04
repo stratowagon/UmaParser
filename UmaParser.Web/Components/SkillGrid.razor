@@ -1,0 +1,170 @@
+@if (Columns.Count > 0 && Rows.Count > 0)
+{
+    <div class="grid-wrap">
+        <table>
+            <thead>
+                <tr>
+                    @foreach (var column in Columns)
+                    {
+                        <th scope="col" class="@NumClass(column.Id)" aria-sort="@Aria(column.Id)" title="@column.Tooltip">
+                            <button type="button" @onclick="() => OnSort(column.Id)">@column.Header @Indicator(column.Id)</button>
+                        </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (SkillActivationRow row in Sorted())
+                {
+                    <tr>
+                        @foreach (var column in Columns)
+                        {
+                            (string text, CellBand band, bool numeric) = Cell(row, column.Id);
+                            <td class="@(numeric ? "num" : null)" style="@BandStyle.For(band, Theme)">@text</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<SkillActivationRow> Rows { get; set; } = Array.Empty<SkillActivationRow>();
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<GridColumnDefinition<SkillActivationRow>> Columns { get; set; } =
+        Array.Empty<GridColumnDefinition<SkillActivationRow>>();
+
+    [Parameter]
+    public ColorTheme Theme { get; set; }
+
+    private IReadOnlyList<SkillActivationRow>? _seen;
+    private string? _sortId;
+    private bool _descending = true;
+    private bool _render = true;
+    private GridRenderGate _gate;
+
+    protected override void OnParametersSet()
+    {
+        if (!ReferenceEquals(_seen, Rows))
+        {
+            _seen = Rows;
+            _sortId = null;
+            _descending = true;
+        }
+
+        _render = _gate.NeedsRender(Rows, Columns, Theme);
+    }
+
+    protected override bool ShouldRender() => _render;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (_render)
+        {
+            _gate.MarkRendered(Rows, Columns, Theme);
+        }
+    }
+
+    private string DefaultId =>
+        Columns.Any(column => column.Id == GridColumnIds.Skills.PtsRace)
+            ? GridColumnIds.Skills.PtsRace
+            : GridColumnIds.Skills.Activations;
+
+    private string ActiveId
+    {
+        get
+        {
+            if (_sortId != null && Columns.Any(column => column.Id == _sortId))
+            {
+                return _sortId;
+            }
+
+            return DefaultId;
+        }
+    }
+
+    private bool ActiveDescending => _sortId == null || _descending;
+
+    private void OnSort(string id)
+    {
+        if (ActiveId == id)
+        {
+            _descending = !ActiveDescending;
+            _sortId = id;
+            return;
+        }
+
+        _sortId = id;
+        _descending = id != GridColumnIds.Skills.Skill;
+    }
+
+    private string Aria(string id) =>
+        ActiveId == id ? (ActiveDescending ? "descending" : "ascending") : "none";
+
+    private string Indicator(string id) =>
+        ActiveId == id ? (ActiveDescending ? "▼" : "▲") : "";
+
+    private static string? NumClass(string id) =>
+        id == GridColumnIds.Skills.Skill ? null : "num";
+
+    private IEnumerable<SkillActivationRow> Sorted()
+    {
+        string id = ActiveId;
+        bool descending = ActiveDescending;
+        return Rows.OrderBy(row => row, Comparer<SkillActivationRow>.Create((left, right) => Compare(left, right, id, descending)));
+    }
+
+    private static int Compare(SkillActivationRow left, SkillActivationRow right, string id, bool descending)
+    {
+        int result = id switch
+        {
+            GridColumnIds.Skills.Skill => string.Compare(left.SkillName, right.SkillName, StringComparison.CurrentCulture),
+            GridColumnIds.Skills.PtsRace => left.PointsPerRace.CompareTo(right.PointsPerRace),
+            GridColumnIds.Skills.Activations => left.ActivationCount.CompareTo(right.ActivationCount),
+            GridColumnIds.Skills.PerRacePct => left.PerRaceActivationRatePercent.CompareTo(right.PerRaceActivationRatePercent),
+            GridColumnIds.Skills.ProcsPerRacePct => left.ActivationRatePercent.CompareTo(right.ActivationRatePercent),
+            GridColumnIds.Skills.WitDelta => SkillWitDeltaSort.Compare(left.WitDeltaPercent, right.WitDeltaPercent),
+            _ => 0,
+        };
+
+        return descending ? -result : result;
+    }
+
+    private static (string Text, CellBand Band, bool Numeric) Cell(SkillActivationRow row, string id)
+    {
+        if (id == GridColumnIds.Skills.Skill)
+        {
+            return (row.SkillName, CellBands.ForSkillName(row), false);
+        }
+
+        CellBand metric = CellBands.ForSkillMetric(row);
+        if (id == GridColumnIds.Skills.PtsRace)
+        {
+            return (SkillCellText.PointsPerRace(row.PointsPerRace), metric, true);
+        }
+
+        if (id == GridColumnIds.Skills.Activations)
+        {
+            return (row.ActivationCount.ToString(), metric, true);
+        }
+
+        if (id == GridColumnIds.Skills.PerRacePct)
+        {
+            return (SkillCellText.OneDecimal(row.PerRaceActivationRatePercent), metric, true);
+        }
+
+        if (id == GridColumnIds.Skills.ProcsPerRacePct)
+        {
+            return (SkillCellText.OneDecimal(row.ActivationRatePercent), metric, true);
+        }
+
+        if (id == GridColumnIds.Skills.WitDelta)
+        {
+            return (SkillCellText.FormatWitDelta(row), metric, true);
+        }
+
+        return ("", CellBand.None, false);
+    }
+}
