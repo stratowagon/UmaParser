@@ -29,7 +29,7 @@
         </label>
         <div class="drop-actions">
             <span class="count">@CountLabel</span>
-            <button type="button" @onclick="Clear" disabled="@(!Session.HasLoaded)">Clear</button>
+            <button type="button" @onclick="Clear" disabled="@(!Session.HasLoaded || _busy)">Clear</button>
         </div>
     </div>
 
@@ -49,7 +49,7 @@
     </main>
 
     <footer class="status" role="status">
-        <span>@Session.StatusText</span>
+        <span>@StatusLine</span>
         <span>@Session.MasterStatus</span>
     </footer>
 </div>
@@ -71,9 +71,13 @@
 
     private string ThemeLabel => _theme == ColorTheme.Dark ? "Dark" : "Light";
 
+    private string _progress = "";
+
     private string DropLabel => _busy
-        ? "Reading files…"
+        ? _progress
         : "Drop .json captures here, or click to choose";
+
+    private string StatusLine => _busy ? _progress : Session.StatusText;
 
     private string CountLabel => Session.HasLoaded ? $"{Session.LoadedCount} file(s)" : "No files";
 
@@ -110,26 +114,66 @@
             return;
         }
 
+        IReadOnlyList<IBrowserFile> files = e.GetMultipleFiles(maximumFileCount: 200);
+        if (files.Count == 0)
+        {
+            return;
+        }
+
         _busy = true;
+        int added = 0;
+        bool finished = false;
         try
         {
-            var incoming = new List<IncomingCapture>();
-            foreach (IBrowserFile file in e.GetMultipleFiles(maximumFileCount: 200))
+            // Read and parse every file before Skills or Tracks are built.
+            // A progress paint is allowed; the grids skip that render.
+            for (int i = 0; i < files.Count; i++)
             {
-                incoming.Add(await ReadAsync(file));
+                IBrowserFile file = files[i];
+                _progress = $"Reading {i + 1} of {files.Count}: {file.Name}";
+                await PaintProgress();
+                IncomingCapture capture = await ReadAsync(file);
+
+                _progress = $"Parsing {i + 1} of {files.Count}: {file.Name}";
+                await PaintProgress();
+                if (Session.Stage(capture))
+                {
+                    added++;
+                }
             }
 
-            int added = Session.Add(incoming);
-            if (added > 0 && _tab is ShellTab.Results or ShellTab.Analysis or ShellTab.Performance)
-            {
-                _tab = ShellTab.Skills;
-            }
+            finished = true;
         }
         finally
         {
-            _busy = false;
-            _pickerKey++;
+            try
+            {
+                if (added > 0 || Session.NeedsPublish)
+                {
+                    Session.PublishScreens();
+                    if (_tab is ShellTab.Results or ShellTab.Analysis or ShellTab.Performance)
+                    {
+                        _tab = ShellTab.Skills;
+                    }
+                }
+                else if (finished)
+                {
+                    Session.NoteAlreadyLoaded();
+                }
+            }
+            finally
+            {
+                _busy = false;
+                _progress = "";
+                _pickerKey++;
+            }
         }
+    }
+
+    private async Task PaintProgress()
+    {
+        StateHasChanged();
+        await Task.Delay(1);
     }
 
     private static async Task<IncomingCapture> ReadAsync(IBrowserFile file)

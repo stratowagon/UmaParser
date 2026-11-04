@@ -29,41 +29,47 @@ public sealed class WebSession
 
     public TracksScreen Tracks { get; private set; } = TracksScreen.Empty;
 
-    public int LoadedCount => _imports.Count;
+    /// <summary>Files included in <see cref="Skills"/> and <see cref="Tracks"/>. Unchanged while a drop is still parsing.</summary>
+    public int LoadedCount { get; private set; }
 
-    public bool HasLoaded => _imports.Count > 0;
+    /// <summary>True after a drop has been published to the screens. False while files are only staged.</summary>
+    public bool HasLoaded { get; private set; }
+
+    /// <summary>True after <see cref="Stage"/> stored a file that <see cref="PublishScreens"/> has not built yet.</summary>
+    public bool NeedsPublish { get; private set; }
 
     public static long MaxFileBytes => MaxBytes;
 
-    /// <summary>Returns how many of <paramref name="files"/> were new.</summary>
-    public int Add(IReadOnlyList<IncomingCapture> files)
+    /// <summary>
+    /// Parses one capture into this session. Does not build Skills, Tracks, or any other screen.
+    /// Returns false when the file was already stored.
+    /// </summary>
+    public bool Stage(IncomingCapture file)
     {
-        int added = 0;
-        foreach (IncomingCapture file in files)
+        if (!_known.Add(Key(file)))
         {
-            if (!_known.Add(Key(file)))
-            {
-                continue;
-            }
-
-            string name = UniqueName(file.FileName);
-            _imports.Add(Import(name, file));
-            added++;
+            return false;
         }
 
-        if (added == 0)
-        {
-            if (files.Count > 0)
-            {
-                StatusText = "Already loaded.";
-            }
-
-            return 0;
-        }
-
-        Rebuild();
-        return added;
+        string name = UniqueName(file.FileName);
+        _imports.Add(Import(name, file));
+        NeedsPublish = true;
+        return true;
     }
+
+    /// <summary>
+    /// Builds Skills and Tracks once from every capture staged so far.
+    /// Call this after the whole drop has been parsed, not after each file.
+    /// </summary>
+    public void PublishScreens()
+    {
+        Rebuild();
+        LoadedCount = _imports.Count;
+        HasLoaded = _imports.Count > 0;
+        NeedsPublish = false;
+    }
+
+    public void NoteAlreadyLoaded() => StatusText = "Already loaded.";
 
     public void Clear()
     {
@@ -73,6 +79,9 @@ public sealed class WebSession
         Skills = SkillsScreen.Empty;
         Tracks = TracksScreen.Empty;
         StatusText = DropStatusText.Cleared;
+        LoadedCount = 0;
+        HasLoaded = false;
+        NeedsPublish = false;
     }
 
     public void SelectSkills(int index) => Skills = Skills.Select(index);

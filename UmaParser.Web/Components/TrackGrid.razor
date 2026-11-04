@@ -42,6 +42,8 @@
     private IReadOnlyList<TracksGridRow>? _seen;
     private string? _sortId;
     private bool _descending;
+    private bool _render = true;
+    private GridRenderGate _gate;
 
     protected override void OnParametersSet()
     {
@@ -50,6 +52,18 @@
             _seen = Rows;
             _sortId = null;
             _descending = false;
+        }
+
+        _render = _gate.NeedsRender(Rows, Columns, Theme);
+    }
+
+    protected override bool ShouldRender() => _render;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (_render)
+        {
+            _gate.MarkRendered(Rows, Columns, Theme);
         }
     }
 
